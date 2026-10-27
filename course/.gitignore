@@ -1,0 +1,6 @@
+.env
+__pycache__/
+audit.json
+build/
+node_modules/
+shots/

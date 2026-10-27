@@ -1,0 +1,23 @@
+# Render.com blueprint for a FREE DEMO only. The web service sleeps after 15 minutes of no traffic and
+# the free database expires after 30 days (deleted 14 days later). Do not use it for real learners.
+# Use it by selecting this file when you create the Blueprint, or rename it to render.yaml.
+services:
+  - type: web
+    name: fullstack-course-demo
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm ci --omit=dev
+    startCommand: node backend/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PGSSL
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase: { name: course-demo-db, property: connectionString }
+databases:
+  - name: course-demo-db
+    plan: free

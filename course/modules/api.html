@@ -1,0 +1,307 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Back end</span><span>Module 15</span><span>190 min</span><span>Intermediate</span></div><h1>API Design and Real-Time Communication</h1><p class="lede">Design clean REST APIs, document them with OpenAPI and Swagger, consume them with fetch and Axios, and add real-time features with WebSockets.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Explain what an API is and what makes a REST API well designed.</li><li>Choose URLs, methods and status codes for a resource.</li><li>Add pagination, filtering, versioning and consistent error responses.</li><li>Document an API with OpenAPI and explore it with Swagger UI.</li><li>Call an API from code with <code class="inline">fetch</code> and Axios, and handle failures.</li><li>Explain WebSockets and when to use them instead of normal requests.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Back-End Development and Advanced <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button> (promises and <code class="inline">async</code>/<code class="inline">await</code>).</p></section>
+<h2 id="what-is-an-api">What is an API?</h2>
+<p>An <button type="button" class="term" data-term="API" data-def="A set of rules that lets one program ask another program to do something or share data. A restaurant menu is an API: you order from it without knowing how the kitchen works.">API</button> (Application Programming Interface) is a <strong>contract</strong> that lets one program talk to another. A restaurant menu is a good model: it lists what you may ask for and what you will get, and you do not need to know how the kitchen works. In web development, "API" usually means a <strong>web API</strong>: a server that offers data and actions over <button type="button" class="term" data-term="HTTP" data-def="The set of rules browsers and servers use to exchange web pages and data.">HTTP</button>, usually as <button type="button" class="term" data-term="JSON" data-def="A simple text format for sending structured data between programs. It looks like name and value pairs in curly braces.">JSON</button>.</p>
+<p>Your own <button type="button" class="term" data-term="Front end" data-def="The part of an application that users see and interact with in their browser or app.">front end</button> will call your back-end API. Other developers may call it too, and so might phone apps and partner companies. That is why API design matters: <strong>once other people depend on your API, you cannot change it freely.</strong></p>
+<h2 id="rest-designing-around-resources">REST: designing around resources</h2>
+<p><strong><button type="button" class="term" data-term="REST" data-def="A popular style for designing web APIs around resources and standard HTTP methods such as GET, POST, PUT and DELETE.">REST</button></strong> is a style for web APIs built around <strong>resources</strong> (things, such as users, orders and lessons) and the standard HTTP methods. The rules of thumb:</p>
+<ol><li><strong>URLs name things (nouns), not actions.</strong> <code class="inline">/api/orders</code>, not <code class="inline">/api/getOrders</code>.</li><li><strong>The method says what to do.</strong> GET reads, POST creates, PUT or PATCH changes, DELETE removes.</li><li><strong>Use plural nouns and nesting for relationships.</strong> <code class="inline">/api/users/42/orders</code>.</li><li><strong>Use proper status codes</strong> and send JSON.</li><li><strong>Be stateless.</strong> Each request carries everything the server needs (such as a token). The server does not remember you between requests.</li></ol>
+<div class="table-wrap"><table><thead><tr><th scope="col">Action</th><th scope="col">Request</th><th scope="col">Success response</th></tr></thead><tbody><tr><td>List orders</td><td><code class="inline">GET /api/orders</code></td><td><code class="inline">200</code> with an array</td></tr><tr><td>Read one</td><td><code class="inline">GET /api/orders/42</code></td><td><code class="inline">200</code> with the order, or <code class="inline">404</code></td></tr><tr><td>Create</td><td><code class="inline">POST /api/orders</code> with a JSON body</td><td><code class="inline">201</code> with the new order, and a <code class="inline">Location</code> header</td></tr><tr><td>Replace</td><td><code class="inline">PUT /api/orders/42</code> with the full order</td><td><code class="inline">200</code></td></tr><tr><td>Change part</td><td><code class="inline">PATCH /api/orders/42</code> with only the changed fields</td><td><code class="inline">200</code></td></tr><tr><td>Delete</td><td><code class="inline">DELETE /api/orders/42</code></td><td><code class="inline">204</code> with no body</td></tr></tbody></table></div>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 624 494" role="img" aria-label="A complete CRUD conversation" style="max-width:624px;min-width:450px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-api1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><line x1="156.1" y1="54" x2="156.1" y2="488.0" class="fg-life"/><rect x="101.1" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="156.1" y="38.0" text-anchor="middle" class="fg-title">Client</text><line x1="468.3" y1="54" x2="468.3" y2="488.0" class="fg-life"/><rect x="413.3" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="468.3" y="38.0" text-anchor="middle" class="fg-title">API</text><line x1="160.1" y1="94" x2="464.3" y2="94" class="fg-line" marker-end="url(#ah-api1)"/><text x="312.2" y="86" text-anchor="middle" class="fg-msg">POST /api/todos {&quot;title&quot;: &quot;Milk&quot;}</text><line x1="464.3" y1="144" x2="160.1" y2="144" class="fg-line fg-dash" marker-end="url(#ah-api1)"/><text x="312.2" y="136" text-anchor="middle" class="fg-msg">201 Created {&quot;id&quot;: 7, &quot;title&quot;: &quot;Milk&quot;}</text><line x1="160.1" y1="194" x2="464.3" y2="194" class="fg-line" marker-end="url(#ah-api1)"/><text x="312.2" y="186" text-anchor="middle" class="fg-msg">GET /api/todos/7</text><line x1="464.3" y1="244" x2="160.1" y2="244" class="fg-line fg-dash" marker-end="url(#ah-api1)"/><text x="312.2" y="236" text-anchor="middle" class="fg-msg">200 OK {&quot;id&quot;: 7, &quot;done&quot;: false}</text><line x1="160.1" y1="294" x2="464.3" y2="294" class="fg-line" marker-end="url(#ah-api1)"/><text x="312.2" y="286" text-anchor="middle" class="fg-msg">PATCH /api/todos/7 {&quot;done&quot;: true}</text><line x1="464.3" y1="344" x2="160.1" y2="344" class="fg-line fg-dash" marker-end="url(#ah-api1)"/><text x="312.2" y="336" text-anchor="middle" class="fg-msg">200 OK {&quot;id&quot;: 7, &quot;done&quot;: true}</text><line x1="160.1" y1="394" x2="464.3" y2="394" class="fg-line" marker-end="url(#ah-api1)"/><text x="312.2" y="386" text-anchor="middle" class="fg-msg">DELETE /api/todos/7</text><line x1="464.3" y1="444" x2="160.1" y2="444" class="fg-line fg-dash" marker-end="url(#ah-api1)"/><text x="312.2" y="436" text-anchor="middle" class="fg-msg">204 No Content</text></svg></div><figcaption><span class="fig-n">Figure 1.</span> A complete CRUD conversation</figcaption></figure>
+<h3 id="safe-and-idempotent-methods">Safe and idempotent methods</h3>
+<p>An <strong><button type="button" class="term" data-term="Idempotent" data-def="An operation that has the same effect whether you do it once or many times.">Idempotent</button></strong> operation gives the same result no matter how many times you repeat it. This matters, because networks fail and clients retry.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Method</th><th scope="col">Safe (changes nothing)</th><th scope="col">Idempotent</th></tr></thead><tbody><tr><td>GET</td><td>Yes</td><td>Yes</td></tr><tr><td>PUT</td><td>No</td><td>Yes (setting the same value twice leaves it set)</td></tr><tr><td>DELETE</td><td>No</td><td>Yes (deleting twice leaves it deleted)</td></tr><tr><td>POST</td><td>No</td><td><strong>No</strong> (two identical POSTs create two things)</td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Do not change data with GET</div><div class="callout-body"><p>Browsers, caches and search crawlers freely call GET URLs, and prefetch links. A <button type="button" class="term" data-term="URL" data-def="The full address of something on the web, such as https://example.com/page.">URL</button> like <code class="inline">GET /api/deleteUser?id=5</code> can be triggered by a crawler or an image tag. Use <code class="inline">DELETE</code> or <code class="inline">POST</code>.</p></div></aside>
+<aside class="callout callout-best"><div class="callout-title">Good API design, quickly</div><div class="callout-body"><ul><li>Consistent names (<code class="inline">created_at</code> everywhere, not sometimes <code class="inline">createdAt</code>).</li><li>Always return JSON, including for errors.</li><li>Never return more than the client needs. In particular, never return password hashes.</li><li>Keep responses predictable: a list endpoint returns an array or a standard envelope, not sometimes one and sometimes the other.</li><li>Prefer adding fields to changing or removing them. New fields do not break old clients.</li></ul></div></aside>
+<h2 id="pagination-filtering-and-sorting">Pagination, filtering and sorting</h2>
+<p>A list <button type="button" class="term" data-term="Endpoint" data-def="One specific URL of an API that does one job, such as GET /api/users.">endpoint</button> that returns a million rows will crash somebody's phone. Always <strong>paginate</strong>, and let clients <strong>filter</strong> and <strong>sort</strong> through the <button type="button" class="term" data-term="Query string" data-def="The part of a URL after the question mark that carries options, such as ?page=2&amp;sort=price.">query string</button>.</p>
+<pre class="code-block" data-lang="text"><span class="lang-tag">Text</span>GET /api/orders?status=shipped&amp;sort=-created_at&amp;page=2&amp;limit=20</pre>
+<p>A typical paginated response:</p>
+<pre class="code-block" data-lang="json"><span class="lang-tag">JSON</span>{
+  "data": [ { "id": 21, "status": "shipped" } ],
+  "page": 2,
+  "pageSize": 20,
+  "total": 134,
+  "totalPages": 7
+}</pre>
+<div class="table-wrap"><table><thead><tr><th scope="col">Style</th><th scope="col">How</th><th scope="col">Good for</th></tr></thead><tbody><tr><td>Page and size</td><td><code class="inline">?page=3&amp;limit=20</code></td><td>Simple lists with page numbers</td></tr><tr><td>Cursor</td><td><code class="inline">?after=&lt;id of the last item&gt;</code></td><td>Large or constantly changing data (feeds), because pages never skip or repeat</td></tr></tbody></table></div>
+<p>Two small challenges: build the query string, and compute a page.</p>
+<div class="challenge" data-id="api.buildurl" data-title="Build a URL with a query string"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Build a URL with a query string</h3></div><div class="challenge-body"><p>Write <code class="inline">buildUrl(base, params)</code>. It appends the parameters to <code class="inline">base</code> as a correctly <strong>encoded</strong> query string. Skip parameters whose value is <code class="inline">undefined</code> or <code class="inline">null</code>. Convert values to text. If no parameters remain, return <code class="inline">base</code> unchanged.</p></div><script type="text/plain" data-part="starter">function buildUrl(base, params) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('adds parameters', () => assert.equal(buildUrl('/api/todos', { done: true, page: 2 }), '/api/todos?done=true&page=2'));
+test('encodes values', () => assert.equal(buildUrl('/search', { q: 'a b&c' }), '/search?q=a+b%26c'));
+test('skips undefined and null', () => assert.equal(buildUrl('/x', { a: 1, b: undefined, c: null }), '/x?a=1'));
+test('no parameters', () => assert.equal(buildUrl('/x', {}), '/x'));
+test('only skipped parameters', () => assert.equal(buildUrl('/x', { a: undefined }), '/x'));
+test('keeps zero and false', () => assert.equal(buildUrl('/x', { n: 0, f: false }), '/x?n=0&f=false'));</script><script type="text/plain" data-part="solution">function buildUrl(base, params) {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(params || {})) {
+    if (v !== undefined && v !== null) q.append(k, String(v));
+  }
+  const s = q.toString();
+  return s ? base + '?' + s : base;
+}</script><div class="hint-text" hidden><code class="inline">new URLSearchParams()</code> handles the encoding. Use <code class="inline">.append(key, String(value))</code> and <code class="inline">.toString()</code>.</div><div class="hint-text" hidden>Loop with <code class="inline">Object.entries(params)</code>.</div></div>
+<div class="challenge" data-id="api.paginate" data-title="Paginate a list"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Paginate a list</h3></div><div class="challenge-body"><p>Write <code class="inline">paginate(items, page, pageSize)</code> returning an object <code class="inline">{ data, page, pageSize, total, totalPages }</code>. <code class="inline">data</code> is the slice of items for that page (pages start at 1). <code class="inline">total</code> is the number of items, and <code class="inline">totalPages</code> is how many pages there are (0 for an empty list). A page below 1 (or not a number) counts as page 1. A page past the end gives an empty <code class="inline">data</code>.</p></div><script type="text/plain" data-part="starter">function paginate(items, page, pageSize) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">const items = Array.from({ length: 25 }, (_, i) => i + 1);
+test('first page', () => assert.deepEqual(paginate(items, 1, 10), { data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], page: 1, pageSize: 10, total: 25, totalPages: 3 }));
+test('second page', () => assert.deepEqual(paginate(items, 2, 10).data, [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]));
+test('last page is shorter', () => assert.deepEqual(paginate(items, 3, 10).data, [21, 22, 23, 24, 25]));
+test('past the end', () => assert.deepEqual(paginate(items, 4, 10).data, []));
+test('page below one means one', () => assert.equal(paginate(items, 0, 10).page, 1));
+test('empty list', () => assert.deepEqual(paginate([], 1, 10), { data: [], page: 1, pageSize: 10, total: 0, totalPages: 0 }));</script><script type="text/plain" data-part="solution">function paginate(items, page, pageSize) {
+  const p = Math.max(1, Math.floor(page) || 1);
+  const start = (p - 1) * pageSize;
+  return {
+    data: items.slice(start, start + pageSize),
+    page: p,
+    pageSize,
+    total: items.length,
+    totalPages: Math.ceil(items.length / pageSize),
+  };
+}</script><div class="hint-text" hidden>The first item of page <code class="inline">p</code> is at index <code class="inline">(p - 1) * pageSize</code>. Use <code class="inline">items.slice(start, start + pageSize)</code>.</div><div class="hint-text" hidden><code class="inline">totalPages</code> is <code class="inline">Math.ceil(items.length / pageSize)</code>.</div></div>
+<h2 id="errors-that-help">Errors that help</h2>
+<p>When something fails, a good API tells the client <strong>what</strong> went wrong in a form a program can read, plus a message a person can read. Use one consistent shape for every error.</p>
+<pre class="code-block" data-lang="json"><span class="lang-tag">JSON</span>{
+  "error": {
+    "code": "validation_failed",
+    "message": "The request body is invalid",
+    "details": [
+      { "field": "email", "message": "email is invalid" }
+    ]
+  }
+}</pre>
+<p>Use the status code for the category (<code class="inline">400</code>, <code class="inline">401</code>, <code class="inline">403</code>, <code class="inline">404</code>, <code class="inline">409</code>, <code class="inline">429</code>, <code class="inline">500</code>) and the <code class="inline">code</code> for the specific reason, so clients can show different messages without parsing sentences.</p>
+<h2 id="protecting-an-api">Protecting an API</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Concern</th><th scope="col">What to do</th></tr></thead><tbody><tr><td>Who is calling?</td><td>Authentication, such as tokens or API keys (see the Security module)</td></tr><tr><td>May they do this?</td><td>Authorisation checks on every endpoint</td></tr><tr><td>Abuse and overload</td><td><strong>Rate limiting</strong>: allow only N requests per time window per client, otherwise answer <code class="inline">429 Too Many Requests</code></td></tr><tr><td>Bad data</td><td>Validate everything. Set a maximum body size</td></tr><tr><td>Eavesdropping</td><td>HTTPS only</td></tr><tr><td>Browser access from other sites</td><td>Configure CORS carefully</td></tr></tbody></table></div>
+<p>Rate limiting is easier to understand once you have built one.</p>
+<div class="challenge" data-id="api.ratelimiter" data-title="Build a rate limiter"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Build a rate limiter</h3></div><div class="challenge-body"><p>Write <code class="inline">createRateLimiter(limit, windowMs)</code> that returns a function <code class="inline">allow(key, now)</code>. <code class="inline">key</code> identifies the client (an IP address or user id), and <code class="inline">now</code> is the current time in milliseconds (passed in, so that the code is easy to test). Use a <strong>fixed window</strong>: the first request for a key starts a window that lasts <code class="inline">windowMs</code>. Inside the window, the first <code class="inline">limit</code> requests return <code class="inline">true</code> and later ones <code class="inline">false</code>. Once the window has ended, the next request starts a fresh window. Each key is counted separately.</p></div><script type="text/plain" data-part="starter">function createRateLimiter(limit, windowMs) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('allows up to the limit', () => { const a = createRateLimiter(2, 1000); assert.equal(a('x', 0), true); assert.equal(a('x', 10), true); });
+test('blocks beyond the limit', () => { const a = createRateLimiter(2, 1000); a('x', 0); a('x', 10); assert.equal(a('x', 20), false); });
+test('keys are separate', () => { const a = createRateLimiter(1, 1000); a('x', 0); assert.equal(a('y', 5), true); });
+test('window resets', () => { const a = createRateLimiter(1, 1000); a('x', 0); assert.equal(a('x', 500), false); assert.equal(a('x', 1000), true); });
+test('blocked requests do not extend the window', () => { const a = createRateLimiter(1, 1000); a('x', 0); a('x', 900); assert.equal(a('x', 1000), true); });</script><script type="text/plain" data-part="solution">function createRateLimiter(limit, windowMs) {
+  const hits = new Map();
+  return function allow(key, now) {
+    let entry = hits.get(key);
+    if (!entry || now - entry.start >= windowMs) {
+      entry = { start: now, count: 0 };
+      hits.set(key, entry);
+    }
+    if (entry.count >= limit) return false;
+    entry.count++;
+    return true;
+  };
+}</script><div class="hint-text" hidden>Store <code class="inline">{ start, count }</code> for each key in a <code class="inline">Map</code>.</div><div class="hint-text" hidden>If there is no entry, or <code class="inline">now - entry.start &gt;= windowMs</code>, begin a new entry <code class="inline">{ start: now, count: 0 }</code>. Then refuse if <code class="inline">count &gt;= limit</code>, otherwise increment and allow.</div></div>
+<div class="quiz-mount" data-id="api-c1" data-kind="check" data-title="Checkpoint: REST design" data-count="4"><script type="application/json" class="quiz-data">{"id": "api-c1", "kind": "check", "title": "Checkpoint: REST design", "questions": [{"t": "mcq", "q": "Which URL follows REST conventions for listing a user's orders?", "o": ["<code class=\"inline\">GET /api/users/42/orders<\/code>", "<code class=\"inline\">GET /api/users/42/doOrders<\/code>", "<code class=\"inline\">GET /api/getUserOrders?id=42<\/code>", "<code class=\"inline\">POST /api/listOrders<\/code>"], "a": 0, "why": "URLs are nouns that show the relationships. The method carries the action."}, {"t": "mcq", "q": "Which status code should <code class=\"inline\">DELETE /api/todos/7<\/code> return on success, with nothing left to show?", "o": ["204", "404", "200 with a long message", "201"], "a": 0, "why": "<code class=\"inline\">204 No Content<\/code> means that it worked and there is no body."}, {"t": "mcq", "q": "Why is <code class=\"inline\">POST<\/code> not idempotent?", "o": ["It is slower", "Repeating the same request creates another resource each time", "It is encrypted", "It cannot carry a body"], "a": 1, "why": "Two identical POSTs create two resources, so blind retries are risky."}, {"t": "tf", "q": "An API that returns a million rows from <code class=\"inline\">GET /api/orders<\/code> is fine, because the client can ignore the extra rows.", "a": false, "why": "Always paginate. Large responses waste bandwidth, memory and time."}]}</script></div>
+<h2 id="documenting-an-api-openapi-and-swagger">Documenting an API: OpenAPI and Swagger</h2>
+<p>An API without documentation is a locked door. <strong>OpenAPI</strong> is the standard, machine-readable format to describe an API: its paths, methods, parameters, bodies and responses. <strong>Swagger UI</strong> reads an OpenAPI file and turns it into an interactive web page where people can read the docs and <strong>try</strong> each endpoint.</p>
+<pre class="code-block" data-lang="yaml"><span class="lang-tag">YAML</span>openapi: 3.0.3
+info:
+  title: Todo API
+  version: 1.0.0
+paths:
+  /api/todos:
+    get:
+      summary: List todos
+      parameters:
+        - name: done
+          in: query
+          schema: { type: boolean }
+      responses:
+        "200":
+          description: A list of todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Todo" }
+    post:
+      summary: Create a todo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, maxLength: 200 }
+      responses:
+        "201": { description: Created }
+        "400": { description: Validation failed }
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        done: { type: boolean }</pre>
+<p>In Express you can serve the interactive documentation from the same file:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+
+const spec = YAML.load("./openapi.yaml");
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(spec));</pre>
+<p>Now visiting <code class="inline">/api/docs</code> shows every endpoint with a "Try it out" button. Many tools can also generate <strong>client code</strong> and <strong>tests</strong> from the same file, so one document drives the docs, the validation and the SDKs.</p>
+<h2 id="calling-apis-from-code">Calling APIs from code</h2>
+<p>You met <code class="inline">fetch</code>. The pattern never changes: build the URL, send the request, <strong>check the status</strong>, parse the body, handle failure. Here it is in seven languages, so that you can see it is just HTTP.</p>
+<div class="code-tabs" data-title="GET a JSON resource and print the status and body"><div class="code-tabs-title">GET a JSON resource and print the status and body</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>async function getTodo(id) {
+  const response = await fetch("https://api.example.com/todos/" + id);
+  console.log(response.status);
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  return response.json();
+}</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>import requests  # pip install requests
+
+response = requests.get("https://api.example.com/todos/1", timeout=10)
+print(response.status_code)
+response.raise_for_status()
+todo = response.json()</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>import java.net.URI;
+import java.net.http.*;
+
+try {
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.example.com/todos/1")).build();
+    HttpResponse&lt;String&gt; response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    System.out.println(response.statusCode());
+    System.out.println(response.body());
+} catch (Exception e) {
+    System.out.println("Request failed: " + e.getMessage());
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>using var client = new HttpClient();
+var response = await client.GetAsync("https://api.example.com/todos/1");
+Console.WriteLine((int)response.StatusCode);
+response.EnsureSuccessStatusCode();
+string body = await response.Content.ReadAsStringAsync();</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$context = stream_context_create(["http" =&gt; ["timeout" =&gt; 10]]);
+$body = file_get_contents("https://api.example.com/todos/1", false, $context);
+$todo = json_decode($body, true);
+echo $http_response_header[0] . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>resp, err := http.Get("https://api.example.com/todos/1")
+if err != nil {
+    log.Fatal(err)
+}
+defer resp.Body.Close()
+body, _ := io.ReadAll(resp.Body)
+fmt.Println(resp.StatusCode, string(body))</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>require "net/http"
+require "json"
+
+uri = URI("https://api.example.com/todos/1")
+response = Net::HTTP.get_response(uri)
+puts response.code
+todo = JSON.parse(response.body)</pre></div>
+<h3 id="fetch-or-axios">fetch or Axios?</h3>
+<p><strong>Axios</strong> is a popular library that wraps HTTP calls with a friendlier interface.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>import axios from "axios";
+
+const api = axios.create({ baseURL: "/api", timeout: 8000 });
+
+// runs before every request: add the token
+api.interceptors.request.use((config) =&gt; {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = "Bearer " + token;
+  return config;
+});
+
+try {
+  const { data } = await api.post("/todos", { title: "Milk" });   // JSON is automatic
+  console.log(data);
+} catch (error) {
+  if (error.response) console.log("Server said", error.response.status, error.response.data);
+  else console.log("No response (network?)", error.message);
+}</pre>
+<div class="table-wrap"><table><thead><tr><th scope="col"></th><th scope="col"><code class="inline">fetch</code></th><th scope="col">Axios</th></tr></thead><tbody><tr><td>Built in</td><td>Yes, in browsers and Node 18+</td><td>Install it (<code class="inline">npm install axios</code>)</td></tr><tr><td>HTTP errors (404, 500)</td><td>Resolve normally. Check <code class="inline">response.ok</code></td><td><strong>Throws</strong> automatically</td></tr><tr><td>JSON body</td><td>Call <code class="inline">response.json()</code> and <code class="inline">JSON.stringify</code></td><td>Automatic</td></tr><tr><td>Timeouts, interceptors, base URL</td><td>Write them yourself</td><td>Built in</td></tr><tr><td>Size</td><td>Zero</td><td>A small dependency</td></tr></tbody></table></div>
+<p>Both are fine. A good habit is to write <strong>one small wrapper</strong> that your whole front end uses, so that headers, error handling and timeouts live in one place, whichever library is underneath.</p>
+<h2 id="websockets-real-time-communication">WebSockets: real-time communication</h2>
+<p>With normal HTTP, the client asks and the server answers, and the server can never speak first. That is awkward for chat, live scores, notifications, collaborative editing and dashboards. A <strong><button type="button" class="term" data-term="WebSocket" data-def="A connection between browser and server that stays open so either side can send messages at any time.">WebSocket</button></strong> is a <strong>long-lived two-way connection</strong>: once opened, either side can send messages whenever it likes.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 597 394" role="img" aria-label="How a WebSocket works" style="max-width:597px;min-width:430px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-api2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><line x1="149.2" y1="54" x2="149.2" y2="388.0" class="fg-life"/><rect x="94.2" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="149.2" y="38.0" text-anchor="middle" class="fg-title">Browser</text><line x1="447.6" y1="54" x2="447.6" y2="388.0" class="fg-life"/><rect x="392.6" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="447.6" y="38.0" text-anchor="middle" class="fg-title">Server</text><line x1="153.2" y1="94" x2="443.6" y2="94" class="fg-line" marker-end="url(#ah-api2)"/><text x="298.4" y="86" text-anchor="middle" class="fg-msg">HTTP request with Upgrade: websocket</text><line x1="443.6" y1="144" x2="153.2" y2="144" class="fg-line fg-dash" marker-end="url(#ah-api2)"/><text x="298.4" y="136" text-anchor="middle" class="fg-msg">101 Switching Protocols</text><line x1="153.2" y1="194" x2="443.6" y2="194" class="fg-line" marker-end="url(#ah-api2)"/><text x="298.4" y="186" text-anchor="middle" class="fg-msg">message: &quot;hello&quot;</text><line x1="443.6" y1="244" x2="153.2" y2="244" class="fg-line fg-dash" marker-end="url(#ah-api2)"/><text x="298.4" y="236" text-anchor="middle" class="fg-msg">message: &quot;welcome, Ada&quot;</text><line x1="443.6" y1="294" x2="153.2" y2="294" class="fg-line fg-dash" marker-end="url(#ah-api2)"/><text x="298.4" y="286" text-anchor="middle" class="fg-msg">message: &quot;new message from Tunde&quot;</text><line x1="153.2" y1="344" x2="443.6" y2="344" class="fg-line" marker-end="url(#ah-api2)"/><text x="298.4" y="336" text-anchor="middle" class="fg-msg">close</text></svg></div><figcaption><span class="fig-n">Figure 2.</span> How a WebSocket works</figcaption></figure>
+<p>The client (built into every browser):</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const socket = new WebSocket("wss://example.com/chat");     // wss = WebSocket over TLS
+
+socket.addEventListener("open", () =&gt; {
+  socket.send(JSON.stringify({ type: "join", room: "general" }));
+});
+
+socket.addEventListener("message", (event) =&gt; {
+  const message = JSON.parse(event.data);
+  console.log("Received:", message);
+});
+
+socket.addEventListener("close", () =&gt; console.log("Disconnected. Reconnect with a delay."));</pre>
+<p>A very small server with the popular <code class="inline">ws</code> library for Node:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const { WebSocketServer } = require("ws");
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on("connection", (socket) =&gt; {
+  socket.on("message", (data) =&gt; {
+    // broadcast to everyone connected
+    for (const client of wss.clients) {
+      if (client.readyState === 1) client.send(data.toString());
+    }
+  });
+});</pre>
+<p>Servers like this keep a registry of who is connected, and often of <strong>rooms</strong> (a chat channel, a game lobby). Build the heart of that registry yourself.</p>
+<div class="challenge" data-id="api.hub" data-title="Build a message hub"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Build a message hub</h3></div><div class="challenge-body"><p>Write <code class="inline">createHub()</code> that returns an object with:</p>
+<ul><li><code class="inline">subscribe(room, callback)</code>: registers <code class="inline">callback</code> for messages in <code class="inline">room</code>, and returns an <strong>unsubscribe function</strong>.</li><li><code class="inline">publish(room, message)</code>: calls every subscriber of that room with <code class="inline">message</code>, and returns <strong>how many</strong> subscribers received it (0 if there are none).</li></ul>
+<p>Messages in one room must never reach another room. After unsubscribing, a callback receives nothing more.</p></div><script type="text/plain" data-part="starter">function createHub() {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('delivers to a subscriber', () => { const h = createHub(); const got = []; h.subscribe('a', (m) => got.push(m)); h.publish('a', 'hi'); assert.deepEqual(got, ['hi']); });
+test('returns the number of receivers', () => { const h = createHub(); h.subscribe('a', () => {}); h.subscribe('a', () => {}); assert.equal(h.publish('a', 1), 2); });
+test('empty room returns zero', () => assert.equal(createHub().publish('nobody', 'x'), 0));
+test('rooms are separate', () => { const h = createHub(); const got = []; h.subscribe('a', (m) => got.push(m)); h.publish('b', 'no'); assert.deepEqual(got, []); });
+test('unsubscribe works', () => { const h = createHub(); const got = []; const off = h.subscribe('a', (m) => got.push(m)); off(); h.publish('a', 'x'); assert.deepEqual(got, []); assert.equal(h.publish('a', 'x'), 0); });</script><script type="text/plain" data-part="solution">function createHub() {
+  const rooms = new Map();
+  return {
+    subscribe(room, callback) {
+      if (!rooms.has(room)) rooms.set(room, new Set());
+      rooms.get(room).add(callback);
+      return () => { rooms.get(room).delete(callback); };
+    },
+    publish(room, message) {
+      const subs = rooms.get(room);
+      if (!subs) return 0;
+      for (const cb of [...subs]) cb(message);
+      return subs.size;
+    },
+  };
+}</script><div class="hint-text" hidden>Keep a <code class="inline">Map</code> from room name to a <code class="inline">Set</code> of callbacks.</div><div class="hint-text" hidden>The unsubscribe function simply deletes the callback from the room's <code class="inline">Set</code>.</div></div>
+<h3 id="choosing-the-right-real-time-tool">Choosing the right real-time tool</h3>
+<div class="table-wrap"><table><thead><tr><th scope="col">Technique</th><th scope="col">How it works</th><th scope="col">Use for</th></tr></thead><tbody><tr><td><strong>Polling</strong></td><td>The client asks every few seconds</td><td>Simple, rarely changing data</td></tr><tr><td><strong>Server-Sent Events (SSE)</strong></td><td>A one-way stream from server to client over HTTP</td><td>Notifications, live feeds, progress bars</td></tr><tr><td><strong>WebSockets</strong></td><td>A two-way persistent connection</td><td>Chat, games, collaboration, trading screens</td></tr><tr><td><strong>Push services</strong></td><td>Messages through a third party (Firebase, APNs)</td><td>Mobile notifications, even when the app is closed</td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Real-time pitfalls</div><div class="callout-body"><ul><li><strong>No reconnection.</strong> Connections drop on trains and in lifts. Reconnect automatically with a growing delay.</li><li><strong>Trusting the socket.</strong> Authenticate the connection (for example, a token in the first message), and validate every message as you would an HTTP body.</li><li><strong>Broadcasting everything to everyone.</strong> Use rooms and permission checks.</li><li><strong>Memory leaks</strong> from never removing closed connections.</li><li><strong>Using WebSockets when polling would do.</strong> Persistent connections cost memory and complicate scaling.</li></ul></div></aside>
+<section class="lab-box"><h3>Lab: build, document and call an API</h3><p>Take your Todo API from the back-end module and make it a proper, documented, real-time API.</p><ol class="lab-steps"><li>Review the endpoints against the REST rules: plural nouns, methods, status codes. Fix anything that does not follow them.</li><li>Add pagination (<code class="inline">?page=&amp;limit=</code>) and filtering (<code class="inline">?done=true</code>), and return the <code class="inline">{ data, page, total, totalPages }</code> shape.</li><li>Replace ad hoc errors with the consistent <code class="inline">{ error: { code, message, details } }</code> shape, with a central error handler.</li><li>Write <code class="inline">openapi.yaml</code> describing every endpoint. Serve it with Swagger UI at <code class="inline">/api/docs</code>, and use "Try it out" to test each endpoint.</li><li>Add a rate limiter middleware (60 requests a minute per IP) and return <code class="inline">429</code> with a <code class="inline">Retry-After</code> header.</li><li>Write a tiny front-end page that lists the todos with <code class="inline">fetch</code> (loading and error states) and adds one through a form.</li><li>Add a WebSocket server, so that when one browser adds a todo, every open browser tab sees it appear without refreshing.</li><li>Write a short <code class="inline">README</code> with example <code class="inline">curl</code> commands for each endpoint.</li><li>Stretch goal: call your API from a script in a second language from the code tabs.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>An API is a contract between programs. Once others depend on it, it is hard to change.</li><li>REST uses nouns for URLs, HTTP methods for actions, correct status codes, JSON, and stateless requests.</li><li>GET, PUT and DELETE are idempotent. POST is not. Never change data with GET.</li><li>Paginate, filter and sort list endpoints. Return errors in one consistent, machine-readable shape.</li><li>Protect APIs with authentication, authorisation, validation, rate limits and HTTPS.</li><li>OpenAPI describes an API, and Swagger UI makes it explorable.</li><li><code class="inline">fetch</code> and Axios do the same job. Always handle HTTP errors, network errors and timeouts.</li><li>WebSockets provide a persistent two-way connection for real-time features. Polling and SSE are simpler alternatives.</li></ul></section>
+<div class="quiz-mount" data-id="api" data-kind="test" data-title="Module test: APIs" data-count="11"><script type="application/json" class="quiz-data">{"id": "api", "kind": "test", "title": "Module test: APIs", "questions": [{"t": "mcq", "q": "Which method should create a new resource?", "o": ["POST", "DELETE", "GET", "HEAD"], "a": 0, "why": "POST sends data to create a new resource under a collection."}, {"t": "mcq", "q": "What is the difference between PUT and PATCH?", "o": ["PUT is only for files", "PATCH deletes the resource", "No difference", "PUT replaces the whole resource, and PATCH changes only the fields sent"], "a": 3, "why": "PUT supplies a full replacement, and PATCH supplies a partial change."}, {"t": "mcq", "q": "The client sends too many requests. Which response is most appropriate?", "o": ["200", "429", "503", "401"], "a": 1, "why": "<code class=\"inline\">429 Too Many Requests<\/code> is the standard rate-limit response."}, {"t": "mcq", "q": "What does OpenAPI describe?", "o": ["How to deploy a server", "The CSS of a website", "An API's endpoints, parameters, bodies and responses in a machine-readable format", "Only the database"], "a": 2, "why": "It is the standard format that tools such as Swagger UI use to generate docs."}, {"t": "mcq", "q": "With <code class=\"inline\">fetch<\/code>, the server responds <code class=\"inline\">404<\/code>. What does the promise do?", "o": ["Retries", "Never settles", "Resolves, with <code class=\"inline\">response.ok<\/code> set to false", "Rejects"], "a": 2, "why": "<code class=\"inline\">fetch<\/code> rejects only for network failures. Check <code class=\"inline\">response.ok<\/code>."}, {"t": "mcq", "q": "Which technology lets the SERVER push messages to the browser at any time over one persistent two-way connection?", "o": ["A cookie", "A GET request", "Polling", "WebSocket"], "a": 3, "why": "A WebSocket keeps the connection open so both sides can send whenever they like."}, {"t": "mcq", "q": "Why is cursor-based pagination better for a constantly changing feed?", "o": ["Pages never skip or repeat items when new ones arrive", "It is shorter to type", "It does not need a database", "It works without HTTP"], "a": 0, "why": "A cursor says \"after this item\", so insertions do not shift the pages."}, {"t": "tf", "q": "<code class=\"inline\">GET /api/deleteUser?id=5<\/code> is a good, RESTful way to delete a user.", "a": false, "why": "GET must be safe. Use <code class=\"inline\">DELETE /api/users/5<\/code>."}, {"t": "tf", "q": "A client should automatically reconnect when a WebSocket connection drops.", "a": true, "why": "Connections drop often. Reconnecting with a delay makes real-time features reliable."}, {"t": "short", "q": "Which HTTP status code means \"Created\"? Type the number.", "a": ["201"], "why": "<code class=\"inline\">201 Created<\/code> confirms that a new resource exists."}, {"t": "multi", "q": "Which of these belong in a well-designed REST API? Select all that apply.", "o": ["Proper status codes", "Verbs in every URL, like <code class=\"inline\">/api/createOrder<\/code>", "Plural noun URLs such as <code class=\"inline\">/api/orders<\/code>", "Pagination on list endpoints"], "a": [0, 2, 3], "why": "REST uses nouns and lets the HTTP method carry the verb."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="api.api-docs" data-req="9" data-stretch="3" aria-labelledby="pj-api.api-docs"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-api.api-docs">Document and harden your API</h3><div class="pj-meta"><span>4-5 hours</span><span>Intermediate</span><span>Skills: API design, pagination, filtering, versioning, OpenAPI, rate limiting, real-time updates</span></div></div><div class="pj-body"><div class="pj-brief"><p>Take the bookmarks API from the back-end module and make it ready for other developers to use. You will add pagination and filtering, version the paths, protect it from abuse, describe it in an OpenAPI file with a live documentation page, and add one real-time feature.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>All routes are served under <code class="inline">/api/v1</code>, and the old routes redirect or return a clear message.</span></label></li><li><label><input type="checkbox" data-k="r1"><span><code class="inline">GET /api/v1/bookmarks</code> supports <code class="inline">page</code> and <code class="inline">limit</code> (with a maximum of 50), <code class="inline">sort</code> and <code class="inline">order</code>, and <code class="inline">tag</code>. The response contains <code class="inline">data</code>, plus <code class="inline">meta</code> with <code class="inline">page</code>, <code class="inline">limit</code>, <code class="inline">total</code> and <code class="inline">pages</code>. Invalid values return 400 and explain what was wrong.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Responses to <code class="inline">GET</code> requests include an <code class="inline">ETag</code>, and a request with a matching <code class="inline">If-None-Match</code> returns 304 with no body.</span></label></li><li><label><input type="checkbox" data-k="r3"><span>A rate limiter allows at most 60 requests per minute for each client address, returns 429 with a <code class="inline">Retry-After</code> header when exceeded, and sends <code class="inline">X-RateLimit-Remaining</code> on every response.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>An <code class="inline">openapi.yaml</code> file describes every endpoint, its parameters, request bodies, response bodies and error shapes. It validates with an OpenAPI linter, and <code class="inline">/docs</code> serves it using Swagger UI or Redoc.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>A consistent error format is documented once and reused in every response.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>Idempotency: <code class="inline">PUT</code> and <code class="inline">DELETE</code> are safe to repeat, and you have a test that repeats them and shows the result is the same.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>One real-time feature: a WebSocket or Server-Sent Events endpoint that pushes a message to connected clients when a bookmark is created.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>A small client page (or script) that lists bookmarks with a Next button and shows live additions without refreshing.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Write the OpenAPI file first for the endpoints you already have, then add the new parameters.</li><li>Mount the routes under <code class="inline">/api/v1</code> and add the pagination logic. Write down the edge cases (page 0, limit 1000, page beyond the last).</li><li>Add ETag support and test it with <code class="inline">curl -i</code> and the <code class="inline">If-None-Match</code> header.</li><li>Implement the rate limiter, and test it with a quick loop of requests.</li><li>Serve the documentation page, and try each endpoint from the page itself.</li><li>Add the real-time feature and the client page.</li><li>Run a linter over the OpenAPI file and fix the warnings.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="yaml"><span class="lang-tag">YAML</span>openapi: 3.0.3
+info:
+  title: Bookmarks API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /bookmarks:
+    get:
+      summary: List bookmarks
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        # TODO: limit, sort, order, tag
+      responses:
+        "200":
+          description: A page of bookmarks
+          # TODO: schema with data and meta
+        "400":
+          $ref: "#/components/responses/BadRequest"
+components:
+  responses:
+    BadRequest:
+      description: The request was invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+              details: { type: array, items: { type: string } }</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Compute <code class="inline">pages</code> with <code class="inline">Math.ceil(total / limit)</code> and use <code class="inline">slice((page - 1) * limit, page * limit)</code> for an in-memory store.</li><li>A simple rate limiter keeps a <code class="inline">Map</code> of address to a count and a window start time. Reset the window when it ends.</li><li>Keep the OpenAPI examples realistic. They are what people copy.</li><li>For Server-Sent Events, set the <code class="inline">Content-Type</code> to <code class="inline">text/event-stream</code> and write lines that start with <code class="inline">data:</code> and end with a blank line.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Add cursor-based pagination and explain when it is better than page numbers.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Generate a client with an OpenAPI code generator and use it from your client page.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Add an API key check on write requests, and document it in the security section of the file.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Design</strong></td><td>Paths, parameters and responses are consistent, predictable and versioned.</td></tr><tr><td><strong>Documentation</strong></td><td>The OpenAPI file is valid, complete and matches the real behaviour of the API.</td></tr><tr><td><strong>Protection</strong></td><td>The rate limiter and input limits behave as documented, with the right status codes and headers.</td></tr><tr><td><strong>Real-time</strong></td><td>Clients receive updates without polling, and disconnected clients are cleaned up.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The updated API, <code class="inline">openapi.yaml</code> and the client page.</li><li>A short log showing a 304 response, a 429 response and a live update arriving.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-api.api-docs">Link to your work (optional)</label><input class="field" id="pjl-api.api-docs" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-api.api-docs">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-api.api-docs" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

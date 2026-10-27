@@ -1,0 +1,5 @@
+# Replace with your domain; Caddy obtains and renews a Let's Encrypt certificate automatically.
+{$DOMAIN:localhost} {
+  encode gzip
+  reverse_proxy app:3000
+}

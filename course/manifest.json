@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Full Stack Development Course",
+  "short_name": "Full Stack",
+  "description": "Interactive offline-ready course on full stack development in the language of your choice.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "My progress", "url": "./index.html#progress", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Projects", "url": "./index.html#projects", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Cheat sheets", "url": "./index.html#reference", "icons": [{ "src": "assets/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

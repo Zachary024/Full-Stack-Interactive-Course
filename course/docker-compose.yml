@@ -1,0 +1,27 @@
+# Local/production-like stack: Express app + PostgreSQL + Caddy (automatic HTTPS)
+services:
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://course:${DB_PASSWORD:-change-me}@db:5432/course
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      NODE_ENV: production
+    depends_on: [db]
+    restart: unless-stopped
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me}
+      POSTGRES_DB: course
+    volumes: [pgdata:/var/lib/postgresql/data]
+    restart: unless-stopped
+  caddy:
+    image: caddy:2-alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [app]
+    restart: unless-stopped
+volumes: { pgdata: {}, caddy_data: {} }

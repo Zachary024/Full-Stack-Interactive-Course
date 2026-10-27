@@ -1,0 +1,290 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Front-end frameworks</span><span>Module 10</span><span>190 min</span><span>Intermediate</span></div><h1>React: Building User Interfaces</h1><p class="lede">Components, JSX, props, state, effects and hooks. Think in components and build interfaces that update themselves.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Explain why frameworks like React exist and what problem they solve.</li><li>Break a screen into components and pass data down with props.</li><li>Keep changing data in state with <code class="inline">useState</code>, and update it immutably.</li><li>Render lists and conditional content, and build controlled forms.</li><li>Run side effects such as data fetching with <code class="inline">useEffect</code>.</li><li>Lift state up, write a reducer, and extract a custom hook.</li><li>Create a React project with Vite and know the next steps.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Advanced <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button> (modules, arrow functions, <button type="button" class="term" data-term="Destructuring" data-def="Unpacking values from an array or object into separate variables in one line, such as const [a, b] = list.">destructuring</button>, spread, promises). <button type="button" class="term" data-term="React" data-def="A JavaScript library for building user interfaces from components.">React</button> is "just JavaScript", so the stronger your JavaScript, the easier React becomes.</p></section>
+<h2 id="why-a-framework">Why a framework?</h2>
+<p>In the JavaScript module you updated the page by hand: find an element, change its text, create an item. That works for a counter. For an application with hundreds of elements that depend on shared data (a shopping cart, a notifications badge, a list and its filters), manual updates become a tangle. You forget to update one place, and the screen disagrees with the data.</p>
+<p>React changes the question. Instead of "how do I change the page?", you describe <strong>what the page should look like for the current data</strong>, and React works out the changes.</p>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>Imagine a whiteboard menu in a cafe. The manual way: whenever the price of tea changes, you walk to the board, find the line, rub it out and write the new price. With React, you maintain the price list, and a helper redraws the board from it every time. You never touch the board directly.</p></div></aside>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 715 202" role="img" aria-label="The React idea: the screen is a function of the data" style="max-width:715px;min-width:515px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-react1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="158.2" height="66.0" rx="9" class="fg-box "/><text x="91.1" y="40.0" text-anchor="middle" class="fg-title">Data (state)</text><text x="91.1" y="59.0" text-anchor="middle" class="fg-sub">what the app knows</text><rect x="216.2" y="12.0" width="282.4" height="66.0" rx="9" class="fg-box fg-accent "/><text x="357.4" y="40.0" text-anchor="middle" class="fg-title">Component</text><text x="357.4" y="59.0" text-anchor="middle" class="fg-sub">a function that describes the screen</text><line x1="173.2" y1="45.0" x2="213.2" y2="45.0" class="fg-line" marker-end="url(#ah-react1)"/><rect x="544.6" y="12.0" width="158.2" height="66.0" rx="9" class="fg-box "/><text x="623.7" y="40.0" text-anchor="middle" class="fg-title">UI</text><text x="623.7" y="59.0" text-anchor="middle" class="fg-sub">what the user sees</text><line x1="501.6" y1="45.0" x2="541.6" y2="45.0" class="fg-line" marker-end="url(#ah-react1)"/><rect x="121.0" y="124.0" width="165.1" height="66.0" rx="9" class="fg-box "/><text x="203.5" y="152.0" text-anchor="middle" class="fg-title">Event</text><text x="203.5" y="171.0" text-anchor="middle" class="fg-sub">click, type, submit</text><rect x="332.1" y="124.0" width="261.7" height="66.0" rx="9" class="fg-box "/><text x="462.9" y="152.0" text-anchor="middle" class="fg-title">Data (state)</text><text x="462.9" y="171.0" text-anchor="middle" class="fg-sub">updated, so the screen is redrawn</text><line x1="289.1" y1="157.0" x2="329.1" y2="157.0" class="fg-line" marker-end="url(#ah-react1)"/><path d="M623.7 81.0 V101.0 H203.5 V121.0" class="fg-line" fill="none" marker-end="url(#ah-react1)"/></svg></div><figcaption><span class="fig-n">Figure 1.</span> The React idea: the screen is a function of the data</figcaption></figure>
+<p>React is a library for building UIs from <strong>components</strong>. It does not decide how you route pages or talk to servers, so you add other tools for that. Vue (the next module) and Angular, Svelte and <button type="button" class="term" data-term="SOLID" data-def="Five object-oriented design principles: single responsibility, open-closed, Liskov substitution, interface segregation and dependency inversion.">Solid</button> share the same core idea. If you understand one, the others come quickly.</p>
+<h2 id="components">Components</h2>
+<p>A <strong>component</strong> is a reusable piece of UI, written as a JavaScript function that returns a description of what to show. You build apps by nesting small components inside larger ones.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 768 186" role="img" aria-label="A screen as a tree of components" style="max-width:768px;min-width:553px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-react2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><path d="M416.0 44 V60.0 H128.0 V76" class="fg-line" fill="none"/><path d="M416.0 44 V60.0 H448.0 V76" class="fg-line" fill="none"/><path d="M416.0 44 V60.0 H704.0 V76" class="fg-line" fill="none"/><path d="M128.0 110 V126.0 H64.0 V142" class="fg-line" fill="none"/><path d="M128.0 110 V126.0 H192.0 V142" class="fg-line" fill="none"/><rect x="36.0" y="142" width="56.0" height="34" rx="7" class="fg-box"/><text x="64.0" y="163.5" text-anchor="middle" class="fg-mono">Logo</text><rect x="152.0" y="142" width="80.0" height="34" rx="7" class="fg-box"/><text x="192.0" y="163.5" text-anchor="middle" class="fg-mono">NavMenu</text><rect x="92.0" y="76" width="72.0" height="34" rx="7" class="fg-box"/><text x="128.0" y="97.5" text-anchor="middle" class="fg-mono">Header</text><path d="M448.0 110 V126.0 H320.0 V142" class="fg-line" fill="none"/><path d="M448.0 110 V126.0 H448.0 V142" class="fg-line" fill="none"/><path d="M448.0 110 V126.0 H576.0 V142" class="fg-line" fill="none"/><rect x="264.0" y="142" width="112.0" height="34" rx="7" class="fg-box"/><text x="320.0" y="163.5" text-anchor="middle" class="fg-mono">ProductCard</text><rect x="392.0" y="142" width="112.0" height="34" rx="7" class="fg-box"/><text x="448.0" y="163.5" text-anchor="middle" class="fg-mono">ProductCard</text><rect x="520.0" y="142" width="112.0" height="34" rx="7" class="fg-box"/><text x="576.0" y="163.5" text-anchor="middle" class="fg-mono">ProductCard</text><rect x="392.0" y="76" width="112.0" height="34" rx="7" class="fg-box"/><text x="448.0" y="97.5" text-anchor="middle" class="fg-mono">ProductList</text><rect x="668.0" y="76" width="72.0" height="34" rx="7" class="fg-box"/><text x="704.0" y="97.5" text-anchor="middle" class="fg-mono">Footer</text><rect x="392.0" y="10" width="48.0" height="34" rx="7" class="fg-box"/><text x="416.0" y="31.5" text-anchor="middle" class="fg-mono">App</text></svg></div><figcaption><span class="fig-n">Figure 2.</span> A screen as a tree of components</figcaption></figure>
+<p>Think of a web shop page. <code class="inline">ProductCard</code> is written <strong>once</strong> and used for every product. Fix a bug or restyle it in one place, and every card changes.</p>
+<h2 id="jsx">JSX</h2>
+<p>React components return <strong><button type="button" class="term" data-term="JSX" data-def="A syntax used by React that looks like HTML inside JavaScript.">JSX</button></strong>, a syntax that looks like <button type="button" class="term" data-term="HTML" data-def="The language that describes the structure and content of a web page with tags.">HTML</button> inside JavaScript.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>function Welcome() {
+  const name = "Ada";
+  return (
+    &lt;section className="welcome"&gt;
+      &lt;h1&gt;Hello, {name}!&lt;/h1&gt;
+      &lt;p&gt;Today is {new Date().toDateString()}.&lt;/p&gt;
+    &lt;/section&gt;
+  );
+}</pre>
+<p>JSX is not HTML. A <button type="button" class="term" data-term="Build tool" data-def="A program that turns source code into something you can run or deploy, such as Vite, Maven or Gradle.">build tool</button> converts it to ordinary JavaScript function calls. The differences you must remember:</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">In HTML</th><th scope="col">In JSX</th><th scope="col">Why</th></tr></thead><tbody><tr><td><code class="inline">class="x"</code></td><td><code class="inline">className="x"</code></td><td><code class="inline">class</code> is a reserved word in JavaScript</td></tr><tr><td><code class="inline">for="id"</code></td><td><code class="inline">htmlFor="id"</code></td><td>Same reason</td></tr><tr><td><code class="inline">&lt;br&gt;</code>, <code class="inline">&lt;img ...&gt;</code></td><td><code class="inline">&lt;br /&gt;</code>, <code class="inline">&lt;img ... /&gt;</code></td><td>Every tag must be closed</td></tr><tr><td><code class="inline">style="color: red"</code></td><td><code class="inline">style={{ color: "red" }}</code></td><td>Style is a JavaScript object</td></tr><tr><td><code class="inline">onclick="..."</code></td><td><code class="inline">onClick={handler}</code></td><td>camelCase names, and you pass a function</td></tr><tr><td>Several top-level tags</td><td>Wrap in one parent, or <code class="inline">&lt;&gt;...&lt;/&gt;</code></td><td>A component returns a single root</td></tr></tbody></table></div>
+<p>Curly braces <code class="inline">{ }</code> mean "JavaScript goes here". Any <strong>expression</strong> works inside them: a variable, a calculation, a function call or a ternary. Statements such as <code class="inline">if</code> or <code class="inline">for</code> do not.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">Components start with a capital letter</div><div class="callout-body"><p><code class="inline">&lt;Welcome /&gt;</code> is a component. <code class="inline">&lt;welcome /&gt;</code> is treated as an HTML tag that does not exist. Always name components in PascalCase.</p></div></aside>
+<h2 id="props-passing-data-down">Props: passing data down</h2>
+<p><strong><button type="button" class="term" data-term="Props" data-def="Inputs that a parent component passes to a child component.">Props</button></strong> (properties) are the inputs to a component, like function arguments. A parent passes them as attributes, and the child receives them as an object.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>function ProductCard({ name, price, inStock }) {
+  return (
+    &lt;article className="card"&gt;
+      &lt;h2&gt;{name}&lt;/h2&gt;
+      &lt;p&gt;${price.toFixed(2)}&lt;/p&gt;
+      {inStock ? &lt;button&gt;Add to cart&lt;/button&gt; : &lt;p&gt;Sold out&lt;/p&gt;}
+    &lt;/article&gt;
+  );
+}
+
+function Shop() {
+  return (
+    &lt;main&gt;
+      &lt;ProductCard name="Notebook" price={4.5} inStock={true} /&gt;
+      &lt;ProductCard name="Pen" price={1.2} inStock={false} /&gt;
+    &lt;/main&gt;
+  );
+}</pre>
+<p>Strings are passed in quotes. Everything else (numbers, booleans, objects, functions) goes in braces.</p>
+<aside class="callout callout-best"><div class="callout-title">Props are read-only</div><div class="callout-body"><p>A component must never change its own props. Data flows <strong>one way</strong>: from parent down to child. If a child needs to ask for a change, the parent passes it a function (a callback prop) to call. This one-way flow makes React apps predictable.</p></div></aside>
+<h2 id="state-data-that-changes">State: data that changes</h2>
+<p>Props come from outside. <strong>State</strong> is data a component owns and can change over time. When state changes, React <strong>re-renders</strong> the component: it calls the function again with the new values and updates the screen.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;You clicked {count} times&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;Click me&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</pre>
+<p><code class="inline">useState(0)</code> returns a pair: the current value and a function to change it. Notice you never write <code class="inline">count = count + 1</code>. Changing the variable directly does nothing, because React would not know. You must call the setter.</p>
+<div class="stepper" data-title="What happens when you click"><ol class="stepper-list"><li><strong>The click handler runs.</strong> <span><code class="inline">setCount(count + 1)</code> is called. If <code class="inline">count</code> was 0, it asks for 1.</span></li><li><strong>React schedules a re-render.</strong> <span>It remembers the new value of <code class="inline">count</code>.</span></li><li><strong>React calls <code class="inline">Counter()</code> again.</strong> <span>This time <code class="inline">useState</code> returns 1, so the JSX describes "You clicked 1 times".</span></li><li><strong>React compares the new description with the old one.</strong> <span>It sees only the text changed.</span></li><li><strong>React updates just that text in the real DOM.</strong> <span>The rest of the page is untouched, which is why it is fast.</span></li></ol></div>
+<h3 id="update-state-without-mutating-it">Update state without mutating it</h3>
+<p>For objects and arrays, create a <strong>new</strong> value instead of changing the old one. React detects changes by checking whether the value is a different object.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>const [todos, setTodos] = useState([]);
+
+// add: a new array with the old items plus one more
+setTodos([...todos, { id: 1, text: "Learn React", done: false }]);
+
+// remove: filter makes a new array
+setTodos(todos.filter((t) =&gt; t.id !== 1));
+
+// change one item: map makes a new array, and the changed item is a new object
+setTodos(todos.map((t) =&gt; (t.id === 1 ? { ...t, done: !t.done } : t)));</pre>
+<p>Never use <code class="inline">todos.push(...)</code>, <code class="inline">todos[0].done = true</code> or <code class="inline">todos.sort()</code> on state. They change the existing object in place, so React sees nothing new.</p>
+<div class="challenge" data-id="react.toggle" data-title="Update a list immutably"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Update a list immutably</h3></div><div class="challenge-body"><p>React state updates must create new arrays and objects. Write <code class="inline">toggleTodo(todos, id)</code> which returns a <strong>new</strong> array in which the todo with that <code class="inline">id</code> has its <code class="inline">done</code> flag flipped. Other todos stay the same. The original array and its objects must not be changed.</p></div><script type="text/plain" data-part="starter">function toggleTodo(todos, id) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">const base = () => [{ id: 1, text: 'a', done: false }, { id: 2, text: 'b', done: true }];
+test('flips the matching todo', () => assert.equal(toggleTodo(base(), 1)[0].done, true));
+test('flips back', () => assert.equal(toggleTodo(base(), 2)[1].done, false));
+test('others unchanged', () => assert.deepEqual(toggleTodo(base(), 1)[1], { id: 2, text: 'b', done: true }));
+test('returns a new array', () => { const a = base(); assert(toggleTodo(a, 1) !== a, 'must return a new array'); });
+test('does not mutate', () => { const a = base(); toggleTodo(a, 1); assert.equal(a[0].done, false); });
+test('unknown id', () => assert.deepEqual(toggleTodo(base(), 99), base()));</script><script type="text/plain" data-part="solution">function toggleTodo(todos, id) {
+  return todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+}</script><div class="hint-text" hidden>Use <code class="inline">todos.map(...)</code>. For the matching todo return <code class="inline">{ ...todo, done: !todo.done }</code>, and for the others return the todo unchanged.</div><div class="hint-text" hidden><code class="inline">todos.map((t) =&gt; (t.id === id ? { ...t, done: !t.done } : t))</code></div></div>
+<div class="quiz-mount" data-id="react-c1" data-kind="check" data-title="Checkpoint: components, props and state" data-count="3"><script type="application/json" class="quiz-data">{"id": "react-c1", "kind": "check", "title": "Checkpoint: components, props and state", "questions": [{"t": "mcq", "q": "How does a parent give data to a child component?", "o": ["Through global variables only", "By editing the child's variables", "With <code class=\"inline\">document.querySelector<\/code>", "Through props"], "a": 3, "why": "Props are the inputs to a component. Data flows down from the parent."}, {"t": "mcq", "q": "Why does <code class=\"inline\">count = count + 1<\/code> not update the screen?", "o": ["It does, but slowly", "Because count is a constant", "React does not know the value changed. You must call the setter from <code class=\"inline\">useState<\/code>", "Because JSX is not JavaScript"], "a": 2, "why": "Calling the setter tells React to re-render with the new value."}, {"t": "tf", "q": "In JSX you write <code class=\"inline\">class=\"card\"<\/code> to give an element a CSS class.", "a": false, "why": "JSX uses <code class=\"inline\">className<\/code> because <code class=\"inline\">class<\/code> is a reserved word in JavaScript."}]}</script></div>
+<h2 id="lists-keys-and-conditions">Lists, keys and conditions</h2>
+<p>Render a list by mapping an array to JSX. Each item needs a stable, unique <strong><code class="inline">key</code></strong> so that React can tell the items apart when the list changes.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>function TodoList({ todos }) {
+  if (todos.length === 0) {
+    return &lt;p&gt;Nothing to do. Enjoy the day.&lt;/p&gt;;     // conditional rendering
+  }
+  return (
+    &lt;ul&gt;
+      {todos.map((todo) =&gt; (
+        &lt;li key={todo.id} className={todo.done ? "done" : ""}&gt;
+          {todo.text}
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}</pre>
+<p>Patterns for showing things conditionally:</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Pattern</th><th scope="col">Use for</th></tr></thead><tbody><tr><td><code class="inline">if (...) return &lt;A /&gt;;</code></td><td>Showing a completely different result (loading, empty, error)</td></tr><tr><td><code class="inline">cond ? &lt;A /&gt; : &lt;B /&gt;</code></td><td>Choosing between two things inside JSX</td></tr><tr><td><code class="inline">cond &amp;&amp; &lt;A /&gt;</code></td><td>Showing something or nothing</td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Keys</div><div class="callout-body"><p>Use a unique id from your data as the key. Do not use the array index when items can be added, removed or reordered, because React then mixes up which item is which (state and input text jump to the wrong rows). And beware: <code class="inline">count &amp;&amp; &lt;A /&gt;</code> renders a literal <code class="inline">0</code> when <code class="inline">count</code> is 0. Write <code class="inline">count &gt; 0 &amp;&amp; &lt;A /&gt;</code>.</p></div></aside>
+<h2 id="forms-controlled-inputs">Forms: controlled inputs</h2>
+<p>In a <strong>controlled input</strong>, React state is the single source of truth for what is in the box.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>function AddTodo({ onAdd }) {
+  const [text, setText] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    if (!text.trim()) return;
+    onAdd(text.trim());
+    setText("");
+  }
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;label htmlFor="todo"&gt;New task&lt;/label&gt;
+      &lt;input id="todo" value={text} onChange={(e) =&gt; setText(e.target.value)} /&gt;
+      &lt;button&gt;Add&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</pre>
+<p>Every keystroke calls <code class="inline">onChange</code>, which updates state, which re-renders the input with the new value. It feels like extra work, but you can validate, format or disable the button at any moment because you always know the value.</p>
+<h2 id="lifting-state-up">Lifting state up</h2>
+<p>When two components need the same data, move the state to their <strong>closest common parent</strong> and pass it down. The children use props to read it and callbacks to request changes.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 874 294" role="img" aria-label="Lifting state: the parent owns the todos" style="max-width:874px;min-width:630px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-react3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><line x1="145.8" y1="54" x2="145.8" y2="288.0" class="fg-life"/><rect x="90.8" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="145.8" y="38.0" text-anchor="middle" class="fg-title">App</text><line x1="437.2" y1="54" x2="437.2" y2="288.0" class="fg-life"/><rect x="382.2" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="437.2" y="38.0" text-anchor="middle" class="fg-title">AddTodo</text><line x1="728.8" y1="54" x2="728.8" y2="288.0" class="fg-life"/><rect x="673.8" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="728.8" y="38.0" text-anchor="middle" class="fg-title">TodoList</text><line x1="433.2" y1="94" x2="149.8" y2="94" class="fg-line" marker-end="url(#ah-react3)"/><text x="291.5" y="86" text-anchor="middle" class="fg-msg">onAdd(&quot;Buy milk&quot;) callback</text><line x1="141.8" y1="144" x2="149.8" y2="144" class="fg-line" marker-end="url(#ah-react3)"/><text x="145.8" y="136" text-anchor="middle" class="fg-msg">setTodos([...todos, newTodo])</text><line x1="149.8" y1="194" x2="724.8" y2="194" class="fg-line fg-dash" marker-end="url(#ah-react3)"/><text x="437.2" y="186" text-anchor="middle" class="fg-msg">renders again with todos as a prop</text><line x1="149.8" y1="244" x2="433.2" y2="244" class="fg-line fg-dash" marker-end="url(#ah-react3)"/><text x="291.5" y="236" text-anchor="middle" class="fg-msg">renders again with the cleared form</text></svg></div><figcaption><span class="fig-n">Figure 3.</span> Lifting state: the parent owns the todos</figcaption></figure>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>function App() {
+  const [todos, setTodos] = useState([]);
+
+  function addTodo(text) {
+    setTodos([...todos, { id: Date.now(), text, done: false }]);
+  }
+
+  return (
+    &lt;&gt;
+      &lt;AddTodo onAdd={addTodo} /&gt;
+      &lt;TodoList todos={todos} /&gt;
+    &lt;/&gt;
+  );
+}</pre>
+<h2 id="effects-talking-to-the-outside-world">Effects: talking to the outside world</h2>
+<p>Rendering must be a pure calculation: the same props and state always give the same JSX. Anything else is a <strong>side effect</strong>: fetching data, starting a timer, changing the page title, subscribing to an event. These belong in <code class="inline">useEffect</code>, which runs <strong>after</strong> the component has appeared on screen.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>import { useState, useEffect } from "react";
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/users/${userId}`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        if (!cancelled) setUser(data);
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      }
+    }
+    load();
+
+    return () =&gt; { cancelled = true; };   // cleanup when userId changes or the component leaves
+  }, [userId]);                           // the dependency array
+
+  if (error) return &lt;p role="alert"&gt;Could not load: {error}&lt;/p&gt;;
+  if (!user) return &lt;p&gt;Loading...&lt;/p&gt;;
+  return &lt;h1&gt;{user.name}&lt;/h1&gt;;
+}</pre>
+<p>The <strong>dependency array</strong> at the end controls when the effect runs again:</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Array</th><th scope="col">The effect runs</th></tr></thead><tbody><tr><td><code class="inline">[]</code></td><td>Once, after the first render</td></tr><tr><td><code class="inline">[userId]</code></td><td>After the first render, and whenever <code class="inline">userId</code> changes</td></tr><tr><td>none at all</td><td>After every render (rarely what you want)</td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Effects that run forever</div><div class="callout-body"><p>Updating state inside an effect with no dependency array creates an endless loop: the state changes, so it re-renders, so the effect runs, and it changes state again. Always list what the effect uses. Also: if you only need to calculate something from props or state, do it during rendering, not in an effect.</p></div></aside>
+<p>Three states appear in nearly every data-loading component: <strong>loading</strong>, <strong>error</strong> and <strong>success</strong>. Always design all three. Users meet the first two more often than developers expect.</p>
+<h2 id="reducers-and-custom-hooks">Reducers and custom hooks</h2>
+<p>When a component has many related state changes, a <strong>reducer</strong> collects all the rules in one pure function: <code class="inline">(state, action) =&gt; newState</code>. It is just JavaScript, which makes it easy to test.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>import { useReducer } from "react";
+
+function todoReducer(state, action) {
+  switch (action.type) {
+    case "add":
+      return [...state, { id: action.id, text: action.text, done: false }];
+    case "toggle":
+      return state.map((t) =&gt; (t.id === action.id ? { ...t, done: !t.done } : t));
+    case "remove":
+      return state.filter((t) =&gt; t.id !== action.id);
+    default:
+      return state;
+  }
+}
+
+function App() {
+  const [todos, dispatch] = useReducer(todoReducer, []);
+  return &lt;button onClick={() =&gt; dispatch({ type: "add", id: 1, text: "Hi" })}&gt;Add&lt;/button&gt;;
+}</pre>
+<div class="challenge" data-id="react.reducer" data-title="Write a cart reducer"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Write a cart reducer</h3></div><div class="challenge-body"><p>Write <code class="inline">cartReducer(state, action)</code>. State is an array of <code class="inline">{ id, qty }</code>. Support these actions:</p>
+<ul><li><code class="inline">{ type: 'add', id }</code>: if the item is in the cart increase its <code class="inline">qty</code> by 1, otherwise add <code class="inline">{ id, qty: 1 }</code>.</li><li><code class="inline">{ type: 'remove', id }</code>: remove the item completely.</li><li><code class="inline">{ type: 'clear' }</code>: return an empty array.</li></ul>
+<p>For an unknown action return the state unchanged. Never modify the old state.</p></div><script type="text/plain" data-part="starter">function cartReducer(state, action) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('adds a new item', () => assert.deepEqual(cartReducer([], { type: 'add', id: 'a' }), [{ id: 'a', qty: 1 }]));
+test('increases quantity', () => assert.deepEqual(cartReducer([{ id: 'a', qty: 1 }], { type: 'add', id: 'a' }), [{ id: 'a', qty: 2 }]));
+test('adds a second kind', () => assert.equal(cartReducer([{ id: 'a', qty: 1 }], { type: 'add', id: 'b' }).length, 2));
+test('removes', () => assert.deepEqual(cartReducer([{ id: 'a', qty: 3 }, { id: 'b', qty: 1 }], { type: 'remove', id: 'a' }), [{ id: 'b', qty: 1 }]));
+test('clears', () => assert.deepEqual(cartReducer([{ id: 'a', qty: 3 }], { type: 'clear' }), []));
+test('unknown action', () => { const s = [{ id: 'a', qty: 1 }]; assert.equal(cartReducer(s, { type: 'zzz' }), s); });
+test('does not mutate', () => { const s = [{ id: 'a', qty: 1 }]; cartReducer(s, { type: 'add', id: 'a' }); assert.equal(s[0].qty, 1); });</script><script type="text/plain" data-part="solution">function cartReducer(state, action) {
+  switch (action.type) {
+    case 'add':
+      if (state.some((i) => i.id === action.id)) {
+        return state.map((i) => (i.id === action.id ? { ...i, qty: i.qty + 1 } : i));
+      }
+      return [...state, { id: action.id, qty: 1 }];
+    case 'remove':
+      return state.filter((i) => i.id !== action.id);
+    case 'clear':
+      return [];
+    default:
+      return state;
+  }
+}</script><div class="hint-text" hidden>Use <code class="inline">state.some(...)</code> or <code class="inline">find</code> to check whether the item exists, then <code class="inline">map</code> or spread to build the new array.</div><div class="hint-text" hidden>For <code class="inline">add</code> when it exists: <code class="inline">state.map((i) =&gt; (i.id === action.id ? { ...i, qty: i.qty + 1 } : i))</code>.</div></div>
+<p>A <strong>custom hook</strong> is a function whose name starts with <code class="inline">use</code> and that calls other hooks. It lets you share stateful logic between components.</p>
+<pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>function useLocalStorage(key, initial) {
+  const [value, setValue] = useState(() =&gt; {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : initial;
+  });
+  useEffect(() =&gt; {
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+  return [value, setValue];
+}
+
+// use it exactly like useState, but the value survives a reload
+const [theme, setTheme] = useLocalStorage("theme", "light");</pre>
+<aside class="callout callout-note"><div class="callout-title">The rules of hooks</div><div class="callout-body"><p>Call hooks only at the top level of a component or another hook: never inside <code class="inline">if</code>, loops or nested functions. React identifies each hook by the order of the calls, so the order must be the same every render.</p></div></aside>
+<h2 id="starting-a-real-project">Starting a real project</h2>
+<p>You do not set up React by hand. Use <strong>Vite</strong>, a fast build tool:</p>
+<pre class="code-block" data-lang="bash"><span class="lang-tag">Shell</span>npm create vite@latest my-app -- --template react
+cd my-app
+npm install
+npm run dev</pre>
+<p>The dev server shows your app at <code class="inline">http://localhost:5173</code> and updates instantly as you save. Source files live in <code class="inline">src/</code>, and <code class="inline">src/main.jsx</code> mounts your <code class="inline">App</code> component into the page.</p>
+<p>What to learn after the basics:</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Need</th><th scope="col">Common choice</th></tr></thead><tbody><tr><td>Multiple pages</td><td>React Router</td></tr><tr><td>Data fetching and caching</td><td>TanStack Query</td></tr><tr><td>Global state shared widely</td><td>Context, Zustand or Redux Toolkit</td></tr><tr><td>Full framework with server rendering</td><td>Next.js</td></tr><tr><td>Types</td><td>TypeScript</td></tr><tr><td>Testing</td><td>Vitest and React Testing Library</td></tr></tbody></table></div>
+<section class="lab-box"><h3>Lab: build a notes app</h3><p>Create a Vite React project and build a small notes app.</p><ol class="lab-steps"><li>Create components <code class="inline">App</code>, <code class="inline">NoteForm</code>, <code class="inline">NoteList</code> and <code class="inline">NoteItem</code>. Sketch the component tree on paper first.</li><li>Keep the notes in state in <code class="inline">App</code>, using <code class="inline">useReducer</code> and the pure reducer idea from the challenge. Actions: add, delete, toggle pinned.</li><li><code class="inline">NoteForm</code> is a controlled form with a title and text, and validates that the title is not empty.</li><li><code class="inline">NoteList</code> renders items with proper keys, and shows a friendly message when empty.</li><li>Persist the notes with the <code class="inline">useLocalStorage</code> hook above.</li><li>Add a search box that filters the displayed notes <strong>without</strong> changing the stored ones (calculate the filtered list while rendering).</li><li>Load a few starter notes from a JSON file or an API with <code class="inline">useEffect</code>, showing loading and error states.</li><li>Make sure everything works by keyboard only, every input has a label and the layout fits a phone. Write the reducer tests as plain assertions.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<aside class="callout callout-pitfall"><div class="callout-title">Common React mistakes</div><div class="callout-body"><ul><li><strong>Mutating state</strong> (<code class="inline">push</code>, assigning to properties). Always create new arrays and objects.</li><li><strong>Missing <code class="inline">key</code></strong> on list items, or using the index as a key in dynamic lists.</li><li><strong>Calling the handler instead of passing it</strong>: <code class="inline">onClick={doIt()}</code> runs immediately. Write <code class="inline">onClick={doIt}</code> or <code class="inline">onClick={() =&gt; doIt(5)}</code>.</li><li><strong>Fetching data in the render body</strong> instead of in <code class="inline">useEffect</code>.</li><li><strong>Forgetting the dependency array</strong>, creating infinite loops.</li><li><strong>Storing derived data in state.</strong> If you can calculate it from other state (a filtered list, a total), calculate it during render.</li><li><strong>Putting all state at the top</strong> or <strong>duplicating state</strong> in several places. Keep state as low as possible, and lift it only as far as needed.</li></ul></div></aside>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>React describes the UI as a function of data. You change state, and React updates the screen.</li><li>A component is a function returning JSX. Names are capitalised, and there is one root.</li><li>Props flow down and are read-only. Callbacks flow up.</li><li><code class="inline">useState</code> holds changing data. Never mutate it: create new arrays and objects.</li><li>Lists need stable <code class="inline">key</code>s. Conditions use <code class="inline">if</code>, ternaries and <code class="inline">&amp;&amp;</code>.</li><li>Controlled inputs keep the value in state.</li><li><code class="inline">useEffect</code> handles side effects. Its dependency array decides when it runs, and its cleanup undoes it.</li><li>Reducers and custom hooks organise growing logic. Start projects with Vite.</li></ul></section>
+<div class="quiz-mount" data-id="react" data-kind="test" data-title="Module test: React" data-count="12"><script type="application/json" class="quiz-data">{"id": "react", "kind": "test", "title": "Module test: React", "questions": [{"t": "mcq", "q": "What is JSX?", "o": ["A CSS framework", "A new programming language that replaces JavaScript", "A database format", "A syntax extension that lets you write HTML-like markup inside JavaScript"], "a": 3, "why": "JSX is converted by a build tool into normal JavaScript calls."}, {"t": "mcq", "q": "What is the difference between props and state?", "o": ["Props can be changed by the child, state cannot", "There is none", "State is only for forms", "Props are inputs given by the parent. State is data a component owns and changes"], "a": 3, "why": "Props flow down and are read-only. State belongs to the component and triggers re-rendering when it changes."}, {"t": "mcq", "q": "What will happen after <code class=\"inline\">const [n, setN] = useState(0); setN(5);<\/code>?", "o": ["The page reloads", "Nothing, because setN needs a second argument", "React re-renders, and on the next render <code class=\"inline\">n<\/code> is 5", "<code class=\"inline\">n<\/code> is immediately 5 in the same function call"], "a": 2, "why": "State updates are applied on the next render. The <code class=\"inline\">n<\/code> in the current function call does not change."}, {"t": "mcq", "q": "Which code correctly adds an item to an array held in state?", "o": ["<code class=\"inline\">setTodos([...todos, item])<\/code>", "<code class=\"inline\">todos[todos.length] = item<\/code>", "<code class=\"inline\">todos = todos + item<\/code>", "<code class=\"inline\">todos.push(item)<\/code>"], "a": 0, "why": "It creates a new array. Mutating the old one leaves React unaware of the change."}, {"t": "mcq", "q": "What does the dependency array <code class=\"inline\">[]<\/code> mean in <code class=\"inline\">useEffect(fn, [])<\/code>?", "o": ["Never run", "Run before rendering", "Run once, after the first render", "Run after every render"], "a": 2, "why": "An empty array means the effect depends on nothing, so it only runs once (plus cleanup on unmount)."}, {"t": "mcq", "q": "Why do list items need a <code class=\"inline\">key<\/code>?", "o": ["To sort them", "So React can identify which items changed, were added or removed", "It is only a convention with no effect", "To style them"], "a": 1, "why": "Stable keys let React keep the right component state attached to the right item."}, {"t": "mcq", "q": "What is wrong with <code class=\"inline\">&lt;button onClick={handleClick()}&gt;<\/code>?", "o": ["Nothing", "You must use <code class=\"inline\">onclick<\/code>", "Buttons cannot have handlers", "The function is called during rendering instead of when the button is clicked"], "a": 3, "why": "Pass the function itself: <code class=\"inline\">onClick={handleClick}<\/code>. Adding parentheses calls it immediately."}, {"t": "tf", "q": "A React component's props can be changed by the component that receives them.", "a": false, "why": "Props are read-only. Only the owner of the data (the parent) may change it, through state."}, {"t": "tf", "q": "Hooks like <code class=\"inline\">useState<\/code> may be called inside an <code class=\"inline\">if<\/code> statement.", "a": false, "why": "Hooks must be called in the same order on every render, so never inside conditions or loops."}, {"t": "short", "q": "Which hook runs side effects, such as fetching data, after rendering? Type its name.", "a": ["useEffect"], "why": "<code class=\"inline\">useEffect<\/code> runs after the component appears on screen and can clean up after itself."}, {"t": "multi", "q": "Which of these are side effects that belong in <code class=\"inline\">useEffect<\/code>? Select all that apply.", "o": ["Calculating a total from props", "Subscribing to a window event", "Starting a timer with <code class=\"inline\">setInterval<\/code>", "Fetching data from an API"], "a": [1, 2, 3], "why": "A total can be computed during render. The other three affect things outside the component and belong in effects."}, {"t": "order", "q": "Put these steps in the order that React performs them after a click that calls a setter.", "o": ["React compares the new JSX with the old", "React calls the component function again", "The setter is called with a new value", "React updates only the changed parts of the DOM"], "a": [2, 1, 0, 3], "why": "Re-render, diff, and then apply the minimal updates."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="react.habit-tracker" data-req="10" data-stretch="3" aria-labelledby="pj-react.habit-tracker"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-react.habit-tracker">Habit tracker in React</h3><div class="pj-meta"><span>4-5 hours</span><span>Intermediate</span><span>Skills: components, props, state, effects, lists and keys, lifting state</span></div></div><div class="pj-body"><div class="pj-brief"><p>Build a habit tracker. Users add habits such as "Read 20 pages" and tick off each day of the current week. The app shows the current streak for every habit and remembers everything between visits. It is small enough to finish in an afternoon and uses every core idea from this module.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>The app is built with at least four components: <code class="inline">App</code>, <code class="inline">AddHabitForm</code>, <code class="inline">HabitList</code> and <code class="inline">HabitRow</code>. Each has a single clear job.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>All habits live in one <code class="inline">useState</code> array in <code class="inline">App</code>. Child components receive data and callbacks through props and never change the array directly.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Each habit is an object with an id, name and an array of date strings for the days it was completed.</span></label></li><li><label><input type="checkbox" data-k="r3"><span><code class="inline">HabitRow</code> shows seven buttons, one for each day of the current week. Clicking a day toggles it, and the button's <code class="inline">aria-pressed</code> and visible style reflect the state.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>Each habit shows its current streak (consecutive days up to today) and the total number done this week. These are calculated from the data and never stored.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>Users can add a habit with a controlled form input, reject empty names and duplicates (ignoring case), and delete a habit.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>Lists use stable <code class="inline">key</code> props based on the habit id, not the array index.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>A <code class="inline">useEffect</code> saves the habits to <code class="inline">localStorage</code> whenever they change, and the initial state is loaded lazily from storage.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>A summary at the top says how many habits were completed today, for example "2 of 4 done today".</span></label></li><li><label><input type="checkbox" data-k="r9"><span>No state mutation anywhere: updates use <code class="inline">map</code>, <code class="inline">filter</code> and spread syntax.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Create the project with Vite (<code class="inline">npm create vite@latest</code>) and choose the React template.</li><li>Design the data: write one example habit object and decide the date format (use <code class="inline">YYYY-MM-DD</code>).</li><li>Build <code class="inline">HabitRow</code> with fake data and no interactivity, so you can see the layout.</li><li>Add the state to <code class="inline">App</code> and pass the toggle callback down. Make the day buttons work.</li><li>Write a pure <code class="inline">streak(dates, today)</code> function in its own file and test it by hand with a few arrays.</li><li>Add the form, delete, the summary, and finally persistence with <code class="inline">useEffect</code>.</li><li>Open the React developer tools, and confirm that typing in the form does not re-render the rows unnecessarily.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="jsx"><span class="lang-tag">JSX</span>import { useState, useEffect } from "react";
+
+function loadHabits() {
+  try {
+    return JSON.parse(localStorage.getItem("habits")) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default function App() {
+  const [habits, setHabits] = useState(loadHabits);
+
+  useEffect(() =&gt; {
+    localStorage.setItem("habits", JSON.stringify(habits));
+  }, [habits]);
+
+  function toggleDay(id, date) {
+    // TODO: return a NEW array where the matching habit has the date added or removed
+  }
+
+  return (
+    &lt;main&gt;
+      &lt;h1&gt;Habits&lt;/h1&gt;
+      {/* TODO: summary, AddHabitForm, HabitList */}
+    &lt;/main&gt;
+  );
+}</pre><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// streak.js
+// Count consecutive completed days ending today (or yesterday, if today is not done yet).
+export function streak(dates, today = new Date()) {
+  // TODO
+  return 0;
+}</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Use <code class="inline">toISOString().slice(0, 10)</code> to turn a date into a <code class="inline">YYYY-MM-DD</code> string. Be aware that it uses UTC, so for local dates build the string from <code class="inline">getFullYear</code>, <code class="inline">getMonth</code> and <code class="inline">getDate</code>.</li><li>To toggle a value in an array without changing it: check <code class="inline">includes</code>, then return either <code class="inline">filter</code> or <code class="inline">[...old, value]</code>.</li><li>If a click does nothing, check that you returned the new array from the <code class="inline">map</code> callback.</li><li>Keep derived values (streaks, totals) out of state. Calculate them while rendering.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Add a custom hook <code class="inline">useLocalStorage(key, initial)</code> and use it instead of the manual effect.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Add a chart of the last 28 days for each habit.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Let users choose which days of the week a habit applies to.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Component design</strong></td><td>Components are small, props flow down, events flow up and state lives in the right place.</td></tr><tr><td><strong>Correct React</strong></td><td>No direct mutation, stable keys, effects with the right dependencies and lazy initial state.</td></tr><tr><td><strong>Behaviour</strong></td><td>Streaks and totals are correct, including the edge cases of an empty list and a gap in the days.</td></tr><tr><td><strong>Usability</strong></td><td>The app is keyboard accessible, buttons announce their pressed state and the layout works on a phone.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The project folder (without <code class="inline">node_modules</code>) or a link to the repository.</li><li>A short note describing which component owns which piece of state and why.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-react.habit-tracker">Link to your work (optional)</label><input class="field" id="pjl-react.habit-tracker" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-react.habit-tracker">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-react.habit-tracker" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

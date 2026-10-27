@@ -1,0 +1,3 @@
+{ "expo": { "name": "Full Stack Course", "slug": "fullstack-course", "version": "1.0.0", "orientation": "default",
+  "icon": "../assets/icon-512.png", "ios": { "supportsTablet": true, "bundleIdentifier": "com.example.fullstackcourse" },
+  "android": { "package": "com.example.fullstackcourse" }, "assets": ["assets/course-offline.html"] } }

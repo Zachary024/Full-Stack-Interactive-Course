@@ -1,0 +1,185 @@
+--- /tmp/style.before.css	2026-10-19 09:56:37.755059219 +0000
++++ css/style.css	2026-10-19 10:02:56.491059219 +0000
+@@ -28,6 +28,7 @@
+   --mark: rgba(250, 204, 21, .38);
+ 
+   --topbar-h: 56px;
++  --header-h: calc(var(--topbar-h) + var(--banner-h, 0px));   /* offline banner (if shown) + top bar */
+   --sidebar-w: 280px;
+   --radius: 10px;
+   --shadow: 0 1px 2px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.10);
+@@ -75,11 +76,11 @@
+ .i.filled { fill: currentColor; }
+ 
+ /* ---------- Offline banner ---------- */
+-.offline-banner { display: none; align-items: center; justify-content: center; gap: 8px; padding: 8px 20px; font-size: 13.5px; background: var(--warn-bg); color: var(--warn-text); border-bottom: 1px solid var(--warn-border); }
++.offline-banner { display: none; position: sticky; top: 0; z-index: 101; align-items: center; justify-content: center; gap: 8px; padding: 8px 20px; text-align: center; line-height: 1.4; font-size: 13.5px; background: var(--warn-bg); color: var(--warn-text); border-bottom: 1px solid var(--warn-border); }
+ .offline-banner.show { display: flex; }
+ 
+ /* ---------- Top bar ---------- */
+-.topbar { position: sticky; top: 0; z-index: 100; height: var(--topbar-h); display: flex; align-items: center; gap: 12px; padding: 0 20px; background: var(--bg); border-bottom: 1px solid var(--border); }
++.topbar { position: sticky; top: var(--banner-h, 0px); z-index: 100; height: var(--topbar-h); display: flex; align-items: center; gap: 12px; padding: 0 20px; background: var(--bg); border-bottom: 1px solid var(--border); }
+ .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 650; font-size: 15px; letter-spacing: -.01em; white-space: nowrap; }
+ .brand:hover { text-decoration: none; }
+ .brand svg { width: 28px; height: 28px; }
+@@ -107,8 +108,8 @@
+ .sr-empty { padding: 14px 12px; color: var(--text-3); font-size: 14px; }
+ 
+ /* ---------- Shell ---------- */
+-.shell { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); min-height: calc(100vh - var(--topbar-h)); }
+-.sidebar { position: sticky; top: var(--topbar-h); height: calc(100vh - var(--topbar-h)); display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--border); }
++.shell { display: grid; grid-template-columns: var(--sidebar-w) minmax(0, 1fr); min-height: calc(100dvh - var(--header-h)); }
++.sidebar { position: sticky; top: var(--header-h); height: calc(100dvh - var(--header-h)); display: flex; flex-direction: column; background: var(--bg); border-right: 1px solid var(--border); }
+ .sidebar nav { flex: 1; overflow-y: auto; padding: 12px 12px 20px; }
+ .nav-group-title { padding: 18px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); }
+ .nav-group-title:first-child { padding-top: 6px; }
+@@ -125,13 +126,13 @@
+ .sidebar-foot .row strong { color: var(--text); font-variant-numeric: tabular-nums; }
+ .progress-bar { height: 6px; border-radius: 999px; background: var(--border); overflow: hidden; }
+ .progress-bar .fill { height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .4s ease; }
+-.scrim { position: fixed; inset: var(--topbar-h) 0 0 0; background: rgba(8,15,30,.5); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90; }
++.scrim { position: fixed; inset: var(--header-h) 0 0 0; background: rgba(8,15,30,.5); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 90; }
+ .scrim.show { opacity: 1; pointer-events: auto; }
+ 
+ main.content { min-width: 0; outline: none; }
+ .page { display: grid; grid-template-columns: minmax(0, 740px) 210px; gap: 64px; max-width: 1080px; margin: 0 auto; padding: 48px 40px 96px; }
+ .page.wide { grid-template-columns: minmax(0, 940px); }
+-.toc { position: sticky; top: calc(var(--topbar-h) + 32px); align-self: start; max-height: calc(100vh - var(--topbar-h) - 64px); overflow-y: auto; font-size: 13px; }
++.toc { position: sticky; top: calc(var(--header-h) + 32px); align-self: start; max-height: calc(100dvh - var(--header-h) - 64px); overflow-y: auto; font-size: 13px; }
+ .toc-title { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+ .toc ul { list-style: none; border-left: 1px solid var(--border); }
+ .toc a { display: block; padding: 5px 0 5px 14px; margin-left: -1px; border-left: 2px solid transparent; color: var(--text-3); line-height: 1.4; }
+@@ -179,7 +180,7 @@
+ /* ---------- Prose ---------- */
+ .prose { min-width: 0; }
+ .prose > h1 { font-size: clamp(28px, 4.2vw, 38px); letter-spacing: -.025em; line-height: 1.15; margin-bottom: 16px; }
+-.prose h2 { margin: 56px 0 14px; font-size: 24px; line-height: 1.3; letter-spacing: -.015em; font-weight: 650; scroll-margin-top: calc(var(--topbar-h) + 24px); }
++.prose h2 { margin: 56px 0 14px; font-size: 24px; line-height: 1.3; letter-spacing: -.015em; font-weight: 650; scroll-margin-top: calc(var(--header-h) + 24px); }
+ .prose h2:first-of-type { margin-top: 0; }
+ .prose h3 { margin: 32px 0 10px; font-size: 18px; line-height: 1.4; font-weight: 650; }
+ .prose p { margin: 0 0 16px; color: var(--text); }
+@@ -235,7 +236,7 @@
+ .check-item input { width: 18px; height: 18px; }
+ 
+ /* ---------- Quiz ---------- */
+-.quiz { margin: 56px 0 8px; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; scroll-margin-top: calc(var(--topbar-h) + 24px); }
++.quiz { margin: 56px 0 8px; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; scroll-margin-top: calc(var(--header-h) + 24px); }
+ .quiz-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding: 16px 24px; background: var(--bg-subtle); border-bottom: 1px solid var(--border); }
+ .quiz-head h3 { margin: 0; font-size: 17px; }
+ .quiz-head span { font-size: 13px; color: var(--text-3); }
+@@ -350,7 +351,7 @@
+ .empty { padding: 32px; text-align: center; color: var(--text-3); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+ 
+ /* ---------- Notes drawer, highlights ---------- */
+-.notes-panel { position: fixed; top: var(--topbar-h); right: 0; bottom: 0; z-index: 95; width: 360px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: var(--bg); border-left: 1px solid var(--border); box-shadow: var(--shadow); transform: translateX(100%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
++.notes-panel { position: fixed; top: var(--header-h); right: 0; bottom: 0; z-index: 95; width: 360px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 20px; background: var(--bg); border-left: 1px solid var(--border); box-shadow: var(--shadow); transform: translateX(100%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
+ .notes-panel.open { transform: none; visibility: visible; transition: transform .25s ease; }
+ .notes-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+ .notes-head h2 { font-size: 16px; line-height: 1.3; }
+@@ -369,7 +370,7 @@
+ @media (max-width: 960px) {
+   #menuBtn { display: inline-grid; }
+   .shell { grid-template-columns: minmax(0, 1fr); }
+-  .sidebar { position: fixed; top: var(--topbar-h); left: 0; bottom: 0; z-index: 95; width: min(320px, 86vw); height: auto; transform: translateX(-102%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; box-shadow: var(--shadow); }
++  .sidebar { position: fixed; top: var(--header-h); left: 0; bottom: 0; z-index: 95; width: min(320px, 86vw); height: auto; transform: translateX(-102%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; box-shadow: var(--shadow); }
+   .sidebar.open { transform: none; visibility: visible; transition: transform .25s ease; }
+   .page { padding: 36px 28px 80px; }
+   .hero { grid-template-columns: 1fr; gap: 32px; }
+@@ -384,7 +385,7 @@
+   .topbar.search-open .search-wrap > .i { left: 24px; top: 28px; transform: none; }
+   .topbar.search-open #searchInput { height: 36px; }
+   .topbar.search-open .kbd { display: none; }
+-  .search-results { position: fixed; top: calc(var(--topbar-h) + 4px); left: 12px; right: 12px; width: auto; }
++  .search-results { position: fixed; top: calc(var(--header-h) + 4px); left: 12px; right: 12px; width: auto; }
+   .page { padding: 28px 18px 72px; }
+   .prose h2 { font-size: 21px; margin-top: 44px; }
+   .lesson-sum { font-size: 16.5px; }
+@@ -411,7 +412,7 @@
+   .shell, .page { display: block; padding: 0; }
+   .code { break-inside: avoid; }
+ }
+-.quiz-slot { scroll-margin-top: calc(var(--topbar-h) + 24px); }
++.quiz-slot { scroll-margin-top: calc(var(--header-h) + 24px); }
+ 
+ /* layout fixes */
+ .page.wide { display: block; max-width: 1000px; }
+@@ -702,3 +703,79 @@
+ .stat { min-width: 0; }
+ .stat span { white-space: nowrap; }
+ .pc-pct small { display: block; margin: 8px 0 0; font-size: 13.5px; line-height: 1.4; }
++
++
++/* =====================================================================
++   RESPONSIVE AUDIT (v5)  -  root-cause fixes, mobile first
++   ===================================================================== */
++
++/* 1. Anchors, scrollIntoView and focus never end up hidden under the sticky header */
++html { scroll-padding-top: calc(var(--header-h) + 16px); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
++
++/* 2. Media can never be wider than its container; text always wraps instead of overflowing */
++img, video, canvas { max-width: 100%; height: auto; }
++iframe { max-width: 100%; }
++.content, .prose, .card, .panel, .callout, .q-text, .opt > span, .lesson-sum, .module-row, .search-results a { overflow-wrap: break-word; }
++code.inline, .prose code.inline, .q-text code.inline, .opt code.inline, .q-why code.inline { overflow-wrap: anywhere; word-break: normal; }
++.opt, .order-item { min-width: 0; }
++.opt > span:last-child, .order-t { min-width: 0; flex: 1 1 auto; }
++.pg-cols > *, .page > *, .grid-2 > * { min-width: 0; }
++
++/* 3. Fluid type */
++.prose h2 { font-size: clamp(1.3rem, 1.12rem + .9vw, 1.5rem); }
++.lesson-head h1 { font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.6rem); overflow-wrap: break-word; }
++.lesson-sum { font-size: clamp(1rem, .95rem + .3vw, 1.125rem); }
++
++/* 4. z-index scale: scrim 90 < drawers 95 < header 100/101 < floating helpers 110 */
++.term-tip, .hl-pop { z-index: 110; }
++
++/* 5. Offline banner, search overlay and drawers all follow --header-h (set by app.js) */
++.topbar.search-open .search-wrap { z-index: 5; }
++
++/* 6. The notes panel pushes the page aside on wide screens instead of covering it */
++@media (min-width: 1241px) {
++  body.notes-open .content { margin-right: 360px; }
++  body.notes-open .toc { display: none; }
++  body.notes-open .page { grid-template-columns: minmax(0, 740px); }
++}
++
++/* 7. Header that always fits: 320px = menu + logo + 4 actions, each at least 44x44 */
++@media (max-width: 960px), (pointer: coarse) {
++  .icon-btn { width: 44px; height: 44px; }
++  .icon-btn.sm { width: 44px; height: 44px; }
++  .brand { min-height: 44px; min-width: 44px; padding: 0 4px; }
++  .topbar-actions { gap: 0; }
++  input.field, select.field, .search-wrap input { min-height: 44px; }
++  .btn-sm { min-height: 44px; }
++  .sidebar a, .toc a, .pager a { min-height: 44px; }
++}
++@media (max-width: 720px) {
++  .topbar { gap: 2px; padding: 0 6px; }
++  .search-wrap input, .topbar.search-open #searchInput { height: 44px; }
++  .topbar.search-open .search-wrap { padding: 6px; }
++  .topbar.search-open .search-wrap > .i { left: 20px; top: 50%; transform: translateY(-50%); }
++  .topbar.search-open .search-wrap input { padding-left: 38px; padding-right: 52px; }
++}
++@media (max-width: 440px) {
++  /* keep the logo, keep the name for screen readers, drop the visible wordmark to make room */
++  .brand > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
++  .page { padding-left: 16px; padding-right: 16px; }
++}
++
++/* 8. Touch targets: at least 44x44 on small screens and on touch devices */
++.icon-btn { flex: none; }
++@media (max-width: 960px), (pointer: coarse) {
++  .btn { min-height: 44px; }
++  .tab, .seg button { min-height: 44px; min-width: 44px; }
++  .code-copy { min-height: 44px; min-width: 44px; justify-content: center; }
++  .rec-link { display: inline-flex; align-items: center; min-height: 44px; }
++  summary { display: list-item; min-height: 44px; padding-block: 10px; box-sizing: border-box; cursor: pointer; }
++  label:has(> input[type="radio"]), label:has(> input[type="checkbox"]) { min-height: 44px; display: flex; align-items: center; gap: 10px; }
++  input[type="radio"], input[type="checkbox"] { width: 22px; height: 22px; flex: none; }
++}
++@media (max-width: 900px) { .brand .brand-sub { display: none; } }   /* no half-truncated wordmark between phone and desktop */
++
++/* Ordering questions: on narrow screens the 44px arrow buttons drop under the text instead of squeezing it */
++.order-item { flex-wrap: wrap; }
++.order-t { flex: 1 1 9rem; }
++.order-btns { margin-left: auto; flex: none; }

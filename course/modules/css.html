@@ -1,0 +1,222 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Foundations</span><span>Module 7</span><span>150 min</span><span>Beginner</span></div><h1>CSS: Styling and Layout</h1><p class="lede">Selectors, the cascade, the box model, colour and type, Flexbox, Grid and responsive design. Make pages look good on every screen.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Write CSS rules with selectors, properties and values, and link a stylesheet to a page.</li><li>Predict which rule wins when several apply, using the cascade, specificity and inheritance.</li><li>Use the box model to control size, spacing and borders.</li><li>Lay out pages with Flexbox and Grid.</li><li>Make a layout responsive with relative units and media queries.</li><li>Use CSS variables to keep a design consistent.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p><button type="button" class="term" data-term="HTML" data-def="The language that describes the structure and content of a web page with tags.">HTML</button>. You should be able to write a page with headings, paragraphs, lists and a form.</p></section>
+<h2 id="what-css-does">What CSS does</h2>
+<p><strong><button type="button" class="term" data-term="CSS" data-def="The language that controls how HTML looks: colours, fonts, spacing and layout.">CSS</button></strong> (Cascading Style Sheets) controls how HTML elements look: colours, fonts, sizes, spacing and layout. Without CSS the <button type="button" class="term" data-term="Browser" data-def="A program, such as Chrome, Firefox or Safari, that downloads web pages and displays them.">browser</button> shows plain, default-styled content. With CSS the same HTML can look like a magazine, a dashboard or a game.</p>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>HTML is the skeleton and the organs. CSS is the clothes, hair and posture. You can change the outfit completely without touching the person underneath. That separation is why websites can be redesigned without rewriting the content.</p></div></aside>
+<p>A CSS <strong>rule</strong> has a <strong>selector</strong> (which elements?) and a <strong>declaration block</strong> with <strong>properties</strong> and <strong>values</strong> (what to do to them).</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 455 94" role="img" aria-label="Anatomy of a CSS rule" style="max-width:455px;min-width:327px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-css1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="6.0" y="8" width="103.2" height="78" rx="9" class="fg-box fg-c1"/><text x="22.0" y="34" class="fg-title">Selector</text><text x="22.0" y="62" class="fg-mono-s" xml:space="preserve">p</text><rect x="119.2" y="8" width="103.2" height="78" rx="9" class="fg-box fg-c2"/><text x="135.2" y="34" class="fg-title">Property</text><text x="135.2" y="62" class="fg-mono-s" xml:space="preserve">color</text><rect x="232.4" y="8" width="78.0" height="78" rx="9" class="fg-box fg-c3"/><text x="248.4" y="34" class="fg-title">Value</text><text x="248.4" y="62" class="fg-mono-s" xml:space="preserve">navy</text><rect x="320.4" y="8" width="128.4" height="78" rx="9" class="fg-box fg-c4"/><text x="336.4" y="34" class="fg-title">Declaration</text><text x="336.4" y="62" class="fg-mono-s" xml:space="preserve">color: navy</text></svg></div><figcaption><span class="fig-n">Figure 1.</span> Anatomy of a CSS rule</figcaption></figure>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>p {
+  color: navy;
+  font-size: 18px;
+}</pre>
+<p>This says: for every <code class="inline">&lt;p&gt;</code> element, make the text navy and 18 pixels tall. Each declaration ends with a semicolon.</p>
+<h3 id="three-ways-to-add-css">Three ways to add CSS</h3>
+<div class="table-wrap"><table><thead><tr><th scope="col">Method</th><th scope="col">How</th><th scope="col">When to use</th></tr></thead><tbody><tr><td>External stylesheet</td><td><code class="inline">&lt;link rel="stylesheet" href="style.css"&gt;</code> in <code class="inline">head</code></td><td><strong>Almost always.</strong> One file styles many pages and is cached</td></tr><tr><td>Internal</td><td>A <code class="inline">&lt;style&gt;</code> element in <code class="inline">head</code></td><td>Quick experiments, single pages</td></tr><tr><td>Inline</td><td><code class="inline">style="color: red"</code> on one element</td><td>Rarely. It is hard to maintain and hard to override</td></tr></tbody></table></div>
+<div class="playground" data-kind="html" data-title="Your first styles"><div class="pg-intro"><p>Change the colours, then try changing <code class="inline">font-size</code> and <code class="inline">border-radius</code>.</p></div><script type="text/plain" data-part="html"><h1>Styled heading</h1>
+<p class="note">A note with style.</p>
+<p>A normal paragraph.</p></script><script type="text/plain" data-part="css">h1 {
+  color: #1d4ed8;
+}
+.note {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 12px 16px;
+  border-radius: 6px;
+}</script></div>
+<h2 id="selectors-choosing-what-to-style">Selectors: choosing what to style</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Selector</th><th scope="col">Example</th><th scope="col">Selects</th></tr></thead><tbody><tr><td>Type</td><td><code class="inline">p</code></td><td>Every <code class="inline">&lt;p&gt;</code></td></tr><tr><td>Class</td><td><code class="inline">.note</code></td><td>Every element with <code class="inline">class="note"</code>. Reusable, and the most common</td></tr><tr><td>ID</td><td><code class="inline">#logo</code></td><td>The one element with <code class="inline">id="logo"</code></td></tr><tr><td>Descendant</td><td><code class="inline">nav a</code></td><td>Every <code class="inline">&lt;a&gt;</code> inside a <code class="inline">&lt;nav&gt;</code></td></tr><tr><td>Child</td><td><code class="inline">ul &gt; li</code></td><td><code class="inline">&lt;li&gt;</code> that are direct children of a <code class="inline">&lt;ul&gt;</code></td></tr><tr><td>Group</td><td><code class="inline">h1, h2, h3</code></td><td>All three types</td></tr><tr><td>Pseudo-class</td><td><code class="inline">a:hover</code></td><td>A link while the mouse is over it</td></tr><tr><td>Attribute</td><td><code class="inline">input[type="email"]</code></td><td>Inputs of a given type</td></tr></tbody></table></div>
+<aside class="callout callout-best"><div class="callout-title">Prefer classes</div><div class="callout-body"><p>Style with <strong>classes</strong> (<code class="inline">.card</code>, <code class="inline">.button-primary</code>). Types are too broad, and IDs are too strong and cannot be reused. Name classes after what something <em>is</em> (<code class="inline">.product-card</code>), not how it looks (<code class="inline">.red-box</code>).</p></div></aside>
+<h2 id="the-cascade-who-wins">The cascade: who wins?</h2>
+<p>Several rules often target the same element, and a conflict has to be settled. CSS resolves it by three things, in this order.</p>
+<ol><li><strong>Importance.</strong> Rules marked <code class="inline">!important</code> beat everything. Avoid them: they cause arms races.</li><li><strong>Specificity.</strong> More specific selectors beat less specific ones. An ID beats a class, and a class beats a type.</li><li><strong>Order.</strong> If specificity ties, the rule that comes <strong>last</strong> wins.</li></ol>
+<figure class="figure"><div class="fig-body"><ul class="fg-layers" aria-label="Specificity: stronger rules at the top"><li class="fgl-row fgl-accent"><strong class="fgl-t">Inline style</strong><span class="fgl-s">style=&quot;...&quot; on the element. The strongest</span></li><li class="fgl-row"><strong class="fgl-t">ID selector</strong><span class="fgl-s">#logo. Very strong</span></li><li class="fgl-row"><strong class="fgl-t">Class, attribute, pseudo-class</strong><span class="fgl-s">.card, [type=&quot;text&quot;], :hover. Medium</span></li><li class="fgl-row"><strong class="fgl-t">Type selector</strong><span class="fgl-s">p, h1, a. Weak</span></li></ul></div><figcaption><span class="fig-n">Figure 2.</span> Specificity: stronger rules at the top</figcaption></figure>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>p { color: black; }          /* weak */
+.note { color: green; }      /* medium: wins over p */
+p.note { color: orange; }    /* type + class: stronger still */</pre>
+<h3 id="inheritance">Inheritance</h3>
+<p>Some properties, such as <code class="inline">color</code> and <code class="inline">font-family</code>, are <strong>inherited</strong> by child elements. Set the font on <code class="inline">body</code> and the whole page uses it. Others, such as <code class="inline">border</code> and <code class="inline">margin</code>, are not inherited, which is what you would want.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">When a style "does not work"</div><div class="callout-body"><p>Nine times out of ten, a more specific rule is <button type="button" class="term" data-term="Overriding" data-def="Replacing a method inherited from a parent class with your own version in the child class.">overriding</button> yours. Open the browser's developer tools (F12), click the element in the <strong>Elements</strong> panel and look at the <strong>Styles</strong> pane. Overridden declarations are crossed out, and it tells you which rule won.</p></div></aside>
+<h2 id="the-box-model">The box model</h2>
+<p>Every element on a page is a rectangular box with four layers.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 460 292" role="img" aria-label="The box model: content, padding, border and margin" style="max-width:460px;min-width:331px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-css3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="10" y="10" width="440" height="270" rx="10" class="fg-box fg-c3"/><text x="30" y="36" class="fg-title">margin</text><rect x="60" y="52" width="340" height="206" rx="8" class="fg-box fg-c4"/><text x="78" y="78" class="fg-title">border</text><rect x="104" y="92" width="252" height="130" rx="6" class="fg-box fg-c2"/><text x="120" y="116" class="fg-title">padding</text><rect x="156" y="130" width="148" height="62" rx="5" class="fg-box fg-accent"/><text x="230" y="166" text-anchor="middle" class="fg-title">content</text><text x="230" y="30" text-anchor="middle" class="fg-sub">space outside the element</text><text x="230" y="250" text-anchor="middle" class="fg-sub">the visible edge</text><text x="230" y="214" text-anchor="middle" class="fg-sub">space inside, around content</text></svg></div><figcaption><span class="fig-n">Figure 3.</span> The box model: content, padding, border and margin</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th scope="col">Layer</th><th scope="col">Property</th><th scope="col">Job</th></tr></thead><tbody><tr><td>Content</td><td><code class="inline">width</code>, <code class="inline">height</code></td><td>The text or image itself</td></tr><tr><td>Padding</td><td><code class="inline">padding</code></td><td>Space between the content and the border, inside the element</td></tr><tr><td>Border</td><td><code class="inline">border</code></td><td>A line around the padding</td></tr><tr><td>Margin</td><td><code class="inline">margin</code></td><td>Space between this element and its neighbours</td></tr></tbody></table></div>
+<p>By default, <code class="inline">width</code> sets only the content width, so padding and border are added on top. That makes sums awkward. The universal fix is one line, and most professional stylesheets begin with it:</p>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>*, *::before, *::after {
+  box-sizing: border-box;   /* width includes padding and border */
+}</pre>
+<div class="playground" data-kind="html" data-title="Explore the box model"><div class="pg-intro"><p>Change <code class="inline">padding</code>, <code class="inline">border</code> and <code class="inline">margin</code> and watch the boxes move. Try removing <code class="inline">box-sizing</code>.</p></div><script type="text/plain" data-part="html"><div class="box">Box one</div>
+<div class="box">Box two</div></script><script type="text/plain" data-part="css">.box {
+  box-sizing: border-box;
+  width: 200px;
+  padding: 20px;
+  border: 4px solid #1d4ed8;
+  margin: 16px 0;
+  background: #eef3ff;
+}</script></div>
+<h2 id="colours-text-and-units">Colours, text and units</h2>
+<h3 id="colours">Colours</h3>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>color: red;                 /* a name */
+color: #1d4ed8;             /* hex: red, green, blue pairs */
+color: rgb(29 78 216);      /* the same blue with rgb() */
+color: rgb(0 0 0 / 50%);    /* black at half opacity */</pre>
+<p><strong>Contrast</strong> matters: light grey text on a white background is hard to read, and fails <button type="button" class="term" data-term="Accessibility" data-def="Designing software so that people with disabilities, for example blind or motor-impaired users, can use it.">accessibility</button> guidelines. Aim for a contrast ratio of at least 4.5 to 1 for body text. Browser developer tools and free online checkers can measure it.</p>
+<h3 id="typography">Typography</h3>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>body {
+  font-family: system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}</pre>
+<p>A <code class="inline">line-height</code> between 1.4 and 1.7 makes paragraphs much easier to read. Limit line length to about 60 to 80 characters (<code class="inline">max-width: 65ch</code>).</p>
+<h3 id="units">Units</h3>
+<div class="table-wrap"><table><thead><tr><th scope="col">Unit</th><th scope="col">Meaning</th><th scope="col">Use for</th></tr></thead><tbody><tr><td><code class="inline">px</code></td><td>A fixed pixel</td><td>Borders, shadows, small precise details</td></tr><tr><td><code class="inline">rem</code></td><td>A multiple of the page's base font size (16px by default)</td><td>Font sizes and spacing. Respects the user's settings</td></tr><tr><td><code class="inline">em</code></td><td>A multiple of the element's own font size</td><td>Spacing inside a component</td></tr><tr><td><code class="inline">%</code></td><td>A percentage of the parent</td><td>Flexible widths</td></tr><tr><td><code class="inline">vw</code>, <code class="inline">vh</code></td><td>1% of the viewport width or height</td><td>Full-screen sections</td></tr><tr><td><code class="inline">fr</code></td><td>A share of the free space in a Grid</td><td>Grid columns</td></tr></tbody></table></div>
+<aside class="callout callout-best"><div class="callout-title">Use rem for text</div><div class="callout-body"><p>Users who have set a larger default font size (for example because of low vision) expect your page to follow. Sizes in <code class="inline">rem</code> do. Sizes in <code class="inline">px</code> do not.</p></div></aside>
+<div class="quiz-mount" data-id="css-c1" data-kind="check" data-title="Checkpoint: selectors and the cascade" data-count="3"><script type="application/json" class="quiz-data">{"id": "css-c1", "kind": "check", "title": "Checkpoint: selectors and the cascade", "questions": [{"t": "mcq", "q": "Which selector targets every element with <code class=\"inline\">class=\"card\"<\/code>?", "o": ["<code class=\"inline\">card<\/code>", "<code class=\"inline\">*card<\/code>", "<code class=\"inline\">#card<\/code>", "<code class=\"inline\">.card<\/code>"], "a": 3, "why": "A dot means class. A hash means id, and a bare name means an HTML tag of that name."}, {"t": "mcq", "q": "Two rules have equal specificity and both set <code class=\"inline\">color<\/code> on the same element. Which wins?", "o": ["The first one in the file", "The last one in the file", "The shortest one", "Neither"], "a": 1, "why": "With equal specificity, order decides and later rules override earlier ones."}, {"t": "tf", "q": "<code class=\"inline\">box-sizing: border-box<\/code> makes the width include padding and border.", "a": true, "why": "That is exactly its purpose, and it makes layout arithmetic far more predictable."}]}</script></div>
+<h2 id="layout-flexbox">Layout: Flexbox</h2>
+<p>Placing items next to each other was once hard. <strong><button type="button" class="term" data-term="Flexbox" data-def="A CSS layout system for arranging items in a row or a column.">Flexbox</button></strong> makes it simple for layouts in <strong>one direction</strong>: a row or a column. Make a <button type="button" class="term" data-term="Container" data-def="A packaged, isolated environment holding an application and everything it needs to run. Docker creates containers.">container</button> flexible with <code class="inline">display: flex</code>, and its direct children become <strong>flex items</strong>.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 640 210" role="img" aria-label="A flex container holds three boxes in a row. The main axis points right and the cross axis points down. The justify-content property spreads them along the main axis." style="max-width:640px;min-width:461px" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ah-c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs>
+<rect x="20" y="40" width="600" height="110" rx="10" class="fg-box"/>
+<rect x="44" y="64" width="110" height="62" rx="8" class="fg-box fg-accent"/><text x="99" y="101" text-anchor="middle" class="fg-title">Item 1</text>
+<rect x="264" y="64" width="110" height="62" rx="8" class="fg-box fg-accent"/><text x="319" y="101" text-anchor="middle" class="fg-title">Item 2</text>
+<rect x="484" y="64" width="110" height="62" rx="8" class="fg-box fg-accent"/><text x="539" y="101" text-anchor="middle" class="fg-title">Item 3</text>
+<line x1="40" y1="24" x2="600" y2="24" class="fg-line" marker-end="url(#ah-c1)"/><text x="320" y="16" text-anchor="middle" class="fg-msg">main axis (flex-direction: row)</text>
+<line x1="8" y1="46" x2="8" y2="146" class="fg-line fg-dash" marker-end="url(#ah-c1)"/><text x="320" y="178" text-anchor="middle" class="fg-msg">cross axis runs from top to bottom. justify-content spreads items along the main axis</text>
+<text x="320" y="200" text-anchor="middle" class="fg-sub">here: justify-content: space-between and align-items: center</text>
+</svg></div><figcaption><span class="fig-n">Figure 4.</span> Flexbox lays items along a main axis</figcaption></figure>
+<p>The properties to know:</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Property</th><th scope="col">On</th><th scope="col">Effect</th></tr></thead><tbody><tr><td><code class="inline">display: flex</code></td><td>Container</td><td>Turns on Flexbox</td></tr><tr><td><code class="inline">flex-direction</code></td><td>Container</td><td><code class="inline">row</code> (default) or <code class="inline">column</code></td></tr><tr><td><code class="inline">justify-content</code></td><td>Container</td><td>Spacing along the main axis: <code class="inline">flex-start</code>, <code class="inline">center</code>, <code class="inline">space-between</code>, <code class="inline">space-around</code></td></tr><tr><td><code class="inline">align-items</code></td><td>Container</td><td>Alignment along the cross axis: <code class="inline">stretch</code>, <code class="inline">center</code>, <code class="inline">flex-start</code></td></tr><tr><td><code class="inline">gap</code></td><td>Container</td><td>Space between items</td></tr><tr><td><code class="inline">flex-wrap</code></td><td>Container</td><td>Let items wrap onto new lines</td></tr><tr><td><code class="inline">flex: 1</code></td><td>Item</td><td>Let this item grow to share leftover space</td></tr></tbody></table></div>
+<div class="playground" data-kind="html" data-title="Flexbox playground"><div class="pg-intro"><p>Change <code class="inline">justify-content</code> to <code class="inline">center</code>, <code class="inline">flex-end</code> and <code class="inline">space-around</code>. Then change <code class="inline">flex-direction</code> to <code class="inline">column</code>.</p></div><script type="text/plain" data-part="html"><div class="row">
+  <div class="item">One</div>
+  <div class="item">Two</div>
+  <div class="item">Three</div>
+</div></script><script type="text/plain" data-part="css">.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f3f4f6;
+}
+.item {
+  padding: 16px 24px;
+  background: #1d4ed8;
+  color: white;
+  border-radius: 8px;
+}</script></div>
+<aside class="callout callout-learn"><div class="callout-title">The classic centring trick</div><div class="callout-body"><p>To centre something both ways inside its parent: <code class="inline">display: flex; justify-content: center; align-items: center;</code> on the parent. It used to be famously hard. It is now three lines.</p></div></aside>
+<h2 id="layout-css-grid">Layout: CSS Grid</h2>
+<p>Where Flexbox is for one direction, <strong>Grid</strong> is for <strong>rows and columns together</strong>: page layouts, galleries, dashboards. You define the tracks, and the browser places the children.</p>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);   /* three equal columns */
+  gap: 16px;
+}</pre>
+<p><code class="inline">1fr</code> means "one share of the free space", so three <code class="inline">1fr</code> columns are equal. A very useful pattern creates as many columns as fit, with <strong>no media queries</strong>:</p>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}</pre>
+<p>This means: fit as many columns as you can, each at least 220px wide, sharing the leftover space. On a phone you get one column. On a laptop you get four.</p>
+<div class="playground" data-kind="html" data-title="Responsive grid"><div class="pg-intro"><p>Drag the width of your browser or this window and watch the columns rearrange. Then change <code class="inline">220px</code>.</p></div><script type="text/plain" data-part="html"><div class="cards">
+  <div class="card">1</div><div class="card">2</div><div class="card">3</div>
+  <div class="card">4</div><div class="card">5</div><div class="card">6</div>
+</div></script><script type="text/plain" data-part="css">.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+}
+.card {
+  padding: 28px 12px;
+  text-align: center;
+  background: #eef3ff;
+  border: 1px solid #1d4ed8;
+  border-radius: 8px;
+  font-weight: bold;
+}</script></div>
+<aside class="callout callout-note"><div class="callout-title">Which one should I use?</div><div class="callout-body"><p>Use <strong>Flexbox</strong> to line things up in a row or column (a navigation bar, a button group, the inside of a card). Use <strong>Grid</strong> for the overall page or any two-dimensional layout. They combine well: a grid of cards, each card laid out with Flexbox.</p></div></aside>
+<h2 id="positioning">Positioning</h2>
+<p>Normally elements flow top to bottom in the order of the HTML. The <code class="inline">position</code> property lets you move them out of the flow.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Value</th><th scope="col">Behaviour</th></tr></thead><tbody><tr><td><code class="inline">static</code></td><td>The default. Normal flow</td></tr><tr><td><code class="inline">relative</code></td><td>Stays in flow, but can be nudged with <code class="inline">top</code> and <code class="inline">left</code>. Also the anchor for absolute children</td></tr><tr><td><code class="inline">absolute</code></td><td>Removed from the flow and placed relative to the nearest positioned ancestor</td></tr><tr><td><code class="inline">fixed</code></td><td>Placed relative to the browser window, and stays when you scroll</td></tr><tr><td><code class="inline">sticky</code></td><td>Behaves normally until it would scroll away, then sticks. Great for headers</td></tr></tbody></table></div>
+<h2 id="responsive-design">Responsive design</h2>
+<p>People use phones, tablets, laptops and giant monitors. <strong><button type="button" class="term" data-term="Responsive design" data-def="Building pages that adapt their layout to any screen size, from phones to wide monitors.">Responsive design</button></strong> means one page that adapts to all of them. You need three ingredients.</p>
+<ol><li>The <strong>viewport meta tag</strong> in your HTML (see the HTML module).</li><li><strong>Flexible units</strong>: percentages, <code class="inline">rem</code>, <code class="inline">fr</code>, <code class="inline">max-width</code> instead of fixed widths.</li><li><strong>Media queries</strong>, to change the layout at certain screen widths.</li></ol>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>.layout {
+  display: grid;
+  grid-template-columns: 1fr;        /* phones: a single column */
+  gap: 16px;
+}
+
+@media (min-width: 800px) {
+  .layout {
+    grid-template-columns: 240px 1fr; /* wide screens: sidebar + content */
+  }
+}</pre>
+<aside class="callout callout-best"><div class="callout-title">Design mobile first</div><div class="callout-body"><p>Write the small-screen layout as the default. Then add <code class="inline">min-width</code> media queries that enhance it for larger screens. It forces you to focus on what matters, and mobile users load less CSS.</p></div></aside>
+<p>Images should shrink inside narrow containers. Add this to your base styles:</p>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>img { max-width: 100%; height: auto; }</pre>
+<h2 id="css-variables-and-transitions">CSS variables and transitions</h2>
+<p><strong>Custom properties</strong> (CSS variables) store a value once and reuse it. Change one line to retheme a whole site. This course's colour scheme works exactly this way.</p>
+<pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>:root {
+  --accent: #1d4ed8;
+  --radius: 8px;
+}
+.button {
+  background: var(--accent);
+  border-radius: var(--radius);
+  transition: background 0.2s;
+}
+.button:hover {
+  background: #1e40af;
+}</pre>
+<p><code class="inline">transition</code> animates a property change smoothly instead of snapping. Use animations sparingly, and respect users who ask their device to reduce motion with <code class="inline">@media (prefers-reduced-motion: reduce)</code>.</p>
+<div class="playground" data-kind="html" data-title="Build a button"><div class="pg-intro"><p>Make the button change colour on hover, and add a <code class="inline">:focus-visible</code> outline so that keyboard users can see where they are.</p></div><script type="text/plain" data-part="html"><button class="btn">Click me</button></script><script type="text/plain" data-part="css">:root { --accent: #1d4ed8; }
+.btn {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn:hover { background: #1e40af; }
+.btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }</script></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Common CSS mistakes</div><div class="callout-body"><ul><li><strong>Using <code class="inline">px</code> for everything.</strong> Prefer <code class="inline">rem</code> and <code class="inline">%</code> so that the page adapts.</li><li><strong>Removing the focus outline</strong> (<code class="inline">outline: none</code>) without replacing it. Keyboard users get lost.</li><li><strong>Fighting specificity with <code class="inline">!important</code>.</strong> Fix the selector instead.</li><li><strong>Fixed widths on containers.</strong> <code class="inline">width: 1200px</code> breaks on a phone. Use <code class="inline">max-width: 1200px; width: 100%</code>.</li><li><strong>Forgetting the viewport meta tag</strong>, then wondering why the mobile layout is tiny.</li><li><strong>Relying on colour alone</strong> to convey meaning, such as red for errors. Add text or an icon.</li></ul></div></aside>
+<section class="lab-box"><h3>Lab: a responsive profile card page</h3><p>Style the profile page you built in the HTML module (or start fresh).</p><ol class="lab-steps"><li>Create <code class="inline">style.css</code>, link it in your page <code class="inline">head</code>, and begin with the <code class="inline">box-sizing: border-box</code> reset.</li><li>Define colours and a radius as CSS variables on <code class="inline">:root</code>. Use them throughout.</li><li>Set <code class="inline">font-family</code>, <code class="inline">line-height</code> and a comfortable <code class="inline">max-width</code> on the main content, centred with <code class="inline">margin: 0 auto</code>.</li><li>Turn your <code class="inline">nav</code> into a horizontal bar with Flexbox. Use <code class="inline">gap</code> and give links a hover state and a visible <code class="inline">:focus-visible</code> outline.</li><li>Lay out your skills as a Grid of cards using <code class="inline">repeat(auto-fit, minmax(200px, 1fr))</code>.</li><li>Make the header <code class="inline">position: sticky; top: 0</code>.</li><li>Add one media query at 800px that places the About text and the image side by side.</li><li>Test at phone width (use the browser's device toolbar), at tablet width and full screen. Nothing should scroll sideways.</li><li>Run a contrast check on your main text and button.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<h2 id="check-your-understanding">Check your understanding</h2>
+<div class="quiz-mount" data-id="css-c2" data-kind="check" data-title="Checkpoint: layout" data-count="3"><script type="application/json" class="quiz-data">{"id": "css-c2", "kind": "check", "title": "Checkpoint: layout", "questions": [{"t": "mcq", "q": "Which CSS turns an element into a flex container?", "o": ["<code class=\"inline\">display: flex<\/code>", "<code class=\"inline\">flex: container<\/code>", "<code class=\"inline\">layout: flex<\/code>", "<code class=\"inline\">position: flex<\/code>"], "a": 0, "why": "<code class=\"inline\">display: flex<\/code> enables Flexbox. The element's direct children become flex items."}, {"t": "mcq", "q": "Which is the best tool for a layout with rows AND columns, such as a photo gallery?", "o": ["<code class=\"inline\">&lt;br&gt;<\/code> tags", "Floats", "CSS Grid", "Inline styles"], "a": 2, "why": "Grid handles two dimensions at once. Flexbox is for one dimension."}, {"t": "short", "q": "Which unit means \"one share of the free space\" in a Grid? Type the unit.", "a": ["fr"], "why": "<code class=\"inline\">1fr<\/code> columns share the leftover space in proportion to their numbers."}]}</script></div>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>A CSS rule is a selector plus declarations. Use external stylesheets and mostly class selectors.</li><li>The cascade decides a winner by importance, specificity, then order. Some properties are inherited.</li><li>The box model has content, padding, border and margin. Use <code class="inline">box-sizing: border-box</code>.</li><li>Use <code class="inline">rem</code> for type, relative units for widths, and check colour contrast.</li><li>Flexbox lays out one dimension, Grid lays out two. <code class="inline">repeat(auto-fit, minmax(...))</code> is a responsive layout with no media queries.</li><li>Responsive design is the viewport tag, flexible units and media queries, mobile first.</li><li>Custom properties keep a design consistent. Always keep a visible focus style.</li></ul></section>
+<div class="quiz-mount" data-id="css" data-kind="test" data-title="Module test: CSS" data-count="10"><script type="application/json" class="quiz-data">{"id": "css", "kind": "test", "title": "Module test: CSS", "questions": [{"t": "mcq", "q": "Which rule makes all paragraphs red?", "o": ["<code class=\"inline\">p: color = red;<\/code>", "<code class=\"inline\">#p { color: red; }<\/code>", "<code class=\"inline\">.p { color: red; }<\/code>", "<code class=\"inline\">p { color: red; }<\/code>"], "a": 3, "why": "A bare name selects HTML tags of that name. A dot would select a class called \"p\"."}, {"t": "mcq", "q": "A class rule and an ID rule both set the background of the same element. Which wins?", "o": ["The class", "The ID, because it is more specific", "Whichever is shorter", "Neither"], "a": 1, "why": "IDs are more specific than classes. That is why styling with classes is easier to override."}, {"t": "mcq", "q": "What is the total width of the visible box if <code class=\"inline\">width: 200px; padding: 20px; border: 5px solid;<\/code> and the default <code class=\"inline\">box-sizing: content-box<\/code>?", "o": ["245px", "200px", "225px", "250px"], "a": 3, "why": "Content 200 + padding 20 on each side (40) + border 5 on each side (10) = 250."}, {"t": "mcq", "q": "Which value of <code class=\"inline\">position<\/code> keeps an element at the top of the viewport while the user scrolls?", "o": ["inherit", "fixed", "relative", "static"], "a": 1, "why": "<code class=\"inline\">fixed<\/code> positions relative to the viewport. <code class=\"inline\">sticky<\/code> also works, but sticks only after scrolling to it."}, {"t": "mcq", "q": "Which approach is mobile first?", "o": ["Write the small-screen layout, then use <code class=\"inline\">min-width<\/code> queries to add larger layouts", "Use fixed widths", "Build a separate site for phones", "Write desktop styles, then use <code class=\"inline\">max-width<\/code> queries to shrink"], "a": 0, "why": "Mobile first starts with a simple default and enhances it as space allows."}, {"t": "tf", "q": "Using <code class=\"inline\">outline: none<\/code> on focusable elements with no replacement is fine for accessibility.", "a": false, "why": "Keyboard users rely on the focus outline. Remove it only if you provide an equally clear replacement."}, {"t": "tf", "q": "Flexbox is designed mainly for laying out items in one direction at a time.", "a": true, "why": "Use it for rows or columns. Grid is the tool for both directions at once."}, {"t": "short", "q": "Which CSS function reads a custom property, as in <code class=\"inline\">var(--accent)<\/code>? Type its name.", "a": ["var"], "why": "<code class=\"inline\">var()<\/code> reads a custom property so you can reuse values across a stylesheet."}, {"t": "multi", "q": "Which of these make a layout responsive? Select all that apply.", "o": ["Fixed widths in pixels on every container", "The viewport meta tag", "Media queries", "Relative units such as % and rem"], "a": [1, 2, 3], "why": "Fixed pixel widths break on small screens. The other three are the core of responsive design."}, {"t": "order", "q": "Put these in order of the cascade, from strongest to weakest.", "o": ["Class selector", "Type selector", "ID selector", "Inline style"], "a": [3, 2, 0, 1], "why": "Specificity increases from tag names through classes and IDs to inline styles."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="css.style-the-event" data-req="10" data-stretch="3" aria-labelledby="pj-css.style-the-event"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-css.style-the-event">Style the event page, mobile first</h3><div class="pj-meta"><span>3-4 hours</span><span>Beginner</span><span>Skills: selectors, box model, flexbox, grid, custom properties, media queries</span></div></div><div class="pj-body"><div class="pj-brief"><p>Take the community event page from the HTML module (or the starter below) and make it look professional on every screen size. You will design for a phone first and add layout for larger screens afterwards. The work must be done in one stylesheet, without changing the HTML structure except for adding classes.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>A single external stylesheet linked from the page, with no inline styles.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>Colours, spacing and font sizes defined once as CSS custom properties on <code class="inline">:root</code> and reused throughout.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>A readable base: a system font stack, a line height of at least 1.5, a comfortable maximum line length for body text and sufficient colour contrast (at least 4.5 to 1 for normal text).</span></label></li><li><label><input type="checkbox" data-k="r3"><span>Mobile first: the base styles are for a narrow screen, and at least two <code class="inline">min-width</code> media queries add layout for tablets and desktops.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>The navigation is a flexbox row that wraps or collapses sensibly on small screens, and the links have a visible hover and focus style.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>The schedule section uses a table that remains usable on a phone (for example by scrolling inside a wrapper, without making the whole page scroll sideways).</span></label></li><li><label><input type="checkbox" data-k="r6"><span>The registration form is laid out with grid or flexbox, with fields that fill the width on a phone and sit in two columns on a wide screen.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>Buttons and form controls are at least 44 pixels tall and have visible focus outlines.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>A dark colour scheme that follows <code class="inline">prefers-color-scheme</code> by changing only the custom properties.</span></label></li><li><label><input type="checkbox" data-k="r9"><span>The page has no horizontal scrolling at 320, 768 and 1280 pixels wide.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Define your design tokens (colours, spacing steps, radius, font sizes) as custom properties.</li><li>Add a reset (box-sizing and margins) and style the base typography.</li><li>Style the header and navigation for a phone, then the main sections and the table.</li><li>Style the form and its states: focus, invalid and disabled.</li><li>Add the media queries one at a time, resizing the browser after each to confirm nothing breaks.</li><li>Add the dark scheme by overriding the custom properties, then check contrast in both schemes.</li><li>Test at the three widths and fix any horizontal scrolling at the root cause.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="css"><span class="lang-tag">CSS</span>:root {
+  --bg: #ffffff;
+  --text: #1a1a1a;
+  --accent: #1d4ed8;
+  --space: 1rem;
+  --radius: 8px;
+  font-family: system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+/* TODO: header, nav, sections, table, form */
+
+@media (min-width: 48rem) {
+  /* TODO: tablet layout */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* TODO: override the colour variables */
+  }
+}</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Make images and tables fit with <code class="inline">max-width: 100%</code>, and wrap wide tables in a container with <code class="inline">overflow-x: auto</code>.</li><li>If something forces a horizontal scrollbar, find the element that is too wide with the browser inspector instead of hiding the overflow.</li><li><code class="inline">gap</code> is simpler than margins for spacing flex and grid items.</li><li>Use <code class="inline">:focus-visible</code> for focus rings so they show for keyboard users.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Add a smooth, subtle transition on buttons and links that respects <code class="inline">prefers-reduced-motion</code>.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Build the event cards with CSS grid using <code class="inline">repeat(auto-fit, minmax(16rem, 1fr))</code>.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Add a print stylesheet that hides the navigation and the form.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Responsiveness</strong></td><td>The layout adapts smoothly with no horizontal scrolling and no overlapping content at any width.</td></tr><tr><td><strong>Consistency</strong></td><td>Colours and spacing come from the custom properties, with no repeated magic numbers.</td></tr><tr><td><strong>Accessibility</strong></td><td>Contrast, focus styles and touch-target sizes meet the requirements in both colour schemes.</td></tr><tr><td><strong>Craft</strong></td><td>The stylesheet is organised, short selectors are used and there is no unneeded repetition.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The HTML file and <code class="inline">styles.css</code>.</li><li>Three screenshots: 320, 768 and 1280 pixels wide.</li><li>One screenshot in the dark scheme.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-css.style-the-event">Link to your work (optional)</label><input class="field" id="pjl-css.style-the-event" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-css.style-the-event">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-css.style-the-event" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

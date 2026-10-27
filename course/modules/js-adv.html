@@ -1,0 +1,341 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Foundations</span><span>Module 9</span><span>180 min</span><span>Intermediate</span></div><h1>Advanced JavaScript</h1><p class="lede">Scope and closures, classes, modules, asynchronous code with promises and async/await, fetch, JSON, errors and modern syntax.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Explain scope and closures, and use a closure to keep private state.</li><li>Create classes with constructors, methods and inheritance.</li><li>Split code into modules with <code class="inline">import</code> and <code class="inline">export</code>.</li><li>Explain why asynchronous code exists and how the event loop schedules it.</li><li>Write promise chains and <code class="inline">async</code>/<code class="inline">await</code> code with proper error handling.</li><li>Call an API with <code class="inline">fetch</code>, and read and write JSON.</li><li>Use modern syntax: optional chaining, nullish coalescing, spread and destructuring.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p><button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button>: Making Pages Interactive. You should be comfortable with functions, arrays, objects and callbacks.</p></section>
+<h2 id="scope-and-closures">Scope and closures</h2>
+<p><strong>Scope</strong> is the area of code where a name is visible. Variables declared with <code class="inline">let</code> and <code class="inline">const</code> live inside the nearest pair of curly braces (a <strong>block</strong>) and disappear after it.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>function demo() {
+  const secret = 42;
+  if (true) {
+    let inner = "only here";
+  }
+  // console.log(inner);  // ReferenceError: not defined here
+  return secret;
+}</pre>
+<p>An inner function can see variables of the outer functions around it. When a function <strong>remembers</strong> the variables from where it was created, even after the outer function has finished, we call it a <strong>closure</strong>.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>function makeCounter() {
+  let count = 0;            // private: nothing outside can touch it
+  return function () {
+    count = count + 1;
+    return count;
+  };
+}
+
+const a = makeCounter();
+const b = makeCounter();
+console.log(a(), a(), a());  // 1 2 3
+console.log(b());            // 1: b has its own separate count</pre>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>A closure is a backpack. When a function is created, it packs the variables around it into a backpack and carries it forever. Every call to <code class="inline">makeCounter</code> gives out a new function with its own backpack, so <code class="inline">a</code> and <code class="inline">b</code> cannot interfere with each other.</p></div></aside>
+<div class="playground" data-kind="js" data-title="Closures at work"><div class="pg-intro"><p>Create a second counter and check that the two are independent. Then add a <code class="inline">reset</code> method by returning an object with <code class="inline">next</code> and <code class="inline">reset</code> functions.</p></div><script type="text/plain" data-part="js">function makeCounter() {
+  let count = 0;
+  return () => ++count;
+}
+
+const clicks = makeCounter();
+clicks();
+clicks();
+console.log("clicks:", clicks());</script></div>
+<div class="challenge" data-id="js-adv.counter" data-title="Build a counter with a closure"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Build a counter with a closure</h3></div><div class="challenge-body"><p>Write <code class="inline">makeCounter(start = 0)</code> that returns an object with three functions: <code class="inline">next()</code> increases the count by one and returns it, <code class="inline">value()</code> returns the current count without changing it, and <code class="inline">reset()</code> sets it back to <code class="inline">start</code>. Each counter must keep its own private count.</p></div><script type="text/plain" data-part="starter">function makeCounter(start = 0) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('counts up', () => { const c = makeCounter(); c.next(); c.next(); assert.equal(c.value(), 2); });
+test('next returns new value', () => { const c = makeCounter(); assert.equal(c.next(), 1); });
+test('custom start', () => { const c = makeCounter(10); assert.equal(c.next(), 11); });
+test('reset', () => { const c = makeCounter(5); c.next(); c.reset(); assert.equal(c.value(), 5); });
+test('independent counters', () => { const a = makeCounter(); const b = makeCounter(); a.next(); a.next(); assert.equal(b.value(), 0); });</script><script type="text/plain" data-part="solution">function makeCounter(start = 0) {
+  let count = start;
+  return {
+    next() { count = count + 1; return count; },
+    value() { return count; },
+    reset() { count = start; },
+  };
+}</script><div class="hint-text" hidden>Declare <code class="inline">let count = start</code> inside <code class="inline">makeCounter</code>, then return an object whose methods use <code class="inline">count</code>.</div><div class="hint-text" hidden><code class="inline">reset</code> should assign <code class="inline">count = start</code>.</div></div>
+<h2 id="classes-and-this">Classes and <code class="inline">this</code></h2>
+<p>A <strong>class</strong> is a blueprint for creating objects with the same shape and behaviour. The objects it creates are called <strong>instances</strong>. (The Advanced Engineering module goes deeper into object-oriented design.)</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>class Account {
+  #balance = 0;                    // a private field
+
+  constructor(owner) {
+    this.owner = owner;
+  }
+
+  deposit(amount) {
+    if (amount &lt;= 0) throw new Error("Amount must be positive");
+    this.#balance += amount;
+  }
+
+  get balance() {
+    return this.#balance;
+  }
+}
+
+const acc = new Account("Ada");
+acc.deposit(100);
+console.log(acc.owner, acc.balance);  // Ada 100</pre>
+<ul><li><code class="inline">constructor</code> runs when you call <code class="inline">new Account(...)</code>.</li><li><code class="inline">this</code> refers to the instance the method is being called on.</li><li><code class="inline">#balance</code> is a <strong>private field</strong>: code outside the class cannot read it, so the only way to change the balance is through the methods that enforce the rules.</li></ul>
+<h3 id="inheritance">Inheritance</h3>
+<p>A class can <strong>extend</strong> another, inheriting its properties and methods, and adding or replacing some.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>class Savings extends Account {
+  addInterest(rate) {
+    this.deposit(this.balance * rate);
+  }
+}
+const s = new Savings("Grace");
+s.deposit(200);
+s.addInterest(0.1);
+console.log(s.balance);   // 220</pre>
+<aside class="callout callout-pitfall"><div class="callout-title">The slippery <code class="inline">this</code></div><div class="callout-body"><p><code class="inline">this</code> depends on <strong>how</strong> a function is called, not where it is written. A method detached from its object loses it:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const f = acc.deposit;
+f(10);          // TypeError: this is undefined</pre>
+<p>Arrow functions do not have their own <code class="inline">this</code>: they use the one around them, which makes them handy for callbacks inside methods. When a <button type="button" class="term" data-term="Callback" data-def="A function you pass to another function so it can be called later, for example when a task finishes.">callback</button> must keep its object, use an <button type="button" class="term" data-term="Arrow function" data-def="A short way to write a function in JavaScript using =&gt;, for example (a, b) =&gt; a + b.">arrow function</button>.</p></div></aside>
+<div class="challenge" data-id="js-adv.account" data-title="A safe bank account class"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>A safe bank account class</h3></div><div class="challenge-body"><p>Write a class <code class="inline">BankAccount</code>. <code class="inline">new BankAccount(balance = 0)</code> starts with an opening balance. It needs <code class="inline">deposit(amount)</code>, <code class="inline">withdraw(amount)</code> and a <code class="inline">balance</code> getter. Both methods must throw an <code class="inline">Error</code> when the amount is not a positive number. <code class="inline">withdraw</code> must also throw if the amount is bigger than the balance, leaving the balance unchanged.</p></div><script type="text/plain" data-part="starter">class BankAccount {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('opening balance', () => assert.equal(new BankAccount(50).balance, 50));
+test('default balance is zero', () => assert.equal(new BankAccount().balance, 0));
+test('deposit', () => { const a = new BankAccount(10); a.deposit(5); assert.equal(a.balance, 15); });
+test('withdraw', () => { const a = new BankAccount(10); a.withdraw(4); assert.equal(a.balance, 6); });
+test('rejects bad deposit', () => assert.throws(() => new BankAccount().deposit(-5)));
+test('rejects zero withdrawal', () => assert.throws(() => new BankAccount(10).withdraw(0)));
+test('cannot overdraw', () => { const a = new BankAccount(10); assert.throws(() => a.withdraw(11)); assert.equal(a.balance, 10); });</script><script type="text/plain" data-part="solution">class BankAccount {
+  #balance;
+  constructor(balance = 0) { this.#balance = balance; }
+  deposit(amount) {
+    if (typeof amount !== 'number' || !(amount > 0)) throw new Error('Amount must be positive');
+    this.#balance += amount;
+  }
+  withdraw(amount) {
+    if (typeof amount !== 'number' || !(amount > 0)) throw new Error('Amount must be positive');
+    if (amount > this.#balance) throw new Error('Insufficient funds');
+    this.#balance -= amount;
+  }
+  get balance() { return this.#balance; }
+}</script><div class="hint-text" hidden>Store the balance in a private field such as <code class="inline">#balance</code>, and expose it with <code class="inline">get balance() { ... }</code>.</div><div class="hint-text" hidden>Check for bad amounts first, then change the balance, so that a failed call changes nothing.</div></div>
+<div class="quiz-mount" data-id="js-adv-c1" data-kind="check" data-title="Checkpoint: closures and classes" data-count="3"><script type="application/json" class="quiz-data">{"id": "js-adv-c1", "kind": "check", "title": "Checkpoint: closures and classes", "questions": [{"t": "mcq", "q": "What is a closure?", "o": ["A class with private fields", "A function that remembers the variables from where it was created", "A function that has no parameters", "A way of closing the browser window"], "a": 1, "why": "A closure carries its surrounding variables with it, which is how <code class=\"inline\">makeCounter<\/code> keeps a private count."}, {"t": "mcq", "q": "What does <code class=\"inline\">#balance<\/code> mean inside a class?", "o": ["A CSS id", "A private field that code outside the class cannot access", "A comment", "A constant"], "a": 1, "why": "The hash prefix makes a field private to the class."}, {"t": "tf", "q": "In an arrow function, <code class=\"inline\">this<\/code> is the object the function was called on.", "a": false, "why": "Arrow functions have no <code class=\"inline\">this<\/code> of their own. They use the <code class=\"inline\">this<\/code> of the code around them."}]}</script></div>
+<h2 id="modules-splitting-code-into-files">Modules: splitting code into files</h2>
+<p>Real programs are split into many files. JavaScript <strong>modules</strong> let each file <code class="inline">export</code> what it offers, and other files <code class="inline">import</code> what they need.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// math.js
+export function add(a, b) { return a + b; }
+export const PI = 3.14159;
+export default function square(n) { return n * n; }
+
+// app.js
+import square, { add, PI } from "./math.js";
+console.log(add(2, 3), square(4), PI);</pre>
+<p>In a page, load the entry file with <code class="inline">&lt;script type="module" src="app.js"&gt;</code>. <button type="button" class="term" data-term="Node.js" data-def="A program that lets you run JavaScript outside the browser, mostly for servers and tools.">Node.js</button> also supports modules (<code class="inline">"type": "module"</code> in <code class="inline">package.json</code>, or the <code class="inline">.mjs</code> extension). You will use modules constantly in <button type="button" class="term" data-term="React" data-def="A JavaScript library for building user interfaces from components.">React</button> and Vue.</p>
+<aside class="callout callout-note"><div class="callout-title">Modules give each file its own scope</div><div class="callout-body"><p>A variable in one module does not leak into another unless it is exported. This removes the old problem of two scripts accidentally overwriting each other's names.</p></div></aside>
+<h2 id="asynchronous-javascript">Asynchronous JavaScript</h2>
+<p>Some jobs take time: downloading data, reading a file, waiting for a timer. If JavaScript <strong>waited</strong> for each one, the page would freeze. Instead it starts the job, carries on with other work, and handles the result <strong>later</strong>. This is <strong><button type="button" class="term" data-term="Asynchronous" data-def="Code that starts a slow task, such as a network request, and carries on with other work instead of waiting. The result arrives later.">asynchronous</button></strong> code.</p>
+<h3 id="the-event-loop">The event loop</h3>
+<p>JavaScript runs one thing at a time on a single thread. The <strong><button type="button" class="term" data-term="Event loop" data-def="The mechanism that lets JavaScript do one thing at a time yet handle many tasks by picking up finished work from a queue.">event loop</button></strong> is how it juggles waiting tasks: finished jobs line up in a queue, and the loop runs them when the <button type="button" class="term" data-term="Call stack" data-def="The list of functions that are currently running, with the newest on top. When a function returns, it is removed from the stack.">call stack</button> is empty.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 742 202" role="img" aria-label="The event loop" style="max-width:742px;min-width:535px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-js-adv1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="185.8" height="66.0" rx="9" class="fg-box "/><text x="104.9" y="40.0" text-anchor="middle" class="fg-title">Your code</text><text x="104.9" y="59.0" text-anchor="middle" class="fg-sub">runs on the call stack</text><rect x="243.8" y="12.0" width="261.7" height="66.0" rx="9" class="fg-box fg-accent "/><text x="374.7" y="40.0" text-anchor="middle" class="fg-title">Browser APIs</text><text x="374.7" y="59.0" text-anchor="middle" class="fg-sub">timers, network, clicks wait here</text><line x1="200.8" y1="45.0" x2="240.8" y2="45.0" class="fg-line" marker-end="url(#ah-js-adv1)"/><rect x="551.5" y="12.0" width="178.9" height="66.0" rx="9" class="fg-box "/><text x="641.0" y="40.0" text-anchor="middle" class="fg-title">Task queue</text><text x="641.0" y="59.0" text-anchor="middle" class="fg-sub">finished jobs line up</text><line x1="508.5" y1="45.0" x2="548.5" y2="45.0" class="fg-line" marker-end="url(#ah-js-adv1)"/><rect x="209.3" y="124.0" width="323.8" height="66.0" rx="9" class="fg-box "/><text x="371.2" y="152.0" text-anchor="middle" class="fg-title">Event loop</text><text x="371.2" y="171.0" text-anchor="middle" class="fg-sub">when the stack is empty, runs the next job</text><path d="M641.0 81.0 V101.0 H371.2 V121.0" class="fg-line" fill="none" marker-end="url(#ah-js-adv1)"/></svg></div><figcaption><span class="fig-n">Figure 1.</span> The event loop</figcaption></figure>
+<p>This explains a famous puzzle. Predict the output before running it.</p>
+<div class="playground" data-kind="js" data-title="Why does &quot;last&quot; come before &quot;timer&quot;?"><div class="pg-intro"><p>Even with a delay of 0 milliseconds, the callback waits until the current code has finished.</p></div><script type="text/plain" data-part="js">console.log("first");
+setTimeout(() => console.log("timer"), 0);
+console.log("last");</script></div>
+<h3 id="callbacks-and-callback-hell">Callbacks, and "callback hell"</h3>
+<p>The oldest way to handle asynchronous results is a <strong>callback</strong>. Dependent steps nest deeper and deeper, which gets unreadable and makes errors hard to handle.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>getUser(1, (user) =&gt; {
+  getOrders(user.id, (orders) =&gt; {
+    getItems(orders[0].id, (items) =&gt; {
+      console.log(items);   // three levels deep!
+    });
+  });
+});</pre>
+<h3 id="promises">Promises</h3>
+<p>A <strong>promise</strong> is an object that represents a value that will arrive later. It is in one of three states.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 612 114" role="img" aria-label="The three states of a promise" style="max-width:612px;min-width:441px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-js-adv2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="6.0" y="8" width="164.0" height="98" rx="9" class="fg-box fg-c1"/><text x="22.0" y="34" class="fg-title">Pending</text><text x="22.0" y="62" class="fg-mono-s" xml:space="preserve">Work in progress</text><rect x="180.0" y="8" width="204.0" height="98" rx="9" class="fg-box fg-c2"/><text x="196.0" y="34" class="fg-title">Fulfilled</text><text x="196.0" y="62" class="fg-mono-s" xml:space="preserve">It worked. A value is</text><text x="196.0" y="82" class="fg-mono-s" xml:space="preserve">available</text><rect x="394.0" y="8" width="212.0" height="98" rx="9" class="fg-box fg-c3"/><text x="410.0" y="34" class="fg-title">Rejected</text><text x="410.0" y="62" class="fg-mono-s" xml:space="preserve">It failed. An error is</text><text x="410.0" y="82" class="fg-mono-s" xml:space="preserve">available</text></svg></div><figcaption><span class="fig-n">Figure 2.</span> The three states of a promise</figcaption></figure>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const wait = (ms, value) =&gt;
+  new Promise((resolve) =&gt; setTimeout(() =&gt; resolve(value), ms));
+
+wait(100, "done")
+  .then((result) =&gt; console.log(result))
+  .catch((error) =&gt; console.error(error))
+  .finally(() =&gt; console.log("always runs"));</pre>
+<p><code class="inline">.then</code> handles success, <code class="inline">.catch</code> handles failure, and <code class="inline">.finally</code> runs either way. Chains stay flat, and one <code class="inline">.catch</code> can handle errors from any step above it.</p>
+<h3 id="async-and-await"><code class="inline">async</code> and <code class="inline">await</code></h3>
+<p><code class="inline">async</code>/<code class="inline">await</code> is syntax that makes promise code read like ordinary top-to-bottom code. An <code class="inline">async</code> function always returns a promise. Inside it, <code class="inline">await</code> pauses <strong>that function</strong> until a promise settles, without freezing the rest of the page.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>async function showUser() {
+  try {
+    const user = await getUser(1);
+    const orders = await getOrders(user.id);
+    console.log(orders);
+  } catch (error) {
+    console.error("Something failed:", error.message);
+  }
+}</pre>
+<p>The ordinary <code class="inline">try</code>/<code class="inline">catch</code> works because <code class="inline">await</code> turns a rejected promise back into a thrown error.</p>
+<div class="playground" data-kind="js" data-title="Async/await in action"><div class="pg-intro"><p>The code below simulates two slow steps. Change the delays, and make the second step fail (<code class="inline">throw new Error("no orders")</code>) to see the <code class="inline">catch</code> run.</p></div><script type="text/plain" data-part="js">const wait = (ms, value) =>
+  new Promise((resolve) => setTimeout(() => resolve(value), ms));
+
+async function main() {
+  try {
+    console.log("loading user...");
+    const user = await wait(60, { id: 1, name: "Ada" });
+    console.log("got", user.name);
+    const orders = await wait(60, ["book", "pen"]);
+    console.log("orders:", orders.length);
+  } catch (error) {
+    console.log("failed:", error.message);
+  }
+}
+main();
+console.log("main() has started, but not finished");</script></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Sequential or parallel?</div><div class="callout-body"><p>Two <code class="inline">await</code>s in a row run <strong>one after the other</strong>. If the jobs are independent, start both first and wait together:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const [users, products] = await Promise.all([getUsers(), getProducts()]);</pre>
+<p>It takes as long as the slowest job, not the sum. If any one fails, <code class="inline">Promise.all</code> fails too (use <code class="inline">Promise.allSettled</code> to get every outcome). Forgetting <code class="inline">await</code> is a classic mistake: you get a promise object instead of its value.</p></div></aside>
+<div class="challenge" data-id="js-adv.delay" data-title="Write a delay helper"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Write a delay helper</h3></div><div class="challenge-body"><p>Write <code class="inline">delay(ms, value)</code> that returns a promise which <strong>resolves to <code class="inline">value</code></strong> after <code class="inline">ms</code> milliseconds. Use <code class="inline">setTimeout</code>.</p></div><script type="text/plain" data-part="starter">function delay(ms, value) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('returns a promise', () => assert(delay(1, 'x') instanceof Promise, 'delay must return a Promise'));
+test('resolves with the value', async () => assert.equal(await delay(5, 'hello'), 'hello'));
+test('waits', async () => { const t = Date.now(); await delay(40, 1); assert(Date.now() - t >= 30, 'resolved too early'); });</script><script type="text/plain" data-part="solution">function delay(ms, value) {
+  return new Promise((resolve) => setTimeout(() => resolve(value), ms));
+}</script><div class="hint-text" hidden><code class="inline">return new Promise((resolve) =&gt; { ... })</code>, and call <code class="inline">resolve(value)</code> from a timer.</div><div class="hint-text" hidden><code class="inline">return new Promise((resolve) =&gt; setTimeout(() =&gt; resolve(value), ms));</code></div></div>
+<div class="challenge" data-id="js-adv.retry" data-title="Retry a failing task"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Retry a failing task</h3></div><div class="challenge-body"><p>Write the <strong>async</strong> function <code class="inline">retry(task, attempts)</code>. <code class="inline">task</code> is an async function. Call it. If it succeeds, return its result. If it throws, try again, up to <code class="inline">attempts</code> calls in total. If every attempt fails, throw the <strong>last</strong> error.</p></div><script type="text/plain" data-part="starter">async function retry(task, attempts) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('succeeds first time', async () => assert.equal(await retry(async () => 'ok', 3), 'ok'));
+test('retries until success', async () => {
+  let n = 0;
+  const r = await retry(async () => { n++; if (n < 3) throw new Error('fail'); return n; }, 5);
+  assert.equal(r, 3);
+});
+test('gives up with the last error', async () => {
+  let calls = 0, caught = null;
+  try { await retry(async () => { calls++; throw new Error('bad ' + calls); }, 2); } catch (e) { caught = e; }
+  assert(caught, 'should have thrown');
+  assert.equal(caught.message, 'bad 2');
+  assert.equal(calls, 2);
+});</script><script type="text/plain" data-part="solution">async function retry(task, attempts) {
+  let lastError;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await task();
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}</script><div class="hint-text" hidden>Use a <code class="inline">for</code> loop from 1 to <code class="inline">attempts</code>, with <code class="inline">try { return await task(); } catch (e) { lastError = e; }</code>.</div><div class="hint-text" hidden>After the loop, <code class="inline">throw lastError</code>.</div></div>
+<h2 id="talking-to-servers-with-fetch">Talking to servers with <code class="inline">fetch</code></h2>
+<p><code class="inline">fetch</code> requests data over HTTP and returns a promise. You learned HTTP in the web module. Now you use it from code.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>async function loadTodos() {
+  const response = await fetch("https://jsonplaceholder.typicode.com/todos?_limit=3");
+  if (!response.ok) {
+    throw new Error("HTTP " + response.status);   // fetch only rejects on network failure!
+  }
+  const todos = await response.json();            // parse the JSON body
+  return todos;
+}</pre>
+<aside class="callout callout-pitfall"><div class="callout-title">fetch does not reject on 404 or 500</div><div class="callout-body"><p><code class="inline">fetch</code> only fails if the <strong>network</strong> fails. A <code class="inline">404 Not Found</code> or <code class="inline">500 Server Error</code> is a <em>successful</em> fetch with <code class="inline">response.ok === false</code>. Always check <code class="inline">response.ok</code> (or <code class="inline">response.status</code>) yourself.</p></div></aside>
+<p>Sending data uses the same function with options:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const response = await fetch("/api/todos", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ title: "Learn fetch" }),
+});
+const created = await response.json();</pre>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 895 344" role="img" aria-label="A fetch request and its promise" style="max-width:895px;min-width:645px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-js-adv3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><line x1="149.2" y1="54" x2="149.2" y2="338.0" class="fg-life"/><rect x="94.2" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="149.2" y="38.0" text-anchor="middle" class="fg-title">Your code</text><line x1="447.6" y1="54" x2="447.6" y2="338.0" class="fg-life"/><rect x="392.6" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="447.6" y="38.0" text-anchor="middle" class="fg-title">Browser</text><line x1="746.0" y1="54" x2="746.0" y2="338.0" class="fg-life"/><rect x="691.0" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="746.0" y="38.0" text-anchor="middle" class="fg-title">Server</text><line x1="153.2" y1="94" x2="443.6" y2="94" class="fg-line" marker-end="url(#ah-js-adv3)"/><text x="298.4" y="86" text-anchor="middle" class="fg-msg">fetch(url) returns a pending promise</text><line x1="145.2" y1="144" x2="153.2" y2="144" class="fg-line" marker-end="url(#ah-js-adv3)"/><text x="149.2" y="136" text-anchor="middle" class="fg-msg">carries on with other work</text><line x1="451.6" y1="194" x2="742.0" y2="194" class="fg-line" marker-end="url(#ah-js-adv3)"/><text x="596.8" y="186" text-anchor="middle" class="fg-msg">GET /todos</text><line x1="742.0" y1="244" x2="451.6" y2="244" class="fg-line fg-dash" marker-end="url(#ah-js-adv3)"/><text x="596.8" y="236" text-anchor="middle" class="fg-msg">200 OK and a JSON body</text><line x1="443.6" y1="294" x2="153.2" y2="294" class="fg-line fg-dash" marker-end="url(#ah-js-adv3)"/><text x="298.4" y="286" text-anchor="middle" class="fg-msg">promise fulfilled, await continues</text></svg></div><figcaption><span class="fig-n">Figure 3.</span> A fetch request and its promise</figcaption></figure>
+<h3 id="json">JSON</h3>
+<p><strong>JSON</strong> is the text format APIs use to exchange data. It looks like a JavaScript object, but keys must be in double quotes, and there are no functions, comments or trailing commas.</p>
+<div class="playground" data-kind="js" data-title="JSON round trip"><div class="pg-intro"><p><code class="inline">JSON.stringify</code> turns a value into text. <code class="inline">JSON.parse</code> turns text back into a value. Try parsing invalid JSON and see the error.</p></div><script type="text/plain" data-part="js">const user = { name: "Ada", age: 36, skills: ["maths", "code"] };
+
+const text = JSON.stringify(user);
+console.log(text);
+
+const back = JSON.parse(text);
+console.log(back.skills[1]);
+
+try {
+  JSON.parse("{ name: 'Ada' }");     // invalid JSON
+} catch (e) {
+  console.log("Bad JSON:", e.name);
+}</script></div>
+<h2 id="errors">Errors</h2>
+<p>You already met <code class="inline">try</code>/<code class="inline">catch</code>. A few more details give you real control.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>class ValidationError extends Error {
+  constructor(message, field) {
+    super(message);
+    this.name = "ValidationError";
+    this.field = field;
+  }
+}
+
+function checkAge(age) {
+  if (!Number.isInteger(age) || age &lt; 0) {
+    throw new ValidationError("Age must be a whole number", "age");
+  }
+}
+
+try {
+  checkAge(-3);
+} catch (e) {
+  if (e instanceof ValidationError) console.log(e.field + ": " + e.message);
+  else throw e;               // unknown error: do not swallow it
+}</pre>
+<aside class="callout callout-best"><div class="callout-title">Handle errors where you can do something useful</div><div class="callout-body"><p>Catch an error where you can recover or show the user a helpful message. Otherwise let it travel up. Never write an empty <code class="inline">catch</code> that silently hides problems, because it will cost you hours of debugging later.</p></div></aside>
+<h2 id="modern-syntax-you-will-see-everywhere">Modern syntax you will see everywhere</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Feature</th><th scope="col">Example</th><th scope="col">What it does</th></tr></thead><tbody><tr><td>Optional chaining</td><td><code class="inline">user?.address?.city</code></td><td>Gives <code class="inline">undefined</code> instead of an error if something is missing</td></tr><tr><td>Nullish coalescing</td><td><code class="inline">input ?? "default"</code></td><td>Uses the default only for <code class="inline">null</code> or <code class="inline">undefined</code> (not for <code class="inline">0</code> or <code class="inline">""</code>)</td></tr><tr><td>Destructuring</td><td><code class="inline">const { name, age } = user</code></td><td>Pulls properties into variables</td></tr><tr><td>Array destructuring</td><td><code class="inline">const [first, ...rest] = list</code></td><td>Splits a list into the first item and the rest</td></tr><tr><td>Spread</td><td><code class="inline">{ ...user, age: 37 }</code>, <code class="inline">[...a, ...b]</code></td><td>Copies and merges objects and arrays</td></tr><tr><td>Rest parameters</td><td><code class="inline">function sum(...nums)</code></td><td>Collects extra arguments into an array</td></tr><tr><td>Template literals</td><td>`<code class="inline"> </code>Hi ${name}<code class="inline"> </code>`</td><td>Embeds expressions in text</td></tr></tbody></table></div>
+<div class="playground" data-kind="js" data-title="Modern syntax tour"><div class="pg-intro"><p>Predict each result, then run it.</p></div><script type="text/plain" data-part="js">const user = { name: "Ada", address: null, visits: 0 };
+
+console.log(user.address?.city);          // undefined, no error
+console.log(user.visits || 10);           // 10   (0 is falsy!)
+console.log(user.visits ?? 10);           // 0    (0 is a real value)
+
+const [first, ...rest] = [1, 2, 3, 4];
+console.log(first, rest);
+
+const merged = { ...user, visits: user.visits + 1, role: "admin" };
+console.log(merged);
+
+const sum = (...nums) => nums.reduce((a, b) => a + b, 0);
+console.log(sum(1, 2, 3, 4));</script></div>
+<h3 id="storing-data-in-the-browser">Storing data in the browser</h3>
+<p><code class="inline">localStorage</code> keeps text under a key, even after the tab closes. It is perfect for preferences and small drafts. Store objects as JSON.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>localStorage.setItem("prefs", JSON.stringify({ theme: "dark" }));
+const prefs = JSON.parse(localStorage.getItem("prefs") ?? "{}");</pre>
+<p>Never store passwords or tokens you cannot afford to leak in <code class="inline">localStorage</code>: any script on the page can read it. The Security module explains the safer options.</p>
+<h2 id="introducing-typescript">Introducing TypeScript</h2>
+<p>JavaScript lets you pass anything anywhere, and finds out at runtime that you passed the wrong thing. <strong>TypeScript</strong> adds <strong>types</strong> to JavaScript, checked <strong>before</strong> the code runs, in your editor.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// TypeScript
+function area(width: number, height: number): number {
+  return width * height;
+}
+area(3, "4");   // error caught immediately: "4" is not a number</pre>
+<p>TypeScript compiles to plain JavaScript, so it runs anywhere JavaScript does. Most professional front-end and Node.js teams use it, and React, Vue and Angular all support it. You do not need it yet, and everything you have learned carries over. It is a good next step once you are comfortable here.</p>
+<section class="lab-box"><h3>Lab: a GitHub profile viewer</h3><p>Use a free public API, and apply everything from this module. Work on your own machine with an HTML page and a JavaScript module.</p><ol class="lab-steps"><li>Build a page with a search box, a button and an empty results area.</li><li>Write <code class="inline">async function getUser(name)</code> which calls <code class="inline">https://api.github.com/users/</code> followed by the name, checks <code class="inline">response.ok</code>, and returns the parsed JSON.</li><li>On submit, show "Loading..." and call <code class="inline">getUser</code>. Display the avatar, name, public repository count and a link, using <code class="inline">createElement</code> and <code class="inline">textContent</code> (not <code class="inline">innerHTML</code>).</li><li>Handle failure: show a friendly message for a 404 ("User not found") and for network errors.</li><li>Use optional chaining and <code class="inline">??</code> for fields that may be <code class="inline">null</code> (such as <code class="inline">name</code> or <code class="inline">bio</code>).</li><li>Put the fetching code in its own module and <code class="inline">import</code> it.</li><li>Save the last search in <code class="inline">localStorage</code> and reload it when the page opens.</li><li>Stretch goal: also fetch the user's repositories in parallel with <code class="inline">Promise.all</code> and list the five most recently updated.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<div class="quiz-mount" data-id="js-adv-c2" data-kind="check" data-title="Checkpoint: asynchronous code" data-count="4"><script type="application/json" class="quiz-data">{"id": "js-adv-c2", "kind": "check", "title": "Checkpoint: asynchronous code", "questions": [{"t": "mcq", "q": "What does an <code class=\"inline\">async<\/code> function always return?", "o": ["Nothing", "A promise", "A callback", "The value of the last line"], "a": 1, "why": "Even if you <code class=\"inline\">return 5<\/code>, an async function wraps it in a promise that resolves to 5."}, {"t": "mcq", "q": "What does <code class=\"inline\">fetch<\/code> do when the server answers with status 404?", "o": ["Throws a syntax error", "Retries automatically", "Rejects the promise", "Resolves normally, with <code class=\"inline\">response.ok<\/code> set to false"], "a": 3, "why": "<code class=\"inline\">fetch<\/code> only rejects on network failure. Always check <code class=\"inline\">response.ok<\/code> yourself."}, {"t": "mcq", "q": "In what order does this print? <code class=\"inline\">console.log(\"A\"); setTimeout(() =&gt; console.log(\"B\"), 0); console.log(\"C\");<\/code>", "o": ["B A C", "C A B", "A C B", "A B C"], "a": 2, "why": "The timer callback runs only after the current synchronous code finishes."}, {"t": "tf", "q": "Two <code class=\"inline\">await<\/code> statements one after another run at the same time.", "a": false, "why": "They run in sequence. Use <code class=\"inline\">Promise.all<\/code> to run independent jobs in parallel."}]}</script></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Common mistakes in advanced JavaScript</div><div class="callout-body"><ul><li><strong>Forgetting <code class="inline">await</code></strong>, then using a promise as if it were its value.</li><li><strong>Assuming <code class="inline">fetch</code> rejects on HTTP errors.</strong> Check <code class="inline">response.ok</code>.</li><li><strong>Using <code class="inline">await</code> in a loop</strong> over independent jobs, making everything slow. Use <code class="inline">Promise.all</code>.</li><li><strong>Swallowing errors</strong> with empty <code class="inline">catch</code> blocks.</li><li><strong>Losing <code class="inline">this</code></strong> when passing a method as a callback.</li><li><strong>Mutating shared objects</strong> when you meant to copy (use spread).</li><li><strong>Using <code class="inline">||</code> for defaults</strong> when <code class="inline">0</code> or an empty string are valid values. Use <code class="inline">??</code>.</li></ul></div></aside>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>A closure is a function carrying the variables from where it was created. It gives you private state.</li><li>Classes create objects with a shared blueprint. <code class="inline">extends</code> inherits, <code class="inline">#field</code> is private, and <code class="inline">this</code> depends on the call.</li><li>Modules (<code class="inline">import</code>/<code class="inline">export</code>) give each file its own scope.</li><li>JavaScript is single-threaded and uses the event loop to handle waiting jobs. Promises and <code class="inline">async</code>/<code class="inline">await</code> make that readable.</li><li><code class="inline">fetch</code> returns a promise, does not reject on HTTP errors, and speaks JSON.</li><li>Use <code class="inline">Promise.all</code> for parallel work and handle errors where you can act on them.</li><li>Optional chaining, <code class="inline">??</code>, destructuring and spread make modern code shorter and safer.</li><li>TypeScript adds checked types on top of JavaScript.</li></ul></section>
+<div class="quiz-mount" data-id="js-adv" data-kind="test" data-title="Module test: Advanced JavaScript" data-count="11"><script type="application/json" class="quiz-data">{"id": "js-adv", "kind": "test", "title": "Module test: Advanced JavaScript", "questions": [{"t": "mcq", "q": "What will this print? <code class=\"inline\">const f = () =&gt; { let n = 0; return () =&gt; ++n; }; const c = f(); c(); console.log(c());<\/code>", "o": ["2", "1", "0", "undefined"], "a": 0, "why": "The inner function keeps its own <code class=\"inline\">n<\/code>. The first call makes it 1 and the second makes it 2."}, {"t": "mcq", "q": "Which keyword creates an instance of a class?", "o": ["<code class=\"inline\">create<\/code>", "<code class=\"inline\">new<\/code>", "<code class=\"inline\">make<\/code>", "<code class=\"inline\">class<\/code>"], "a": 1, "why": "<code class=\"inline\">new Account(\"Ada\")<\/code> runs the constructor and returns a new instance."}, {"t": "mcq", "q": "What does <code class=\"inline\">user?.address?.city<\/code> return when <code class=\"inline\">user.address<\/code> is <code class=\"inline\">null<\/code>?", "o": ["It throws a TypeError", "An empty string", "<code class=\"inline\">undefined<\/code>", "<code class=\"inline\">null<\/code>"], "a": 2, "why": "Optional chaining stops at the first null or undefined and gives <code class=\"inline\">undefined<\/code>."}, {"t": "mcq", "q": "What does <code class=\"inline\">0 ?? 10<\/code> evaluate to?", "o": ["0", "undefined", "10", "null"], "a": 0, "why": "<code class=\"inline\">??<\/code> only replaces <code class=\"inline\">null<\/code> and <code class=\"inline\">undefined<\/code>. Zero is a valid value, so it stays."}, {"t": "mcq", "q": "Which is the correct way to wait for two independent promises at the same time?", "o": ["<code class=\"inline\">await Promise.all([a, b])<\/code>", "<code class=\"inline\">Promise.wait(a, b)<\/code>", "<code class=\"inline\">a.then(b)<\/code>", "<code class=\"inline\">await a; await b;<\/code>"], "a": 0, "why": "<code class=\"inline\">Promise.all<\/code> starts both together and finishes when both have finished."}, {"t": "mcq", "q": "Inside an <code class=\"inline\">async<\/code> function, what is the effect of <code class=\"inline\">await somePromise<\/code>?", "o": ["It freezes the whole browser tab until the promise settles", "It cancels the promise", "It pauses that function until the promise settles, while the rest of the page keeps working", "It converts the promise to a callback"], "a": 2, "why": "<code class=\"inline\">await<\/code> only suspends the async function, not the event loop."}, {"t": "mcq", "q": "What is the output of <code class=\"inline\">console.log(\"1\"); Promise.resolve().then(() =&gt; console.log(\"2\")); console.log(\"3\");<\/code>?", "o": ["1 2 3", "2 1 3", "1 3 2", "3 2 1"], "a": 2, "why": "The <code class=\"inline\">.then<\/code> callback is queued and runs after the synchronous code has finished."}, {"t": "tf", "q": "<code class=\"inline\">JSON.parse(\"{ name: 'Ada' }\")<\/code> works because it is valid JavaScript.", "a": false, "why": "JSON requires double-quoted keys and strings. That text is a valid JavaScript object literal but is not valid JSON, and <code class=\"inline\">JSON.parse<\/code> throws."}, {"t": "tf", "q": "A <code class=\"inline\">#private<\/code> class field can be read from outside the class.", "a": false, "why": "Private fields are only accessible inside the class body."}, {"t": "short", "q": "Which method turns a JavaScript value into JSON text? Type the full call without arguments, such as <code class=\"inline\">JSON.something<\/code>.", "a": ["JSON.stringify"], "why": "<code class=\"inline\">JSON.stringify<\/code> serializes a value into text. <code class=\"inline\">JSON.parse<\/code> reverses it."}, {"t": "multi", "q": "Which of these are true about <code class=\"inline\">export<\/code> and <code class=\"inline\">import<\/code>? Select all that apply.", "o": ["Every variable is automatically global", "A module can have one default export", "In a page, you load a module with <code class=\"inline\">type=\"module\"<\/code>", "A module's variables are private unless exported"], "a": [1, 2, 3], "why": "Modules isolate their scope. Nothing is global unless you attach it deliberately."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="js-adv.profile-finder" data-req="9" data-stretch="3" aria-labelledby="pj-js-adv.profile-finder"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-js-adv.profile-finder">GitHub profile finder</h3><div class="pj-meta"><span>3-4 hours</span><span>Intermediate</span><span>Skills: fetch, promises and async/await, error handling, modules, debouncing</span></div></div><div class="pj-body"><div class="pj-brief"><p>Build a small search tool that looks up a GitHub user and shows their avatar, name, bio, follower count and most recent repositories. It uses the public GitHub API, which needs no key. The goal is to handle everything that can go wrong with a network request: loading, success, not found, rate limiting and no connection.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>A labelled search field and button. Submitting with Enter works, and empty input is rejected with a message.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>The data is fetched from <code class="inline">https://api.github.com/users/&lt;name&gt;</code> and the repositories from the <code class="inline">repos_url</code> in that response, using <code class="inline">fetch</code> with <code class="inline">async</code> and <code class="inline">await</code>.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>The interface has four visible states: idle, loading (with a text or spinner and <code class="inline">aria-busy</code>), success and error. Only one is shown at a time.</span></label></li><li><label><input type="checkbox" data-k="r3"><span>A 404 shows "No user found for ...", a 403 or 429 explains that the rate limit has been reached, and a network failure shows a retry button.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>Check <code class="inline">response.ok</code> before reading the body. A failed request must never be shown as a success.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>Starting a new search cancels the previous request with <code class="inline">AbortController</code>, so an old slow answer can never overwrite a newer one.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>The code is split into at least two ES modules (for example <code class="inline">api.js</code> for network calls and <code class="inline">ui.js</code> for drawing), with exports and imports.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>Show the five most recently updated repositories, each with its name as a link, language and star count. All text from the API is inserted with <code class="inline">textContent</code> or a safe template, never raw HTML.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>Remember the last successful search in <code class="inline">localStorage</code> and load it when the page opens.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Sketch the four states on paper and decide what the page looks like in each.</li><li>Write <code class="inline">api.js</code> with a <code class="inline">getUser(name, signal)</code> function that throws a custom error carrying the status code.</li><li>Write <code class="inline">ui.js</code> with <code class="inline">showLoading</code>, <code class="inline">showUser</code>, <code class="inline">showError</code> and <code class="inline">showIdle</code>.</li><li>Wire them together in <code class="inline">main.js</code>, with a <code class="inline">try</code>, <code class="inline">catch</code> and <code class="inline">finally</code> around the request.</li><li>Add the <code class="inline">AbortController</code> and test it by searching two names quickly one after the other.</li><li>Test the failures: a made-up user name, turning off the network in the developer tools, and (if you can) the rate limit.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// api.js
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
+
+export async function getUser(name, signal) {
+  const res = await fetch(`https://api.github.com/users/${encodeURIComponent(name)}`, { signal });
+  if (!res.ok) {
+    throw new ApiError("Request failed", res.status);
+  }
+  return res.json();
+}
+
+// TODO: getRepos(url, signal)
+
+// ------------------------------------------------------------
+// main.js (a second file)
+import { getUser, ApiError } from "./api.js";
+
+let controller = null;
+
+async function search(name) {
+  if (controller) controller.abort();
+  controller = new AbortController();
+  try {
+    // TODO: show loading, call getUser, show the result
+  } catch (err) {
+    if (err.name === "AbortError") return; // a newer search replaced this one
+    // TODO: show the right error message
+  }
+}</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>ES modules need <code class="inline">type="module"</code> on the script tag and must be served over http, not opened from the file system. Use a tiny local server.</li><li><code class="inline">encodeURIComponent</code> protects the URL if the user types strange characters.</li><li>An aborted request rejects with an error named <code class="inline">AbortError</code>. That is not a real failure and should not show an error message.</li><li><code class="inline">finally</code> is a good place to turn off the loading state.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Debounce the input so it searches 400 milliseconds after the user stops typing.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Cache results in a <code class="inline">Map</code> so a repeat search is instant.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Add keyboard focus management: after a search, move focus to the results heading.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Error handling</strong></td><td>Every failure path gives a clear message, and failed requests are never treated as success.</td></tr><tr><td><strong>Async correctness</strong></td><td>Cancelled requests are ignored, and the loading state always turns off.</td></tr><tr><td><strong>Structure</strong></td><td>Network code and drawing code are separate modules with small, named functions.</td></tr><tr><td><strong>Security</strong></td><td>API data is never inserted as HTML, and user input is encoded in the URL.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The project folder with the modules and HTML file.</li><li>A table of the failure cases you tested and what the page showed.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-js-adv.profile-finder">Link to your work (optional)</label><input class="field" id="pjl-js-adv.profile-finder" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-js-adv.profile-finder">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-js-adv.profile-finder" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

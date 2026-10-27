@@ -1,0 +1,39 @@
+--- /tmp/app.before.js	2026-10-19 09:56:37.755059219 +0000
++++ js/app.js	2026-10-19 09:57:00.143059219 +0000
+@@ -665,7 +665,13 @@
+ }
+ 
+ /* ---------- Offline / install ---------- */
+-function updateOnlineStatus() { $('offlineBanner').classList.toggle('show', !navigator.onLine); if (navigator.onLine) scheduleSync(); }
++/* The offline banner is sticky above the top bar, so everything fixed below the header follows --banner-h. */
++function syncBannerHeight() {
++  const b = $('offlineBanner');
++  document.documentElement.style.setProperty('--banner-h', b.classList.contains('show') ? b.offsetHeight + 'px' : '0px');
++}
++function updateOnlineStatus() { $('offlineBanner').classList.toggle('show', !navigator.onLine); syncBannerHeight(); if (navigator.onLine) scheduleSync(); }
++window.addEventListener('resize', syncBannerHeight);
+ let deferredInstall = null;
+ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; $('installBtn').classList.remove('hidden'); });
+ 
+@@ -681,12 +687,19 @@
+   window.addEventListener('offline', updateOnlineStatus);
+ 
+   const sidebar = $('sidebar'), scrim = $('scrim'), menuBtn = $('menuBtn');
+-  const setMenu = (open) => { sidebar.classList.toggle('open', open); scrim.classList.toggle('show', open); menuBtn.setAttribute('aria-expanded', open); menuBtn.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); };
++  const OVERLAY_MAX = 1240;                       // up to this width the notes panel overlays the page (with a scrim)
++  const setMenu = (open) => { if (open && typeof setNotes === 'function') setNotes(false); sidebar.classList.toggle('open', open); scrim.classList.toggle('show', open); menuBtn.setAttribute('aria-expanded', open); menuBtn.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); };
+   menuBtn.addEventListener('click', () => setMenu(!sidebar.classList.contains('open')));
+   scrim.addEventListener('click', () => { setMenu(false); setNotes(false); });
+ 
+   const notes = $('notesPanel');
+-  const setNotes = (open) => { notes.classList.toggle('open', open); $('notesToggle').setAttribute('aria-expanded', open); if (open) { if (innerWidth <= 960) scrim.classList.add('show'); $('notesTextarea').focus(); } else if (!sidebar.classList.contains('open')) scrim.classList.remove('show'); };
++  const setNotes = (open) => {
++    if (open) setMenu(false);
++    notes.classList.toggle('open', open); document.body.classList.toggle('notes-open', open);
++    $('notesToggle').setAttribute('aria-expanded', open);
++    if (open) { if (innerWidth <= OVERLAY_MAX) scrim.classList.add('show'); $('notesTextarea').focus(); }
++    else if (!sidebar.classList.contains('open')) scrim.classList.remove('show');
++  };
+   $('notesToggle').addEventListener('click', () => setNotes(!notes.classList.contains('open')));
+   $('notesClose').addEventListener('click', () => { setNotes(false); $('notesToggle').focus(); });
+   $('notesTextarea').addEventListener('input', () => { clearTimeout(init._t); init._t = setTimeout(saveNotes, 600); });

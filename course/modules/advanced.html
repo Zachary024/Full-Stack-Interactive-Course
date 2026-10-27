@@ -1,0 +1,431 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Engineering practice</span><span>Module 17</span><span>220 min</span><span>Advanced</span></div><h1>Software Engineering Practice</h1><p class="lede">Object-oriented design, concurrency, testing, algorithms and complexity, clean code and packaging. Taught with the same ideas in many languages.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Model a problem with classes, inheritance, interfaces and polymorphism, and know when to prefer composition.</li><li>Explain concurrency, parallelism, race conditions and deadlocks, and use each language's tools safely.</li><li>Write unit tests, apply test-driven development and design testable code.</li><li>Estimate how an algorithm scales using Big-O notation.</li><li>Write clean, readable code, and refactor with confidence.</li><li>Package and share code with each language's package manager.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Programming Fundamentals and a working knowledge of at least one language from the course. The examples show seven languages side by side, so use the tabs to read the one you are learning. Ideas matter more than syntax here.</p></section>
+<h2 id="from-scripts-to-software">From scripts to software</h2>
+<p>A script of fifty lines needs little structure. A system of fifty thousand lines, changed by ten people over five years, is a different animal. The skills in this module are what keep it understandable, changeable and correct: <strong>modelling</strong> with objects, handling <strong>many things at once</strong>, <strong>proving</strong> it works with tests, keeping it <strong>fast enough</strong>, and keeping it <strong>clean</strong>.</p>
+<aside class="callout callout-note"><div class="callout-title">This module is language-neutral on purpose</div><div class="callout-body"><p>Object-oriented design, <button type="button" class="term" data-term="Concurrency" data-def="Making progress on several tasks during the same period of time, even if they do not run at the same instant.">concurrency</button>, testing and complexity are not tied to Python, Java or <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button>. Learn the idea once, and then look up the syntax in whichever language you use. Where the languages differ in an interesting way, the module points it out.</p></div></aside>
+<h2 id="object-oriented-design">Object-oriented design</h2>
+<h3 id="classes-objects-and-encapsulation">Classes, objects and encapsulation</h3>
+<p>A <strong>class</strong> bundles <strong>data</strong> (fields) with the <strong>behaviour</strong> (methods) that works on it. <strong><button type="button" class="term" data-term="Encapsulation" data-def="Keeping an object&#x27;s data private and exposing only safe ways to use it.">Encapsulation</button></strong> means hiding the internals and exposing a small, safe interface: a bank account lets you <code class="inline">deposit</code>, but you cannot directly set its balance to a million.</p>
+<h3 id="inheritance-and-polymorphism">Inheritance and polymorphism</h3>
+<p><button type="button" class="term" data-term="Inheritance" data-def="When one class reuses and extends the features of another class.">Inheritance</button> lets one class build on another: a <code class="inline">Dog</code> <em>is an</em> <code class="inline">Animal</code> and gets its fields and methods, and may change some. <button type="button" class="term" data-term="Polymorphism" data-def="Different kinds of objects responding to the same method call in their own way.">Polymorphism</button> ("many forms") is the payoff: code can treat different kinds of object uniformly, and each one responds in its own way.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 576 120" role="img" aria-label="An inheritance hierarchy" style="max-width:576px;min-width:415px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-advanced1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><path d="M288.0 44 V60.0 H96.0 V76" class="fg-line" fill="none"/><path d="M288.0 44 V60.0 H288.0 V76" class="fg-line" fill="none"/><path d="M288.0 44 V60.0 H480.0 V76" class="fg-line" fill="none"/><rect x="16.0" y="76" width="160.0" height="34" rx="7" class="fg-box"/><text x="96.0" y="97.5" text-anchor="middle" class="fg-mono">Dog (speak: Woof)</text><rect x="208.0" y="76" width="160.0" height="34" rx="7" class="fg-box"/><text x="288.0" y="97.5" text-anchor="middle" class="fg-mono">Cat (speak: Meow)</text><rect x="392.0" y="76" width="176.0" height="34" rx="7" class="fg-box"/><text x="480.0" y="97.5" text-anchor="middle" class="fg-mono">Bird (speak: Tweet)</text><rect x="196.0" y="10" width="184.0" height="34" rx="7" class="fg-box"/><text x="288.0" y="31.5" text-anchor="middle" class="fg-mono">Animal (name, speak)</text></svg></div><figcaption><span class="fig-n">Figure 1.</span> An inheritance hierarchy</figcaption></figure>
+<p>The loop below does not know or care which animal it is dealing with, and calls <code class="inline">speak()</code> on each. The right version runs. That is polymorphism.</p>
+<div class="code-tabs" data-title="Polymorphism: one call, different behaviours"><div class="code-tabs-title">Polymorphism: one call, different behaviours</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>class Animal {
+  constructor(name) { this.name = name; }
+  speak() { return this.name + " makes a sound"; }
+}
+class Dog extends Animal {
+  speak() { return this.name + " says Woof"; }
+}
+class Cat extends Animal {
+  speak() { return this.name + " says Meow"; }
+}
+
+for (const a of [new Dog("Rex"), new Cat("Tom")]) {
+  console.log(a.speak());
+}</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return self.name + " makes a sound"
+
+
+class Dog(Animal):
+    def speak(self):
+        return self.name + " says Woof"
+
+
+class Cat(Animal):
+    def speak(self):
+        return self.name + " says Meow"
+
+
+for a in [Dog("Rex"), Cat("Tom")]:
+    print(a.speak())</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>public class Main {
+    static class Animal {
+        String name;
+        Animal(String name) { this.name = name; }
+        String speak() { return name + " makes a sound"; }
+    }
+    static class Dog extends Animal {
+        Dog(String name) { super(name); }
+        @Override String speak() { return name + " says Woof"; }
+    }
+    static class Cat extends Animal {
+        Cat(String name) { super(name); }
+        @Override String speak() { return name + " says Meow"; }
+    }
+
+    public static void main(String[] args) {
+        Animal[] animals = { new Dog("Rex"), new Cat("Tom") };
+        for (Animal a : animals) {
+            System.out.println(a.speak());
+        }
+    }
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>Animal[] animals = { new Dog("Rex"), new Cat("Tom") };
+foreach (var a in animals)
+{
+    Console.WriteLine(a.Speak());
+}
+
+class Animal
+{
+    public string Name;
+    public Animal(string name) { Name = name; }
+    public virtual string Speak() =&gt; Name + " makes a sound";
+}
+class Dog : Animal
+{
+    public Dog(string name) : base(name) { }
+    public override string Speak() =&gt; Name + " says Woof";
+}
+class Cat : Animal
+{
+    public Cat(string name) : base(name) { }
+    public override string Speak() =&gt; Name + " says Meow";
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+class Animal {
+    public function __construct(protected string $name) {}
+    public function speak(): string { return $this-&gt;name . " makes a sound"; }
+}
+class Dog extends Animal {
+    public function speak(): string { return $this-&gt;name . " says Woof"; }
+}
+class Cat extends Animal {
+    public function speak(): string { return $this-&gt;name . " says Meow"; }
+}
+
+foreach ([new Dog("Rex"), new Cat("Tom")] as $a) {
+    echo $a-&gt;speak() . "\n";
+}</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>package main
+
+import "fmt"
+
+// Go has no inheritance. Types satisfy an interface just by having the method.
+type Speaker interface {
+	Speak() string
+}
+
+type Dog struct{ Name string }
+type Cat struct{ Name string }
+
+func (d Dog) Speak() string { return d.Name + " says Woof" }
+func (c Cat) Speak() string { return c.Name + " says Meow" }
+
+func main() {
+	for _, a := range []Speaker{Dog{"Rex"}, Cat{"Tom"}} {
+		fmt.Println(a.Speak())
+	}
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>class Animal
+  def initialize(name)
+    @name = name
+  end
+
+  def speak
+    "#{@name} makes a sound"
+  end
+end
+
+class Dog &lt; Animal
+  def speak
+    "#{@name} says Woof"
+  end
+end
+
+class Cat &lt; Animal
+  def speak
+    "#{@name} says Meow"
+  end
+end
+
+[Dog.new("Rex"), Cat.new("Tom")].each { |a| puts a.speak }</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>Rex says Woof
+Tom says Meow</pre></div>
+<p>Notice Go's tab. Go deliberately has no inheritance: a type satisfies an interface simply by having the right methods. It is a good reminder that polymorphism is the idea, and inheritance is just one way to get it.</p>
+<h3 id="prefer-composition-to-inheritance">Prefer composition to inheritance</h3>
+<p>Deep inheritance trees become rigid: changing the base class risks breaking every child. A common rule is <strong>"has a" over "is a"</strong>. Instead of <code class="inline">class Car extends Engine</code>, give a <code class="inline">Car</code> an <code class="inline">Engine</code>. Build behaviour out of small parts you can swap.</p>
+<h3 id="solid-principles">SOLID principles</h3>
+<p>Five guidelines for classes that stay easy to change.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Letter</th><th scope="col">Principle</th><th scope="col">In plain words</th></tr></thead><tbody><tr><td><strong>S</strong></td><td>Single responsibility</td><td>A class should have one reason to change</td></tr><tr><td><strong>O</strong></td><td>Open/closed</td><td>Add behaviour by adding code, not by editing working code</td></tr><tr><td><strong>L</strong></td><td>Liskov substitution</td><td>A child must be usable anywhere its parent is expected</td></tr><tr><td><strong>I</strong></td><td>Interface segregation</td><td>Several small interfaces are better than one giant one</td></tr><tr><td><strong>D</strong></td><td>Dependency inversion</td><td>Depend on abstractions (an interface), not on concrete details</td></tr></tbody></table></div>
+<p>The last one makes testing possible: a <code class="inline">OrderService</code> that receives a <code class="inline">PaymentGateway</code> interface can be given a fake gateway in tests, with no real money.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">Over-engineering</div><div class="callout-body"><p>Beginners who learn design patterns want to use all of them. Start with the simplest thing that works. Introduce a class hierarchy, an interface or a pattern when you feel real pain: duplicated code, or a change that touches ten files. Three similar lines of code are often better than a premature abstraction.</p></div></aside>
+<div class="challenge" data-id="advanced.memoize" data-title="Memoise a function"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Memoise a function</h3></div><div class="challenge-body"><p><strong>Memoisation</strong> caches the results of a function so that repeated calls with the same arguments return instantly. Write <code class="inline">memoize(fn)</code>, returning a new function that calls <code class="inline">fn</code> only the first time it sees a given set of arguments, and remembers the result. Use <code class="inline">JSON.stringify(args)</code> as the <button type="button" class="term" data-term="Cache" data-def="A saved copy of something so it can be reused quickly without fetching or computing it again.">cache</button> key.</p></div><script type="text/plain" data-part="starter">function memoize(fn) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('returns the same results', () => { const f = memoize((a, b) => a + b); assert.equal(f(2, 3), 5); assert.equal(f(2, 3), 5); });
+test('calls the function once per argument set', () => { let calls = 0; const f = memoize((n) => { calls++; return n * 2; }); f(4); f(4); f(4); assert.equal(calls, 1); });
+test('different arguments are different entries', () => { let calls = 0; const f = memoize((n) => { calls++; return n; }); f(1); f(2); assert.equal(calls, 2); });
+test('caches falsy results', () => { let calls = 0; const f = memoize(() => { calls++; return 0; }); f(); f(); assert.equal(calls, 1); });
+test('speeds up recursion', () => { const fib = memoize((n) => (n < 2 ? n : fib(n - 1) + fib(n - 2))); assert.equal(fib(40), 102334155); });</script><script type="text/plain" data-part="solution">function memoize(fn) {
+  const cache = new Map();
+  return function (...args) {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+    return result;
+  };
+}</script><div class="hint-text" hidden>Create a <code class="inline">Map</code> outside the returned function. Inside, build <code class="inline">const key = JSON.stringify(args)</code>.</div><div class="hint-text" hidden>Use <code class="inline">cache.has(key)</code> rather than checking the value, so that results like <code class="inline">0</code> or <code class="inline">undefined</code> are cached too.</div></div>
+<div class="quiz-mount" data-id="advanced-c1" data-kind="check" data-title="Checkpoint: object-oriented design" data-count="3"><script type="application/json" class="quiz-data">{"id": "advanced-c1", "kind": "check", "title": "Checkpoint: object-oriented design", "questions": [{"t": "mcq", "q": "What is polymorphism?", "o": ["Treating different kinds of object uniformly, each responding in its own way", "Running code in parallel", "Hiding data inside a class", "Copying a class"], "a": 0, "why": "A loop can call <code class=\"inline\">speak()<\/code> on any animal, and the right version runs."}, {"t": "mcq", "q": "Which is the better design guideline?", "o": ["Always use deep inheritance trees", "Avoid interfaces", "Prefer composition (\"has a\") over inheritance (\"is a\") when behaviour should be swappable", "Put everything in one class"], "a": 2, "why": "Composition is more flexible than rigid inheritance hierarchies."}, {"t": "tf", "q": "Go supports polymorphism even though it has no class inheritance.", "a": true, "why": "Go uses interfaces. Any type with the right methods satisfies the interface."}]}</script></div>
+<h2 id="concurrency">Concurrency</h2>
+<p>Computers do many things at once: serve thousands of users, download files while you type, run animations while waiting for a <button type="button" class="term" data-term="Database" data-def="An organised store of data that programs can save to and query efficiently.">database</button>. <strong>Concurrency</strong> means structuring a program to handle many tasks that overlap in time. <strong>Parallelism</strong> means actually running them at the same instant on several CPU cores. You can have concurrency without parallelism (one cook switching between pots) and parallelism needs concurrency to be useful (many cooks).</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Model</th><th scope="col">How it works</th><th scope="col">Where you meet it</th></tr></thead><tbody><tr><td><strong>Event loop and async/await</strong></td><td>One thread, switching whenever a task waits for I/O</td><td>JavaScript, Python <code class="inline">asyncio</code>, C#, Rust</td></tr><tr><td><strong>Threads</strong></td><td>Several lines of execution sharing memory</td><td>Java, C#, Python (with limits), Ruby</td></tr><tr><td><strong>Lightweight tasks</strong></td><td>Cheap, runtime-managed tasks</td><td>Go goroutines, Kotlin coroutines</td></tr><tr><td><strong>Processes</strong></td><td>Separate programs with separate memory</td><td>Everywhere. Safest isolation</td></tr><tr><td><strong>Queues and workers</strong></td><td>Jobs placed in a queue for background workers</td><td>Email sending, video encoding, reports</td></tr></tbody></table></div>
+<p>Here is the same job in each: square the numbers 1 to 4 in separate workers, then add the results. The answer is 1 + 4 + 9 + 16 = 30.</p>
+<div class="code-tabs" data-title="Do four jobs concurrently, then combine the results"><div class="code-tabs-title">Do four jobs concurrently, then combine the results</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const square = (n) =&gt; new Promise((resolve) =&gt; setTimeout(() =&gt; resolve(n * n), 10));
+
+Promise.all([1, 2, 3, 4].map(square)).then((results) =&gt; {
+  console.log(results.reduce((a, b) =&gt; a + b, 0));
+});</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>from concurrent.futures import ThreadPoolExecutor
+
+
+def square(n):
+    return n * n
+
+
+with ThreadPoolExecutor(max_workers=4) as pool:
+    results = list(pool.map(square, [1, 2, 3, 4]))
+print(sum(results))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>import java.util.*;
+import java.util.concurrent.*;
+
+public class Main {
+    public static void main(String[] args) throws Exception {
+        ExecutorService pool = Executors.newFixedThreadPool(4);
+        List&lt;Future&lt;Integer&gt;&gt; futures = new ArrayList&lt;&gt;();
+        for (int n = 1; n &lt;= 4; n++) {
+            final int x = n;
+            futures.add(pool.submit(() -&gt; x * x));
+        }
+        int total = 0;
+        for (Future&lt;Integer&gt; f : futures) total += f.get();
+        pool.shutdown();
+        System.out.println(total);
+    }
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>using System.Linq;
+using System.Threading.Tasks;
+
+var tasks = Enumerable.Range(1, 4).Select(n =&gt; Task.Run(() =&gt; n * n));
+int[] results = await Task.WhenAll(tasks);
+Console.WriteLine(results.Sum());</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	results := make([]int, 4)
+	var wg sync.WaitGroup
+	for i := 0; i &lt; 4; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			n := i + 1
+			results[i] = n * n
+		}(i)
+	}
+	wg.Wait()
+	total := 0
+	for _, r := range results {
+		total += r
+	}
+	fmt.Println(total)
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>threads = [1, 2, 3, 4].map { |n| Thread.new { n * n } }
+puts threads.map(&amp;:value).sum</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>30</pre></div>
+<p>PHP is absent from the tabs on purpose: classic PHP runs each request in its own short-lived process, so web code rarely needs threads. PHP uses queues, background workers, or event-loop libraries when it does.</p>
+<h3 id="the-dangers-of-shared-memory">The dangers of shared memory</h3>
+<p>When several threads change the <strong>same data</strong>, the order of their steps can corrupt it. Take a counter incremented by two threads. Each increment is really three steps: read, add one, write.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 630 294" role="img" aria-label="A race condition: two threads lose an update" style="max-width:630px;min-width:454px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-advanced2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><line x1="105.0" y1="54" x2="105.0" y2="288.0" class="fg-life"/><rect x="50.0" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="105.0" y="38.0" text-anchor="middle" class="fg-title">Thread A</text><line x1="315.0" y1="54" x2="315.0" y2="288.0" class="fg-life"/><rect x="260.0" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="315.0" y="38.0" text-anchor="middle" class="fg-title">Counter</text><line x1="525.0" y1="54" x2="525.0" y2="288.0" class="fg-life"/><rect x="470.0" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="525.0" y="38.0" text-anchor="middle" class="fg-title">Thread B</text><line x1="109.0" y1="94" x2="311.0" y2="94" class="fg-line" marker-end="url(#ah-advanced2)"/><text x="210.0" y="86" text-anchor="middle" class="fg-msg">read: 5</text><line x1="521.0" y1="144" x2="319.0" y2="144" class="fg-line" marker-end="url(#ah-advanced2)"/><text x="420.0" y="136" text-anchor="middle" class="fg-msg">read: 5</text><line x1="109.0" y1="194" x2="311.0" y2="194" class="fg-line" marker-end="url(#ah-advanced2)"/><text x="210.0" y="186" text-anchor="middle" class="fg-msg">write: 6</text><line x1="521.0" y1="244" x2="319.0" y2="244" class="fg-line" marker-end="url(#ah-advanced2)"/><text x="420.0" y="236" text-anchor="middle" class="fg-msg">write: 6</text></svg></div><figcaption><span class="fig-n">Figure 2.</span> A race condition: two threads lose an update</figcaption></figure>
+<p>Two increments happened but the counter shows 6, not 7. That is a <strong><button type="button" class="term" data-term="Race condition" data-def="A bug where the result depends on which of two tasks happens to finish first.">race condition</button></strong>, and it is one of the hardest bugs to find, because it appears only occasionally.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Problem</th><th scope="col">What happens</th><th scope="col">Remedy</th></tr></thead><tbody><tr><td><strong>Race condition</strong></td><td>Result depends on unlucky timing</td><td>Locks (mutexes), atomic operations, or avoid shared mutable data</td></tr><tr><td><strong>Deadlock</strong></td><td>Two tasks each wait for a lock the other holds, and both wait forever</td><td>Always take locks in the same order, hold them briefly, use timeouts</td></tr><tr><td><strong>Starvation</strong></td><td>A task never gets its turn</td><td>Fair scheduling and queues</td></tr></tbody></table></div>
+<aside class="callout callout-best"><div class="callout-title">The safest concurrency is no shared mutable state</div><div class="callout-body"><p>Prefer to <strong>pass messages</strong> or <strong>return results</strong> rather than modify shared variables (Go's proverb: "Do not communicate by sharing memory. Share memory by communicating"). Make data <button type="button" class="term" data-term="Immutable" data-def="Cannot be changed after it is created. To change it, you make a new copy.">immutable</button> where possible. When you must share, protect it with a lock, and keep the locked section tiny. JavaScript's single-threaded model avoids most races: code between two <code class="inline">await</code>s cannot be interrupted.</p></div></aside>
+<div class="quiz-mount" data-id="advanced-c2" data-kind="check" data-title="Checkpoint: concurrency" data-count="3"><script type="application/json" class="quiz-data">{"id": "advanced-c2", "kind": "check", "title": "Checkpoint: concurrency", "questions": [{"t": "mcq", "q": "What is a race condition?", "o": ["Two programs competing for the fastest speed", "A bug in which the result depends on the timing of operations on shared data", "A deadlock", "A very fast loop"], "a": 1, "why": "Interleaved steps can overwrite each other's changes, in ways that show up only occasionally."}, {"t": "mcq", "q": "Which describes concurrency, as distinct from parallelism?", "o": ["A synonym for threads", "Using a single task", "Several cores running at exactly the same time", "Structuring a program so that many tasks overlap in time, even on one core"], "a": 3, "why": "Concurrency is about structure. Parallelism is about simultaneous execution."}, {"t": "mcq", "q": "What is the best first strategy for avoiding concurrency bugs?", "o": ["Avoid shared mutable state by passing messages or returning results", "Remove all tests", "Add more locks everywhere", "Use bigger threads"], "a": 0, "why": "If tasks do not share changing data, there is nothing to race over."}]}</script></div>
+<h2 id="testing">Testing</h2>
+<p>You already test: you run the program and see whether it works. <strong>Automated tests</strong> do that checking for you in milliseconds, every time you change the code, and forever. They are what lets a team change old code without fear.</p>
+<figure class="figure"><div class="fig-body"><ul class="fg-layers" aria-label="The testing pyramid: many small tests, few large ones"><li class="fgl-row fgl-accent"><strong class="fgl-t">End-to-end tests</strong><span class="fgl-s">A real browser clicks through the whole app. Slow, few</span></li><li class="fgl-row"><strong class="fgl-t">Integration tests</strong><span class="fgl-s">Several parts together, for example the API and a test database. Moderate</span></li><li class="fgl-row"><strong class="fgl-t">Unit tests</strong><span class="fgl-s">One function or class alone. Very fast, very many</span></li></ul></div><figcaption><span class="fig-n">Figure 3.</span> The testing pyramid: many small tests, few large ones</figcaption></figure>
+<h3 id="anatomy-of-a-unit-test">Anatomy of a unit test</h3>
+<p>Every test follows <strong>Arrange, Act, Assert</strong>: set up the situation, do the thing, and check the result. Here is the same trivial test in each language's most common framework.</p>
+<div class="code-tabs" data-title="A unit test in each ecosystem"><div class="code-tabs-title">A unit test in each ecosystem</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// Vitest or Jest
+import { add } from "./math.js";
+
+test("adds two numbers", () =&gt; {
+  expect(add(2, 3)).toBe(5);
+});
+
+test("handles negatives", () =&gt; {
+  expect(add(-1, 1)).toBe(0);
+});</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span># pytest
+from mathlib import add
+
+
+def test_adds_two_numbers():
+    assert add(2, 3) == 5
+
+
+def test_handles_negatives():
+    assert add(-1, 1) == 0</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>// JUnit 5
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+class MathTest {
+    @Test
+    void addsTwoNumbers() {
+        assertEquals(5, Math2.add(2, 3));
+    }
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>// xUnit
+public class MathTests
+{
+    [Fact]
+    public void AddsTwoNumbers()
+    {
+        Assert.Equal(5, Calculator.Add(2, 3));
+    }
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+// PHPUnit
+use PHPUnit\Framework\TestCase;
+
+final class MathTest extends TestCase
+{
+    public function testAddsTwoNumbers(): void
+    {
+        $this-&gt;assertSame(5, add(2, 3));
+    }
+}</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>// Go's built-in testing package. File name ends in _test.go
+package mathlib
+
+import "testing"
+
+func TestAdd(t *testing.T) {
+	if got := Add(2, 3); got != 5 {
+		t.Errorf("Add(2, 3) = %d, want 5", got)
+	}
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span># Minitest
+require "minitest/autorun"
+
+class MathTest &lt; Minitest::Test
+  def test_adds_two_numbers
+    assert_equal 5, add(2, 3)
+  end
+end</pre></div>
+<h3 id="what-makes-a-good-test">What makes a good test?</h3>
+<ul><li><strong>Fast and independent.</strong> Tests must not depend on each other or on their order.</li><li><strong>One idea per test</strong>, with a name that reads like a sentence: <code class="inline">rejects_negative_deposit</code>.</li><li><strong>Test behaviour, not implementation.</strong> If a harmless refactor breaks a test, the test was too tied to the details.</li><li><strong>Cover the edges.</strong> Empty input, one item, the maximum, negative numbers, the wrong type.</li><li><strong>Use fakes (mocks) for slow or risky dependencies</strong>, such as the network, the clock and payment providers.</li></ul>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>A <button type="button" class="term" data-term="Test suite" data-def="A collection of tests.">test suite</button> is a smoke alarm for your code. You do not install one because you expect a fire today. You install it so that when something does go wrong, you find out in seconds, not after the whole house is gone.</p></div></aside>
+<h3 id="test-driven-development">Test-driven development</h3>
+<p><strong>TDD</strong> reverses the order: write a <strong>failing</strong> test first, then the smallest code to make it pass, then clean up.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 846 202" role="img" aria-label="Red, green, refactor" style="max-width:846px;min-width:609px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-advanced4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="192.7" height="66.0" rx="9" class="fg-box "/><text x="108.4" y="40.0" text-anchor="middle" class="fg-title">Red</text><text x="108.4" y="59.0" text-anchor="middle" class="fg-sub">write a test that fails</text><rect x="250.7" y="12.0" width="227.2" height="66.0" rx="9" class="fg-box fg-accent "/><text x="364.3" y="40.0" text-anchor="middle" class="fg-title">Green</text><text x="364.3" y="59.0" text-anchor="middle" class="fg-sub">write the least code to pass</text><line x1="207.7" y1="45.0" x2="247.7" y2="45.0" class="fg-line" marker-end="url(#ah-advanced4)"/><rect x="523.9" y="12.0" width="310.0" height="66.0" rx="9" class="fg-box "/><text x="678.9" y="40.0" text-anchor="middle" class="fg-title">Refactor</text><text x="678.9" y="59.0" text-anchor="middle" class="fg-sub">clean up, with the tests as a safety net</text><line x1="480.9" y1="45.0" x2="520.9" y2="45.0" class="fg-line" marker-end="url(#ah-advanced4)"/><rect x="330.1" y="124.0" width="185.8" height="66.0" rx="9" class="fg-box "/><text x="423.0" y="152.0" text-anchor="middle" class="fg-title">Repeat</text><text x="423.0" y="171.0" text-anchor="middle" class="fg-sub">for the next behaviour</text><path d="M678.9 81.0 V101.0 H423.0 V121.0" class="fg-line" fill="none" marker-end="url(#ah-advanced4)"/></svg></div><figcaption><span class="fig-n">Figure 4.</span> Red, green, refactor</figcaption></figure>
+<p>You have been doing TDD all course long: every coding challenge gave you tests first. Designing code that is easy to test tends to produce <strong>better design</strong> anyway: small functions with clear inputs and outputs, and dependencies passed in, not hidden inside.</p>
+<h2 id="algorithms-and-complexity">Algorithms and complexity</h2>
+<p>Two programs can give the same answer and differ enormously in speed once the data grows. <strong>Big-O notation</strong> describes how the work grows as the input size <em>n</em> grows, ignoring constants.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Big-O</th><th scope="col">Name</th><th scope="col">Example</th><th scope="col">1,000 items</th><th scope="col">1,000,000 items</th></tr></thead><tbody><tr><td>O(1)</td><td>Constant</td><td>Look up in a map or array by index</td><td>1 step</td><td>1 step</td></tr><tr><td>O(log n)</td><td>Logarithmic</td><td>Binary search in a sorted array</td><td>about 10 steps</td><td>about 20 steps</td></tr><tr><td>O(n)</td><td>Linear</td><td>Scan a list once</td><td>1,000</td><td>1,000,000</td></tr><tr><td>O(n log n)</td><td>Linearithmic</td><td>Good sorting algorithms</td><td>about 10,000</td><td>about 20,000,000</td></tr><tr><td>O(n²)</td><td>Quadratic</td><td>Compare every pair (nested loops)</td><td>1,000,000</td><td>one trillion</td></tr></tbody></table></div>
+<p>The jump from O(n) to O(n²) is why a page that works with 100 test rows freezes with 100,000 real ones. A very common beginner fix is to replace a nested loop with a <strong>map or set lookup</strong>, which turns O(n²) into O(n).</p>
+<p><strong><button type="button" class="term" data-term="Binary search" data-def="A fast way to find an item in a sorted list by repeatedly checking the middle and discarding half of what is left.">Binary search</button></strong> is the classic O(log n) idea: in a sorted list, look at the middle element. If it is too big, discard the upper half. If too small, discard the lower half. Repeat. A million items need only about twenty looks.</p>
+<div class="challenge" data-id="advanced.bsearch" data-title="Binary search"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Binary search</h3></div><div class="challenge-body"><p>Write <code class="inline">binarySearch(sorted, target)</code>. <code class="inline">sorted</code> is an array of numbers in ascending order. Return the <strong>index</strong> of <code class="inline">target</code>, or <strong>-1</strong> if it is not there. Use the halving method (not <code class="inline">indexOf</code>, which is O(n)).</p></div><script type="text/plain" data-part="starter">function binarySearch(sorted, target) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">const a = [1, 3, 5, 7, 9, 11, 13];
+test('finds a middle item', () => assert.equal(binarySearch(a, 7), 3));
+test('finds the first', () => assert.equal(binarySearch(a, 1), 0));
+test('finds the last', () => assert.equal(binarySearch(a, 13), 6));
+test('missing item', () => assert.equal(binarySearch(a, 6), -1));
+test('empty array', () => assert.equal(binarySearch([], 5), -1));
+test('single item found', () => assert.equal(binarySearch([4], 4), 0));
+test('large array is fast', () => {
+  const big = Array.from({ length: 1000000 }, (_, i) => i * 2);
+  let steps = 0;
+  const probe = new Proxy(big, { get(t, k) { if (typeof k === 'string' && /^\d+$/.test(k)) steps++; return t[k]; } });
+  assert.equal(binarySearch(probe, 999998), 499999);
+  assert(steps < 60, 'too many steps: ' + steps);
+});</script><script type="text/plain" data-part="solution">function binarySearch(sorted, target) {
+  let low = 0, high = sorted.length - 1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (sorted[mid] === target) return mid;
+    if (sorted[mid] < target) low = mid + 1;
+    else high = mid - 1;
+  }
+  return -1;
+}</script><div class="hint-text" hidden>Keep <code class="inline">low = 0</code> and <code class="inline">high = sorted.length - 1</code>. While <code class="inline">low &lt;= high</code>, take <code class="inline">mid = Math.floor((low + high) / 2)</code>.</div><div class="hint-text" hidden>If <code class="inline">sorted[mid]</code> is the target, return <code class="inline">mid</code>. If it is smaller, set <code class="inline">low = mid + 1</code>. Otherwise set <code class="inline">high = mid - 1</code>.</div></div>
+<div class="challenge" data-id="advanced.lru" data-title="Build an LRU cache"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Build an LRU cache</h3></div><div class="challenge-body"><p>A <strong>least-recently-used (LRU) cache</strong> keeps at most <code class="inline">capacity</code> entries. When it is full and a new key arrives, it throws out the entry that was used <strong>longest ago</strong>. Write a class <code class="inline">LRUCache</code> with a constructor taking the capacity, a <code class="inline">get(key)</code> method that returns the value or <code class="inline">undefined</code> (and counts as a "use"), and a <code class="inline">put(key, value)</code> method that stores a value (and counts as a "use"). Updating an existing key never causes an eviction.</p></div><script type="text/plain" data-part="starter">class LRUCache {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('stores and reads', () => { const c = new LRUCache(2); c.put('a', 1); assert.equal(c.get('a'), 1); });
+test('missing key', () => assert.equal(new LRUCache(2).get('zzz'), undefined));
+test('evicts the oldest', () => { const c = new LRUCache(2); c.put('a', 1); c.put('b', 2); c.put('c', 3); assert.equal(c.get('a'), undefined); assert.equal(c.get('c'), 3); });
+test('get refreshes a key', () => { const c = new LRUCache(2); c.put('a', 1); c.put('b', 2); c.get('a'); c.put('c', 3); assert.equal(c.get('b'), undefined); assert.equal(c.get('a'), 1); });
+test('updating does not evict', () => { const c = new LRUCache(2); c.put('a', 1); c.put('b', 2); c.put('a', 9); assert.equal(c.get('a'), 9); assert.equal(c.get('b'), 2); });
+test('capacity of one', () => { const c = new LRUCache(1); c.put('a', 1); c.put('b', 2); assert.equal(c.get('a'), undefined); assert.equal(c.get('b'), 2); });</script><script type="text/plain" data-part="solution">class LRUCache {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.map = new Map();
+  }
+  get(key) {
+    if (!this.map.has(key)) return undefined;
+    const value = this.map.get(key);
+    this.map.delete(key);
+    this.map.set(key, value);
+    return value;
+  }
+  put(key, value) {
+    if (this.map.has(key)) this.map.delete(key);
+    else if (this.map.size >= this.capacity) this.map.delete(this.map.keys().next().value);
+    this.map.set(key, value);
+  }
+}</script><div class="hint-text" hidden>A JavaScript <code class="inline">Map</code> remembers insertion order. To mark a key as most recent, delete it and set it again.</div><div class="hint-text" hidden>The oldest key is <code class="inline">map.keys().next().value</code>.</div></div>
+<h2 id="clean-code-and-refactoring">Clean code and refactoring</h2>
+<p>Code is read far more often than it is written, often by you, six months later. <strong>Clean code</strong> is code that a stranger can understand and safely change.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Habit</th><th scope="col">Why</th></tr></thead><tbody><tr><td><strong>Name things for what they mean.</strong> <code class="inline">daysUntilExpiry</code>, not <code class="inline">d</code> or <code class="inline">data2</code></td><td>The name is the cheapest documentation</td></tr><tr><td><strong>Small functions that do one thing</strong></td><td>Easy to name, test and reuse</td></tr><tr><td><strong>No magic numbers.</strong> <code class="inline">const MAX_ATTEMPTS = 5</code></td><td>The reader learns what the 5 means</td></tr><tr><td><strong>Avoid deep nesting.</strong> Return early on bad cases</td><td>Flat code is easier to follow</td></tr><tr><td><strong>Do not repeat yourself (DRY)</strong>, but do not over-abstract either</td><td>Duplication spreads bugs</td></tr><tr><td><strong>Keep it simple (KISS) and build only what you need (YAGNI)</strong></td><td>Unused flexibility is a cost</td></tr><tr><td><strong>Comment the <em>why</em>, not the <em>what</strong></em></td><td>The code shows what. Only you know why</td></tr><tr><td><strong>Consistent formatting, enforced by a tool</strong> (Prettier, Black, gofmt)</td><td>Ends style arguments</td></tr></tbody></table></div>
+<p><strong><button type="button" class="term" data-term="Refactoring" data-def="Improving the structure of code without changing what it does.">Refactoring</button></strong> is improving the structure of code without changing what it does. The safety net is your tests: refactor in small steps and run them after each step. Signs that code needs it ("code smells"): a function longer than a screen, copy-pasted blocks, a function with six parameters, a class that knows about everything, comments explaining confusing code that should be rewritten instead.</p>
+<p>Compare the same logic before and after:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// Before: nested, unclear
+function f(u) {
+  if (u) {
+    if (u.age &gt;= 18) {
+      if (u.verified) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// After: early return, clear names
+function canBuyAlcohol(user) {
+  if (!user) return false;
+  if (user.age &lt; 18) return false;
+  return user.verified;
+}</pre>
+<h3 id="code-review">Code review</h3>
+<p>A second pair of eyes catches bugs and spreads knowledge. As an <strong>author</strong>: keep changes small, explain the why, and review your own diff first. As a <strong>reviewer</strong>: be kind and specific, ask questions rather than issuing orders, and separate "must fix" from "nice to have". Review the code, never the person.</p>
+<h2 id="packaging-and-dependencies">Packaging and dependencies</h2>
+<p>Your code will use other people's code (<strong>dependencies</strong>), and others will use yours. Every ecosystem has a <strong>package manager</strong> and a <strong>manifest file</strong> that lists the dependencies and their versions.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Language</th><th scope="col">Package manager</th><th scope="col">Manifest and lock file</th><th scope="col">Registry</th></tr></thead><tbody><tr><td>JavaScript / TypeScript</td><td>npm, pnpm, yarn</td><td><code class="inline">package.json</code>, <code class="inline">package-lock.json</code></td><td>npm</td></tr><tr><td>Python</td><td>pip, uv, poetry</td><td><code class="inline">pyproject.toml</code>, <code class="inline">requirements.txt</code></td><td>PyPI</td></tr><tr><td>Java</td><td>Maven, Gradle</td><td><code class="inline">pom.xml</code>, <code class="inline">build.gradle</code></td><td>Maven Central</td></tr><tr><td>C#</td><td>NuGet (via <code class="inline">dotnet</code>)</td><td><code class="inline">.csproj</code></td><td>NuGet</td></tr><tr><td>PHP</td><td>Composer</td><td><code class="inline">composer.json</code>, <code class="inline">composer.lock</code></td><td>Packagist</td></tr><tr><td>Go</td><td>Go modules</td><td><code class="inline">go.mod</code>, <code class="inline">go.sum</code></td><td>Any Git host</td></tr><tr><td>Ruby</td><td>Bundler</td><td><code class="inline">Gemfile</code>, <code class="inline">Gemfile.lock</code></td><td>RubyGems</td></tr></tbody></table></div>
+<p>Good habits, whatever the language:</p>
+<ul><li><strong>Commit the lock file</strong>, so that every machine installs exactly the same versions.</li><li><strong>Pin and update deliberately.</strong> Semantic versioning (<code class="inline">MAJOR.MINOR.PATCH</code>) says that a major bump may break your code, a minor adds features, and a patch fixes bugs.</li><li><strong>Isolate environments</strong> (Python virtual environments, <code class="inline">node_modules</code> per project) so that projects never fight over versions.</li><li><strong>Audit dependencies</strong> (<code class="inline">npm audit</code>, <code class="inline">pip-audit</code>, Dependabot), and prefer fewer, well-maintained ones. Every dependency is code you trust but did not write.</li><li><strong>Publish carefully.</strong> Add a licence, a README with an example, a version number and a changelog.</li></ul>
+<aside class="callout callout-pitfall"><div class="callout-title">Common engineering mistakes</div><div class="callout-body"><ul><li><strong>Premature optimisation.</strong> Make it correct and clear, then measure, and optimise only the real bottleneck.</li><li><strong>No tests around the scary code</strong>, which then nobody dares to touch.</li><li><strong>Testing only the happy path.</strong></li><li><strong>Sharing mutable state between threads</strong> without protection.</li><li><strong>Deep inheritance trees</strong> where composition would do.</li><li><strong>Giant functions and classes</strong> that do everything.</li><li><strong>Copy-pasting code</strong> instead of extracting a function.</li><li><strong>Unpinned dependencies</strong>, so that "it worked yesterday" builds break.</li><li><strong>Not reading error messages</strong> and stack traces from the top.</li></ul></div></aside>
+<section class="lab-box"><h3>Lab: refactor and test a messy module</h3><p>You are given a messy function and asked to make it safe to change. Write it yourself, or take any old project of yours.</p><ol class="lab-steps"><li>Write a 40-line function <code class="inline">processOrders(orders)</code> in your language that mixes validation, price calculation (with a discount rule and tax), and formatting a receipt, using nested <code class="inline">if</code>s, magic numbers and one-letter names.</li><li>Before changing anything, write <strong>characterisation tests</strong> that capture its current behaviour, including at least six edge cases (empty list, negative quantity, discount threshold, rounding).</li><li>Refactor in small steps, running the tests after each: rename variables, extract <code class="inline">validateOrder</code>, <code class="inline">calculateTotal</code> and <code class="inline">formatReceipt</code>, replace the magic numbers with named constants, and flatten the nesting with early returns.</li><li>Introduce a <code class="inline">Discount</code> interface (or function type) with two implementations and select one by customer type. Explain which SOLID principle you applied.</li><li>Replace a real dependency (the clock, or a payment call) with an injected fake, and write a test that uses it.</li><li>Measure: generate 100,000 orders and time the function. If something is O(n²), find it and fix it with a map or set.</li><li>Run your language's formatter and linter, and fix everything they report.</li><li>Write a short README with how to install, run the tests and use the code. Add the dependency list in the right manifest.</li><li>Stretch goal: wrap the work in a pull request description that explains what changed and why, and ask a classmate to review it.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>Classes bundle data with behaviour. Encapsulation hides the details, and polymorphism lets code treat different objects uniformly.</li><li>Prefer composition to deep inheritance. SOLID gives five guidelines for changeable classes.</li><li>Concurrency structures overlapping tasks, and parallelism runs them simultaneously. Shared mutable state causes race conditions and deadlocks, so avoid sharing where you can.</li><li>Automated tests (arrange, act, assert) are a safety net. The pyramid favours many fast unit tests, and TDD is red, green, refactor.</li><li>Big-O describes how work grows with input size. Maps and sets, and binary search, are everyday speed-ups.</li><li>Clean code has clear names, small functions and flat structure. Refactor under test.</li><li>Every ecosystem has a package manager and a lock file. Commit the lock file, audit dependencies, and keep them few.</li></ul></section>
+<div class="quiz-mount" data-id="advanced" data-kind="test" data-title="Module test: Software engineering practice" data-count="12"><script type="application/json" class="quiz-data">{"id": "advanced", "kind": "test", "title": "Module test: Software engineering practice", "questions": [{"t": "mcq", "q": "Which principle says that a class should have only one reason to change?", "o": ["Single responsibility", "Liskov substitution", "Open/closed", "Dependency inversion"], "a": 0, "why": "The \"S\" in SOLID: do one job, so that changes in one area do not break another."}, {"t": "mcq", "q": "In what order does test-driven development proceed?", "o": ["Test everything at the end", "Refactor, test, release", "Write code, write tests, refactor", "Write a failing test, make it pass with minimal code, refactor"], "a": 3, "why": "Red, green, refactor."}, {"t": "mcq", "q": "What is the time complexity of finding a value in a sorted array of one million items with binary search?", "o": ["O(n squared)", "O(log n)", "O(n)", "O(1)"], "a": 1, "why": "Each step halves the remaining items: about twenty steps for a million."}, {"t": "mcq", "q": "Which change usually turns an O(n squared) \"find duplicates\" nested loop into O(n)?", "o": ["Using a set or map to remember what has been seen", "Adding more nested loops", "Sorting twice", "Using a bigger computer"], "a": 0, "why": "Set lookups are about constant time, so one pass is enough."}, {"t": "mcq", "q": "Two threads each wait for a lock held by the other, so neither can continue. What is this called?", "o": ["A cache miss", "A deadlock", "A memory leak", "A race condition"], "a": 1, "why": "Deadlock is a circular wait. Take locks in a consistent order to prevent it."}, {"t": "mcq", "q": "What is the main purpose of a lock file such as <code class=\"inline\">package-lock.json<\/code>?", "o": ["To speed up the code", "To store passwords", "To record the exact dependency versions so that installs are reproducible", "To keep the project secret"], "a": 2, "why": "Everyone, including the build server, installs the same versions."}, {"t": "mcq", "q": "What is a good reason to inject a dependency (such as a payment gateway) into a class instead of creating it inside?", "o": ["It makes the class shorter", "It is required by all languages", "You can substitute a fake in tests", "It makes the code run in parallel"], "a": 2, "why": "Passing dependencies in makes the class testable and flexible."}, {"t": "tf", "q": "Refactoring means changing code so that it does something new.", "a": false, "why": "Refactoring changes the structure without changing behaviour. Tests prove that behaviour stayed the same."}, {"t": "tf", "q": "Comments should mostly explain WHY code does something rather than restate WHAT it does.", "a": true, "why": "Good names show what. Comments earn their place by explaining intent and surprises."}, {"t": "short", "q": "What is the three-letter abbreviation for writing a failing test before the code that satisfies it?", "a": ["TDD"], "why": "Test-driven development: red, green, refactor."}, {"t": "multi", "q": "Which of these are sensible clean-code habits? Select all that apply.", "o": ["Give variables meaningful names", "Write one very long function to keep everything together", "Return early to avoid deep nesting", "Replace magic numbers with named constants"], "a": [0, 2, 3], "why": "Short, well-named, flat functions are the heart of readable code."}, {"t": "order", "q": "Put these Big-O classes in order from FASTEST to SLOWEST growth.", "o": ["O(1)", "O(n squared)", "O(n)", "O(log n)"], "a": [0, 3, 2, 1], "why": "Constant is best, then logarithmic, then linear. Quadratic grows fastest of these."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="advanced.cart-refactor" data-req="10" data-stretch="3" aria-labelledby="pj-advanced.cart-refactor"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-advanced.cart-refactor">Test and refactor a shopping cart</h3><div class="pj-meta"><span>3-4 hours</span><span>Intermediate</span><span>Skills: unit testing, refactoring, clean code, complexity, Git workflow</span></div></div><div class="pj-body"><div class="pj-brief"><p>You inherit working but messy code that calculates the total of a shopping cart. Nobody dares to touch it because there are no tests. Your job is the one every professional developer meets: write tests that pin down the current behaviour, then clean up the code safely, then add a feature. Work on a branch and commit often.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>Create a Git repository. Work on a branch named <code class="inline">refactor-cart</code>, with at least six commits whose messages say what changed and why.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>Before you change any logic, write at least ten tests that describe what the existing code does, including empty carts, quantities of zero, unknown coupon codes and rounding.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Refactor the function into small, well-named functions (for example <code class="inline">subtotal</code>, <code class="inline">discount</code>, <code class="inline">shipping</code> and <code class="inline">tax</code>) with no change in behaviour. All the tests must stay green after every step.</span></label></li><li><label><input type="checkbox" data-k="r3"><span>Remove magic numbers by naming them as constants, and remove repeated code.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>Use clear names, and keep each function short enough to read without scrolling.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>Do not mutate the input. Show a test that the cart is unchanged after a calculation.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>Add one new feature using test-driven development: write a failing test first, then make it pass. The feature is a "buy 3, get the cheapest free" rule.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>Add input checks that throw a clear error for negative prices or quantities, with tests.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>Write down the time complexity of your final function in Big O notation, and one sentence explaining why.</span></label></li><li><label><input type="checkbox" data-k="r9"><span>Open a pull request (or write the description you would use) with a summary, the risks and how you tested.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Copy the starter, run it by hand with three carts and write down the results.</li><li>Turn those results into tests. Add edge cases until you feel safe.</li><li>Refactor one small thing at a time. Run the tests after each change and commit when they pass.</li><li>Add the validation, then the new feature with a failing test first.</li><li>Analyse the complexity, and tidy the final version.</li><li>Write the pull request description.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// cart.js: works, but nobody understands it
+function t(c, k) {
+  var x = 0;
+  for (var i = 0; i &lt; c.length; i++) {
+    x = x + c[i].price * c[i].qty;
+  }
+  if (k == "SAVE10") { x = x - x * 0.1; }
+  else if (k == "SAVE20") { x = x - x * 0.2; }
+  if (x &lt; 50) { x = x + 4.99; }
+  x = x + x * 0.075;
+  return Math.round(x * 100) / 100;
+}
+
+module.exports = { t };</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span># cart.py: works, but nobody understands it
+def t(c, k):
+    x = 0
+    for i in range(len(c)):
+        x = x + c[i]["price"] * c[i]["qty"]
+    if k == "SAVE10":
+        x = x - x * 0.1
+    elif k == "SAVE20":
+        x = x - x * 0.2
+    if x &lt; 50:
+        x = x + 4.99
+    x = x + x * 0.075
+    return round(x, 2)</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Characterisation tests record what the code does now, even if you think it is odd. Fix bugs later, on purpose, in separate commits.</li><li>When a test fails after a refactor, undo the last change and make a smaller one.</li><li>Floating-point arithmetic can surprise you with money. Compare with a tolerance, or work in whole cents.</li><li>Name a function by what it returns (<code class="inline">subtotal</code>) and a variable by what it holds (<code class="inline">shippingCost</code>).</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Convert the money calculation to integer cents and show why it is safer.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Add a coverage report and aim for 100% of lines.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Add a lint rule set and a pre-commit hook that runs the tests.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Safety net</strong></td><td>Tests describe the original behaviour thoroughly, and they pass after every refactoring step.</td></tr><tr><td><strong>Clean code</strong></td><td>Names, function size and structure make the code understandable without comments.</td></tr><tr><td><strong>Discipline</strong></td><td>Commits are small and well described, and the new feature starts with a failing test.</td></tr><tr><td><strong>Analysis</strong></td><td>The Big O claim is correct and explained, and the pull request clearly states risks.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The repository with its history, or an export of the log.</li><li>The test file and the pull request description.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-advanced.cart-refactor">Link to your work (optional)</label><input class="field" id="pjl-advanced.cart-refactor" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-advanced.cart-refactor">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-advanced.cart-refactor" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

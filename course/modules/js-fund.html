@@ -1,0 +1,240 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Foundations</span><span>Module 8</span><span>170 min</span><span>Beginner</span></div><h1>JavaScript: Making Pages Interactive</h1><p class="lede">JavaScript in the browser: variables, functions, objects, arrays, the DOM and events. Build pages that respond to people.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Explain where JavaScript runs and how to run it in the browser console and in a page.</li><li>Use <code class="inline">let</code> and <code class="inline">const</code>, and avoid the common type surprises.</li><li>Write functions, including arrow functions, and pass them around as values.</li><li>Work with objects and arrays, and transform lists with <code class="inline">map</code>, <code class="inline">filter</code> and <code class="inline">reduce</code>.</li><li>Select and change page elements with the DOM, and react to events.</li><li>Build a small interactive app.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Programming Fundamentals (variables, conditions, loops, functions, lists, dictionaries) and <button type="button" class="term" data-term="HTML" data-def="The language that describes the structure and content of a web page with tags.">HTML</button>. <button type="button" class="term" data-term="CSS" data-def="The language that controls how HTML looks: colours, fonts, spacing and layout.">CSS</button> is helpful. If you chose another language for the fundamentals, nothing here is wasted: the <button type="button" class="term" data-term="Browser" data-def="A program, such as Chrome, Firefox or Safari, that downloads web pages and displays them.">browser</button> only runs <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button>, so everyone learns it for the <button type="button" class="term" data-term="Front end" data-def="The part of an application that users see and interact with in their browser or app.">front end</button>.</p></section>
+<h2 id="javascript-in-the-browser">JavaScript in the browser</h2>
+<p>JavaScript is the only programming language that every browser understands. HTML gives a page structure, CSS makes it look good, and JavaScript makes it <strong>do</strong> things: validate a form, update a counter, load new content without reloading, play a game. With <strong><button type="button" class="term" data-term="Node.js" data-def="A program that lets you run JavaScript outside the browser, mostly for servers and tools.">Node.js</button></strong>, the same language also runs on servers, which is why it is so popular for full stack work.</p>
+<p>Three places to run it:</p>
+<ol><li><strong>The browser console.</strong> Press F12, open the <strong>Console</strong> tab, type code and press Enter. Perfect for experiments.</li><li><strong>Inside a page</strong>, with a <code class="inline">&lt;script&gt;</code> element:</li></ol>
+<pre class="code-block" data-lang="html"><span class="lang-tag">HTML</span>&lt;script src="app.js" defer&gt;&lt;/script&gt;</pre>
+<p>The <code class="inline">defer</code> <button type="button" class="term" data-term="Attribute" data-def="Extra information inside an HTML tag, written as name=&quot;value&quot;, such as href in a link.">attribute</button> waits until the HTML is loaded before running your script, so that the elements exist when you look for them.</p>
+<ol><li><strong>Node.js</strong>, with <code class="inline">node file.js</code>, for programs without a page.</li></ol>
+<div class="playground" data-kind="js" data-title="Your JavaScript lab"><div class="pg-intro"><p>Everything in this module that does not need a page runs right here. Edit and press Run.</p></div><script type="text/plain" data-part="js">const language = "JavaScript";
+console.log("Hello from " + language);
+console.log(2 ** 10);   // 2 to the power of 10</script></div>
+<h2 id="variables-let-and-const">Variables: <code class="inline">let</code> and <code class="inline">const</code></h2>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const pi = 3.14159;        // cannot be reassigned
+let score = 0;             // can be reassigned
+score = score + 10;</pre>
+<p>Use <strong><code class="inline">const</code></strong> by default, and <strong><code class="inline">let</code></strong> when the value must change. Avoid the old <code class="inline">var</code>, which has confusing scope rules. A <code class="inline">const</code> object or array can still have its <em>contents</em> changed. What cannot happen is pointing the name at something else.</p>
+<h2 id="types-and-their-surprises">Types and their surprises</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Type</th><th scope="col">Example</th><th scope="col">Notes</th></tr></thead><tbody><tr><td>number</td><td><code class="inline">42</code>, <code class="inline">3.14</code></td><td>One type for integers and decimals</td></tr><tr><td>string</td><td><code class="inline">"hi"</code>, <code class="inline">'hi'</code>, `<code class="inline"> </code>hi<code class="inline"> </code>`</td><td>Three kinds of quotes</td></tr><tr><td>boolean</td><td><code class="inline">true</code>, <code class="inline">false</code></td><td></td></tr><tr><td>undefined</td><td><code class="inline">undefined</code></td><td>A variable that has no value yet</td></tr><tr><td>null</td><td><code class="inline">null</code></td><td>"Deliberately empty"</td></tr><tr><td>object</td><td><code class="inline">{ a: 1 }</code>, <code class="inline">[1, 2]</code></td><td>Arrays are objects too</td></tr></tbody></table></div>
+<p><code class="inline">typeof</code> tells you the type of a value: <code class="inline">typeof 42</code> is <code class="inline">"number"</code>.</p>
+<h3 id="always-use">Always use <code class="inline">===</code></h3>
+<p>JavaScript has two equality operators. <code class="inline">==</code> tries to convert types first, with bizarre results. <code class="inline">===</code> compares without converting.</p>
+<div class="playground" data-kind="js" data-title="Equality surprises"><div class="pg-intro"><p>Read each line and guess the answer first.</p></div><script type="text/plain" data-part="js">console.log(5 == "5");     // true: converted!
+console.log(5 === "5");    // false: different types
+console.log(0 == false);   // true
+console.log(0 === false);  // false
+console.log("5" + 3);      // "53"
+console.log("5" - 3);      // 2
+console.log(0.1 + 0.2);    // 0.30000000000000004</script></div>
+<aside class="callout callout-best"><div class="callout-title">One rule that prevents most surprises</div><div class="callout-body"><p>Use <code class="inline">===</code> and <code class="inline">!==</code>. Never <code class="inline">==</code> or <code class="inline">!=</code>. Convert types yourself, deliberately: <code class="inline">Number("5")</code>, <code class="inline">String(5)</code>.</p></div></aside>
+<h3 id="truthy-and-falsy">Truthy and falsy</h3>
+<p>In a condition, JavaScript treats these values as <strong>falsy</strong>: <code class="inline">false</code>, <code class="inline">0</code>, <code class="inline">""</code> (empty text), <code class="inline">null</code>, <code class="inline">undefined</code> and <code class="inline">NaN</code>. Everything else is <strong>truthy</strong>, including <code class="inline">"0"</code>, <code class="inline">[]</code> and <code class="inline">{}</code>.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const name = "";
+if (name) {
+  console.log("Hello, " + name);
+} else {
+  console.log("Please enter your name");
+}</pre>
+<h2 id="functions">Functions</h2>
+<p>You know functions from the fundamentals. JavaScript gives you two common ways to write them.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// a function declaration
+function add(a, b) {
+  return a + b;
+}
+
+// an arrow function stored in a constant
+const multiply = (a, b) =&gt; a * b;
+
+// default parameter values
+function greet(name = "friend") {
+  return `Hello, ${name}!`;
+}</pre>
+<p>The back-tick strings `<code class="inline"> </code>Hello, ${name}!<code class="inline"> </code><code class="inline"> are **template literals**: whatever is in </code>${...}` is calculated and inserted. They also allow multiple lines.</p>
+<h3 id="functions-are-values">Functions are values</h3>
+<p>In JavaScript a function is a value like any other. You can store it in a variable, put it in a list, pass it to another function and return it from one. A function passed to another is called a <strong><button type="button" class="term" data-term="Callback" data-def="A function you pass to another function so it can be called later, for example when a task finishes.">callback</button></strong>. This idea powers events, array methods and asynchronous code.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>function repeat(times, action) {
+  for (let i = 0; i &lt; times; i++) {
+    action(i);
+  }
+}
+repeat(3, (n) =&gt; console.log("Round " + n));</pre>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>Handing a function to another function is like leaving a note for a babysitter: "When the baby wakes up, do this." You are not doing it now. You are saying what to do later, when something happens.</p></div></aside>
+<h2 id="objects-and-arrays">Objects and arrays</h2>
+<h3 id="objects">Objects</h3>
+<p>An <strong>object</strong> groups related values under names (called properties).</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const user = {
+  name: "Ada",
+  age: 36,
+  skills: ["maths", "code"],
+  greet() {
+    return "Hi, I am " + this.name;
+  },
+};
+
+console.log(user.name);        // dot notation
+console.log(user["age"]);      // bracket notation (for dynamic keys)
+user.email = "ada@example.com"; // add a property
+console.log(user.greet());</pre>
+<p>Two modern shortcuts you will see everywhere:</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const { name, age } = user;                 // destructuring: pull values out
+const older = { ...user, age: 37 };         // spread: copy an object, change one value</pre>
+<h3 id="arrays-and-their-superpowers">Arrays and their superpowers</h3>
+<p>Arrays have built-in methods that replace most hand-written loops. Three of them will do most of your daily data work.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Method</th><th scope="col">What it does</th><th scope="col">Returns</th></tr></thead><tbody><tr><td><code class="inline">map(fn)</code></td><td>Transform every item</td><td>A new array of the same length</td></tr><tr><td><code class="inline">filter(fn)</code></td><td>Keep items for which <code class="inline">fn</code> returns true</td><td>A shorter array</td></tr><tr><td><code class="inline">reduce(fn, start)</code></td><td>Combine all items into a single value</td><td>One value</td></tr><tr><td><code class="inline">find(fn)</code></td><td>The first item for which <code class="inline">fn</code> is true</td><td>One item or <code class="inline">undefined</code></td></tr><tr><td><code class="inline">some(fn)</code> / <code class="inline">every(fn)</code></td><td>Is any / are all items matching?</td><td>A boolean</td></tr><tr><td><code class="inline">includes(x)</code></td><td>Is <code class="inline">x</code> in the array?</td><td>A boolean</td></tr><tr><td><code class="inline">sort(fn)</code></td><td>Sort in place (use a compare function for numbers)</td><td>The array</td></tr></tbody></table></div>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 683 90" role="img" aria-label="filter, then map, then reduce: a pipeline of small steps" style="max-width:683px;min-width:491px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-js-fund1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="158.2" height="66.0" rx="9" class="fg-box "/><text x="91.1" y="40.0" text-anchor="middle" class="fg-title">Numbers</text><text x="91.1" y="59.0" text-anchor="middle" class="fg-sub">[1, 2, 3, 4, 5, 6]</text><rect x="216.2" y="12.0" width="126.4" height="66.0" rx="9" class="fg-box fg-accent "/><text x="279.4" y="40.0" text-anchor="middle" class="fg-title">filter even</text><text x="279.4" y="59.0" text-anchor="middle" class="fg-sub">[2, 4, 6]</text><line x1="173.2" y1="45.0" x2="213.2" y2="45.0" class="fg-line" marker-end="url(#ah-js-fund1)"/><rect x="388.6" y="12.0" width="118.0" height="66.0" rx="9" class="fg-box "/><text x="447.6" y="40.0" text-anchor="middle" class="fg-title">map square</text><text x="447.6" y="59.0" text-anchor="middle" class="fg-sub">[4, 16, 36]</text><line x1="345.6" y1="45.0" x2="385.6" y2="45.0" class="fg-line" marker-end="url(#ah-js-fund1)"/><rect x="552.6" y="12.0" width="118.0" height="66.0" rx="9" class="fg-box "/><text x="611.6" y="40.0" text-anchor="middle" class="fg-title">reduce sum</text><text x="611.6" y="59.0" text-anchor="middle" class="fg-sub">56</text><line x1="509.6" y1="45.0" x2="549.6" y2="45.0" class="fg-line" marker-end="url(#ah-js-fund1)"/></svg></div><figcaption><span class="fig-n">Figure 1.</span> filter, then map, then reduce: a pipeline of small steps</figcaption></figure>
+<div class="playground" data-kind="js" data-title="Build a data pipeline"><div class="pg-intro"><p>Change the data and the functions. Try filtering numbers above 3, or doubling instead of squaring.</p></div><script type="text/plain" data-part="js">const numbers = [1, 2, 3, 4, 5, 6];
+
+const evens = numbers.filter((n) => n % 2 === 0);
+const squares = evens.map((n) => n * n);
+const total = squares.reduce((sum, n) => sum + n, 0);
+
+console.log(evens);    // [2, 4, 6]
+console.log(squares);  // [4, 16, 36]
+console.log(total);    // 56</script></div>
+<p>Here is the same idea as a comparison with the language you chose. This is a good way to see that the <strong>idea</strong> (filter, transform) is universal, even though the syntax differs.</p>
+<div class="code-tabs" data-title="Squares of the even numbers from 1 to 6"><div class="code-tabs-title">Squares of the even numbers from 1 to 6</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const result = [1, 2, 3, 4, 5, 6]
+  .filter((n) =&gt; n % 2 === 0)
+  .map((n) =&gt; n * n);
+console.log(result.join(" "));</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>result = [n * n for n in range(1, 7) if n % 2 == 0]
+print(" ".join(str(n) for n in result))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>String result = IntStream.rangeClosed(1, 6)
+    .filter(n -&gt; n % 2 == 0)
+    .map(n -&gt; n * n)
+    .mapToObj(String::valueOf)
+    .collect(Collectors.joining(" "));
+System.out.println(result);</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>using System.Linq;
+
+var result = Enumerable.Range(1, 6).Where(n =&gt; n % 2 == 0).Select(n =&gt; n * n);
+Console.WriteLine(string.Join(" ", result));</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$even = array_filter(range(1, 6), fn($n) =&gt; $n % 2 === 0);
+$result = array_map(fn($n) =&gt; $n * $n, $even);
+echo implode(" ", $result) . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>var out []string
+for n := 1; n &lt;= 6; n++ {
+    if n%2 == 0 {
+        out = append(out, strconv.Itoa(n*n))
+    }
+}
+fmt.Println(strings.Join(out, " "))</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>result = (1..6).select(&amp;:even?).map { |n| n * n }
+puts result.join(" ")</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>4 16 36</pre></div>
+<div class="challenge" data-id="js-fund.double" data-title="Double every number"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Double every number</h3></div><div class="challenge-body"><p>Write <code class="inline">doubleAll(numbers)</code> that returns a <strong>new</strong> array with every number multiplied by 2. Use <code class="inline">map</code>.</p></div><script type="text/plain" data-part="starter">function doubleAll(numbers) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('doubles a list', () => assert.deepEqual(doubleAll([1, 2, 3]), [2, 4, 6]));
+test('empty list', () => assert.deepEqual(doubleAll([]), []));
+test('negatives', () => assert.deepEqual(doubleAll([-1, 0, 5]), [-2, 0, 10]));
+test('does not change the original', () => { const a = [1, 2]; doubleAll(a); assert.deepEqual(a, [1, 2]); });</script><script type="text/plain" data-part="solution">function doubleAll(numbers) {
+  return numbers.map((n) => n * 2);
+}</script><div class="hint-text" hidden><code class="inline">numbers.map(...)</code> takes a function that receives one item and returns its replacement.</div><div class="hint-text" hidden><code class="inline">return numbers.map((n) =&gt; n * 2);</code></div></div>
+<div class="challenge" data-id="js-fund.adults" data-title="Keep only the adults"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Keep only the adults</h3></div><div class="challenge-body"><p>Write <code class="inline">adultNames(people)</code>. Given an array of objects like <code class="inline">{ name: "Ada", age: 36 }</code>, return an array with just the <strong>names</strong> of people aged 18 or over, in the same order.</p></div><script type="text/plain" data-part="starter">function adultNames(people) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">const group = [{ name: 'Ada', age: 36 }, { name: 'Tim', age: 12 }, { name: 'Grace', age: 18 }];
+test('finds adults', () => assert.deepEqual(adultNames(group), ['Ada', 'Grace']));
+test('no adults', () => assert.deepEqual(adultNames([{ name: 'Kid', age: 5 }]), []));
+test('empty', () => assert.deepEqual(adultNames([]), []));</script><script type="text/plain" data-part="solution">function adultNames(people) {
+  return people.filter((p) => p.age >= 18).map((p) => p.name);
+}</script><div class="hint-text" hidden>First <code class="inline">filter</code> the people by age, then <code class="inline">map</code> them to their names.</div><div class="hint-text" hidden><code class="inline">people.filter((p) =&gt; p.age &gt;= 18).map((p) =&gt; p.name)</code></div></div>
+<div class="challenge" data-id="js-fund.cart" data-title="Total a shopping cart"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Total a shopping cart</h3></div><div class="challenge-body"><p>Write <code class="inline">cartTotal(items)</code>. Each item looks like <code class="inline">{ price: 2.5, quantity: 4 }</code>. Return the sum of <code class="inline">price * quantity</code> for all items. Use <code class="inline">reduce</code>.</p></div><script type="text/plain" data-part="starter">function cartTotal(items) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('two items', () => assert.equal(cartTotal([{ price: 2, quantity: 3 }, { price: 5, quantity: 1 }]), 11));
+test('empty cart', () => assert.equal(cartTotal([]), 0));
+test('single', () => assert.equal(cartTotal([{ price: 10, quantity: 2 }]), 20));</script><script type="text/plain" data-part="solution">function cartTotal(items) {
+  return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+}</script><div class="hint-text" hidden><code class="inline">reduce</code> takes a function <code class="inline">(running, item) =&gt; ...</code> and a starting value. Start at 0.</div><div class="hint-text" hidden><code class="inline">items.reduce((sum, item) =&gt; sum + item.price * item.quantity, 0)</code></div></div>
+<div class="quiz-mount" data-id="js-fund-c1" data-kind="check" data-title="Checkpoint: JavaScript basics" data-count="3"><script type="application/json" class="quiz-data">{"id": "js-fund-c1", "kind": "check", "title": "Checkpoint: JavaScript basics", "questions": [{"t": "mcq", "q": "Which declaration should you reach for by default?", "o": ["<code class=\"inline\">let<\/code>, always", "<code class=\"inline\">const<\/code>", "<code class=\"inline\">var<\/code>", "No keyword"], "a": 1, "why": "Use <code class=\"inline\">const<\/code> unless the value has to change, then <code class=\"inline\">let<\/code>. <code class=\"inline\">var<\/code> has confusing scope rules and is best avoided."}, {"t": "mcq", "q": "What does <code class=\"inline\">\"5\" + 3<\/code> evaluate to in JavaScript?", "o": ["8", "NaN", "2", "\"53\""], "a": 3, "why": "With text on one side, <code class=\"inline\">+<\/code> joins. <code class=\"inline\">-<\/code> has no text meaning, so <code class=\"inline\">\"5\" - 3<\/code> gives 2."}, {"t": "tf", "q": "<code class=\"inline\">5 === \"5\"<\/code> is true because JavaScript converts the text to a number.", "a": false, "why": "Triple equals compares without converting types, so a number and a string are never equal."}]}</script></div>
+<div class="quiz-mount" data-id="js-fund-c2" data-kind="check" data-title="Checkpoint: arrays and objects" data-count="2"><script type="application/json" class="quiz-data">{"id": "js-fund-c2", "kind": "check", "title": "Checkpoint: arrays and objects", "questions": [{"t": "mcq", "q": "Which method returns a NEW array of the same length with each item changed?", "o": ["<code class=\"inline\">find<\/code>", "<code class=\"inline\">map<\/code>", "<code class=\"inline\">reduce<\/code>", "<code class=\"inline\">filter<\/code>"], "a": 1, "why": "<code class=\"inline\">map<\/code> transforms each item. <code class=\"inline\">filter<\/code> keeps some of them and <code class=\"inline\">reduce<\/code> collapses them to a single value."}, {"t": "mcq", "q": "What does <code class=\"inline\">[1, 2, 3, 4].filter((n) =&gt; n &gt; 2)<\/code> return?", "o": ["<code class=\"inline\">[3, 4]<\/code>", "<code class=\"inline\">[1, 2]<\/code>", "<code class=\"inline\">[false, false, true, true]<\/code>", "<code class=\"inline\">7<\/code>"], "a": 0, "why": "<code class=\"inline\">filter<\/code> keeps only the items for which the function returns true."}]}</script></div>
+<h2 id="the-dom-changing-the-page">The DOM: changing the page</h2>
+<p>In the HTML module you met the DOM, the tree of elements the browser builds. JavaScript can <strong>find</strong> elements, <strong>change</strong> them, <strong>create</strong> new ones and <strong>remove</strong> them. Every change appears on screen immediately.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 749 90" role="img" aria-label="The DOM workflow in three steps" style="max-width:749px;min-width:539px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-js-fund2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="185.8" height="66.0" rx="9" class="fg-box fg-accent "/><text x="104.9" y="40.0" text-anchor="middle" class="fg-title">1. Find</text><text x="104.9" y="59.0" text-anchor="middle" class="fg-sub">document.querySelector</text><rect x="243.8" y="12.0" width="234.1" height="66.0" rx="9" class="fg-box "/><text x="360.9" y="40.0" text-anchor="middle" class="fg-title">2. Change</text><text x="360.9" y="59.0" text-anchor="middle" class="fg-sub">textContent, classList, style</text><line x1="200.8" y1="45.0" x2="240.8" y2="45.0" class="fg-line" marker-end="url(#ah-js-fund2)"/><rect x="523.9" y="12.0" width="213.4" height="66.0" rx="9" class="fg-box "/><text x="630.6" y="40.0" text-anchor="middle" class="fg-title">3. Observe</text><text x="630.6" y="59.0" text-anchor="middle" class="fg-sub">the page updates instantly</text><line x1="480.9" y1="45.0" x2="520.9" y2="45.0" class="fg-line" marker-end="url(#ah-js-fund2)"/></svg></div><figcaption><span class="fig-n">Figure 2.</span> The DOM workflow in three steps</figcaption></figure>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const title = document.querySelector("h1");     // find the first h1
+title.textContent = "New title";                // change its text
+title.classList.add("highlight");               // add a CSS class</pre>
+<p><code class="inline">querySelector</code> takes any CSS selector and returns the first match. <code class="inline">querySelectorAll</code> returns all matches.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Do this</th><th scope="col">With</th></tr></thead><tbody><tr><td>Change text safely</td><td><code class="inline">el.textContent = "..."</code></td></tr><tr><td>Add or remove a class</td><td><code class="inline">el.classList.add("x")</code>, <code class="inline">.remove("x")</code>, <code class="inline">.toggle("x")</code></td></tr><tr><td>Read or set an attribute</td><td><code class="inline">el.getAttribute("href")</code>, <code class="inline">el.setAttribute("href", "...")</code></td></tr><tr><td>Create an element</td><td><code class="inline">document.createElement("li")</code></td></tr><tr><td>Insert it</td><td><code class="inline">parent.append(child)</code></td></tr><tr><td>Remove it</td><td><code class="inline">el.remove()</code></td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">Beware of innerHTML</div><div class="callout-body"><p><code class="inline">el.innerHTML = userText</code> inserts text as <strong>HTML</strong>. If a visitor types <code class="inline">&lt;script&gt;</code> or <code class="inline">&lt;img onerror=...&gt;</code>, you have just given them control of your page. This is an <strong>XSS</strong> attack. Use <code class="inline">textContent</code> for text, and build elements with <code class="inline">createElement</code>.</p></div></aside>
+<h2 id="events-reacting-to-the-user">Events: reacting to the user</h2>
+<p>An <strong>event</strong> is something that happens: a click, a key press, a form submission, a page load. You attach a function (a callback) that runs when it happens.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>button.addEventListener("click", () =&gt; {
+  counter = counter + 1;
+  display.textContent = counter;
+});</pre>
+<div class="stepper" data-title="How a click becomes a change on screen"><ol class="stepper-list"><li><strong>The user clicks the button.</strong> <span>The browser notices and creates an event describing the click.</span></li><li><strong>The browser looks for listeners.</strong> <span>It checks whether any function was registered with <code class="inline">addEventListener("click", ...)</code> on that element.</span></li><li><strong>Your callback runs.</strong> <span>Your code updates a variable and changes the page, for example with <code class="inline">textContent</code>.</span></li><li><strong>The browser repaints.</strong> <span>The visitor sees the new number. Nothing was reloaded.</span></li></ol></div>
+<p>Try it. The editor has HTML, CSS and JavaScript tabs. Click the tabs to read all three, then press the button in the result.</p>
+<div class="playground" data-kind="html" data-title="A click counter"><div class="pg-intro"><p>Change the step from 1 to 5. Add a "Reset" button as an extra challenge.</p></div><script type="text/plain" data-part="html"><p>You clicked <strong id="count">0</strong> times.</p>
+<button id="btn">Click me</button></script><script type="text/plain" data-part="css">body { font-family: system-ui, sans-serif; padding: 16px; }
+button { padding: 10px 18px; font-size: 1rem; border: 0; border-radius: 8px; background: #1d4ed8; color: #fff; cursor: pointer; }</script><script type="text/plain" data-part="js">let count = 0;
+const display = document.getElementById("count");
+document.getElementById("btn").addEventListener("click", () => {
+  count = count + 1;
+  display.textContent = count;
+});</script></div>
+<h3 id="forms-and-preventdefault">Forms and <code class="inline">preventDefault</code></h3>
+<p>When a form is submitted, the browser normally reloads the page. In interactive apps we intercept the event and handle it ourselves.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>form.addEventListener("submit", (event) =&gt; {
+  event.preventDefault();       // stop the page reload
+  const text = input.value.trim();
+  if (!text) return;            // ignore empty input
+  addTodo(text);
+  input.value = "";
+});</pre>
+<div class="playground" data-kind="html" data-title="A to-do list"><div class="pg-intro"><p>Read the JavaScript tab carefully. Everything in it is something you have already learned. Then add a feature: clicking an item removes it.</p></div><script type="text/plain" data-part="html"><form id="form">
+  <label for="item">New task</label>
+  <input id="item" required>
+  <button>Add</button>
+</form>
+<ul id="list"></ul></script><script type="text/plain" data-part="css">body { font-family: system-ui, sans-serif; padding: 16px; }
+li { margin: 6px 0; }
+input { padding: 6px; }
+button { padding: 6px 12px; }</script><script type="text/plain" data-part="js">const form = document.getElementById("form");
+const input = document.getElementById("item");
+const list = document.getElementById("list");
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const li = document.createElement("li");
+  li.textContent = input.value.trim();
+  list.append(li);
+  input.value = "";
+});</script></div>
+<aside class="callout callout-learn"><div class="callout-title">Read the error, then fix</div><div class="callout-body"><p>If a DOM script does nothing, open the console. The most common messages: <code class="inline">Cannot read properties of null</code> (your <code class="inline">querySelector</code> found nothing, so check the selector or whether the script ran before the element existed) and <code class="inline">x is not defined</code> (a typo).</p></div></aside>
+<h2 id="debugging-in-the-browser">Debugging in the browser</h2>
+<p>The developer tools are a superpower. Press F12 and try these.</p>
+<ul><li><strong>Console</strong>: see errors and your <code class="inline">console.log</code> output. Type code to test ideas.</li><li><strong>Elements</strong>: inspect and edit the live DOM and CSS.</li><li><strong>Sources</strong>: set a <strong>breakpoint</strong> by clicking a line number. The page pauses there, and you can inspect every variable and step through line by line.</li><li><strong>Network</strong>: see every request the page makes, with status codes and timings.</li></ul>
+<section class="lab-box"><h3>Lab: build a tip calculator</h3><p>Make a page that works out a tip and a bill split. Use your own computer, or the live HTML editor.</p><ol class="lab-steps"><li>In HTML, add number inputs for <strong>bill amount</strong>, <strong>tip percentage</strong> and <strong>number of people</strong>, each with a visible label. Add a "Calculate" button and an empty <code class="inline">&lt;output&gt;</code> or <code class="inline">&lt;p&gt;</code> for the result.</li><li>Write a function <code class="inline">calculateTip(bill, percent, people)</code> that returns an object with <code class="inline">tip</code>, <code class="inline">total</code> and <code class="inline">perPerson</code>, rounded to two decimals (<code class="inline">Number(x.toFixed(2))</code>).</li><li>Listen for the form's <code class="inline">submit</code> event, call <code class="inline">event.preventDefault()</code>, read the input values with <code class="inline">Number(input.value)</code>, and show the result.</li><li>Handle bad input: if the bill is not positive or the number of people is below 1, show a clear error message instead of a result.</li><li>Add three quick-select buttons for 10%, 15% and 20% that fill in the percentage field.</li><li>Style it with CSS and make it work on a phone screen.</li><li>Stretch goal: remember the last used values with <code class="inline">localStorage.setItem</code> and <code class="inline">localStorage.getItem</code>.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<aside class="callout callout-pitfall"><div class="callout-title">Common JavaScript mistakes</div><div class="callout-body"><ul><li><strong>Using <code class="inline">==</code>.</strong> Use <code class="inline">===</code>.</li><li><strong>Forgetting <code class="inline">defer</code></strong>, so the script runs before the elements exist and finds <code class="inline">null</code>.</li><li><strong>Mutating when you meant to copy.</strong> <code class="inline">const b = a</code> does not copy an array, it gives it a second name. Use <code class="inline">[...a]</code>.</li><li><strong>Comparing floating-point numbers exactly</strong> (<code class="inline">0.1 + 0.2 === 0.3</code> is false).</li><li><strong>Using <code class="inline">innerHTML</code> with user text.</strong> Use <code class="inline">textContent</code>.</li><li><strong>Treating a string from an input as a number.</strong> <code class="inline">input.value</code> is always text. Convert it with <code class="inline">Number(...)</code>.</li></ul></div></aside>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>JavaScript runs in every browser, and also on servers with Node.js.</li><li>Use <code class="inline">const</code> by default, <code class="inline">let</code> when needed. Always compare with <code class="inline">===</code>.</li><li>Functions are values. Arrow functions and callbacks are everywhere.</li><li>Objects group named values. Arrays have <code class="inline">map</code>, <code class="inline">filter</code> and <code class="inline">reduce</code>.</li><li>The DOM is a tree you can find, change, create and remove with JavaScript.</li><li>Events (clicks, submits, key presses) trigger your callbacks. Use <code class="inline">preventDefault</code> on form submits.</li><li>Use <code class="inline">textContent</code>, not <code class="inline">innerHTML</code>, for user-provided text. Debug with the browser's developer tools.</li></ul></section>
+<div class="quiz-mount" data-id="js-fund" data-kind="test" data-title="Module test: JavaScript" data-count="11"><script type="application/json" class="quiz-data">{"id": "js-fund", "kind": "test", "title": "Module test: JavaScript", "questions": [{"t": "mcq", "q": "What does <code class=\"inline\">[1, 2, 3].map((n) =&gt; n * 2)<\/code> return?", "o": ["<code class=\"inline\">[1, 2, 3]<\/code>", "<code class=\"inline\">[2, 4, 6]<\/code>", "<code class=\"inline\">6<\/code>", "<code class=\"inline\">[2, 3]<\/code>"], "a": 1, "why": "<code class=\"inline\">map<\/code> returns a new array with the function applied to each item."}, {"t": "mcq", "q": "Which statement about <code class=\"inline\">const<\/code> is TRUE?", "o": ["A <code class=\"inline\">const<\/code> array can never change in any way", "<code class=\"inline\">const<\/code> makes the program faster", "A <code class=\"inline\">const<\/code> name cannot be reassigned, but an array or object it points to can still be modified", "<code class=\"inline\">const<\/code> is only for numbers"], "a": 2, "why": "<code class=\"inline\">const<\/code> stops you from pointing the name at something else, but the contents of an object or array are still mutable."}, {"t": "mcq", "q": "What does <code class=\"inline\">console.log(0 == false, 0 === false)<\/code> print?", "o": ["<code class=\"inline\">false true<\/code>", "<code class=\"inline\">true false<\/code>", "<code class=\"inline\">true true<\/code>", "<code class=\"inline\">false false<\/code>"], "a": 1, "why": "<code class=\"inline\">==<\/code> converts types, so 0 equals false. <code class=\"inline\">===<\/code> does not convert, so they differ."}, {"t": "mcq", "q": "What is the output of `<code class=\"inline\"> const n = 3; console.log(<\/code>n is ${n + 1}<code class=\"inline\">); <\/code>`?", "o": ["<code class=\"inline\">n is ${n + 1}<\/code>", "<code class=\"inline\">n is 31<\/code>", "An error", "<code class=\"inline\">n is 4<\/code>"], "a": 3, "why": "Inside <code class=\"inline\">${...}<\/code> any expression is evaluated, so <code class=\"inline\">n + 1<\/code> becomes 4."}, {"t": "mcq", "q": "Why is <code class=\"inline\">el.innerHTML = userInput<\/code> dangerous?", "o": ["It only works on buttons", "It is slow", "It deletes the element", "It can run scripts or HTML supplied by an attacker (XSS)"], "a": 3, "why": "innerHTML parses its input as HTML. Use <code class=\"inline\">textContent<\/code> for plain text."}, {"t": "mcq", "q": "A script run in <code class=\"inline\">&lt;head&gt;<\/code> without <code class=\"inline\">defer<\/code> calls <code class=\"inline\">document.querySelector(\"h1\")<\/code> and gets <code class=\"inline\">null<\/code>. Why?", "o": ["There is no h1 in any page", "null means success", "querySelector is broken", "The script ran before the browser had built the elements"], "a": 3, "why": "The DOM does not exist yet while the head is being parsed. Use <code class=\"inline\">defer<\/code> or place the script at the end of the body."}, {"t": "tf", "q": "The value of <code class=\"inline\">input.value<\/code> for a number input is a number.", "a": false, "why": "It is always a string. Convert it with <code class=\"inline\">Number(input.value)<\/code> before doing arithmetic."}, {"t": "tf", "q": "<code class=\"inline\">event.preventDefault()<\/code> on a form's submit event stops the browser from reloading the page.", "a": true, "why": "This lets your JavaScript handle the data instead."}, {"t": "short", "q": "Which array method combines all items into a single value? Type its name.", "a": ["reduce"], "why": "<code class=\"inline\">reduce<\/code> takes a function and a starting value and folds the array into one result, such as a total."}, {"t": "multi", "q": "Which of these are falsy in JavaScript? Select all that apply.", "o": ["<code class=\"inline\">null<\/code>", "<code class=\"inline\">\"\"<\/code> (an empty string)", "<code class=\"inline\">[]<\/code> (an empty array)", "<code class=\"inline\">0<\/code>"], "a": [0, 1, 3], "why": "An empty array is an object, so it is truthy. The other three are falsy."}, {"t": "order", "q": "Put these steps of handling a click in order.", "o": ["The browser finds the registered listener", "The user clicks", "The page shows the new value", "Your callback runs and updates the variable"], "a": [1, 0, 3, 2], "why": "The event happens, the browser dispatches it, your code responds, and the screen is repainted."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="js-fund.todo-app" data-req="10" data-stretch="3" aria-labelledby="pj-js-fund.todo-app"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-js-fund.todo-app">A to-do list that remembers</h3><div class="pj-meta"><span>3-4 hours</span><span>Beginner</span><span>Skills: DOM, events, arrays and objects, functions, localStorage</span></div></div><div class="pj-body"><div class="pj-brief"><p>Build a to-do list in the browser with plain JavaScript. It must feel like a real app: you can add, complete and delete tasks, filter them, and when you close the tab and come back your tasks are still there.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>A form with a labelled text input and an Add button. Pressing Enter in the field also adds the task.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>Empty or whitespace-only tasks are rejected with a visible message (not an alert box).</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Each task shows its text, a checkbox to mark it done (with a line through completed text) and a button to delete it.</span></label></li><li><label><input type="checkbox" data-k="r3"><span>Tasks are stored in an array of objects, each with an id, text and done flag. The page is drawn from this array by a single <code class="inline">render()</code> function.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>Three filter buttons (All, Active, Done) show the matching tasks, and the current filter is clear to the user.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>A counter shows how many tasks are still active, for example "3 items left".</span></label></li><li><label><input type="checkbox" data-k="r6"><span>A "Clear completed" button removes all done tasks.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>Tasks and the chosen filter are saved in <code class="inline">localStorage</code> and restored when the page loads. Corrupt saved data must not break the page.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>An empty state message is shown when there is nothing to display.</span></label></li><li><label><input type="checkbox" data-k="r9"><span>Every control works with the keyboard and has an accessible name. Text typed by users is never inserted with <code class="inline">innerHTML</code>.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Build the static HTML and make sure you can read it in the browser.</li><li>Create the <code class="inline">tasks</code> array and a <code class="inline">render()</code> function that rebuilds the list from it.</li><li>Add the form submit handler and make adding work.</li><li>Use event delegation on the list to handle the checkbox and delete clicks.</li><li>Add the filters and the counter inside <code class="inline">render()</code>.</li><li>Add <code class="inline">save()</code> and <code class="inline">load()</code> with <code class="inline">JSON.stringify</code> and <code class="inline">JSON.parse</code> inside a try and catch.</li><li>Test the odd cases: empty input, a very long task, a task containing angle brackets, and clearing storage.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="html"><span class="lang-tag">HTML</span>&lt;main&gt;
+  &lt;h1&gt;To-do&lt;/h1&gt;
+  &lt;form id="form"&gt;
+    &lt;label for="newTask"&gt;New task&lt;/label&gt;
+    &lt;input id="newTask" autocomplete="off"&gt;
+    &lt;button&gt;Add&lt;/button&gt;
+    &lt;p id="msg" role="alert"&gt;&lt;/p&gt;
+  &lt;/form&gt;
+  &lt;ul id="list"&gt;&lt;/ul&gt;
+  &lt;p id="count"&gt;&lt;/p&gt;
+&lt;/main&gt;
+&lt;script src="app.js"&gt;&lt;/script&gt;</pre><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const STORAGE_KEY = "todo-v1";
+let tasks = load();
+let filter = "all";
+
+function load() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+}
+
+function render() {
+  // TODO: build the list, apply the filter, update the counter
+}
+
+// TODO: submit handler, list click handler, filter buttons
+render();</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Create elements with <code class="inline">document.createElement</code> and set <code class="inline">textContent</code>, which keeps user text safe.</li><li>Give each task an id with <code class="inline">Date.now()</code> and find tasks by id, not by their position in the list.</li><li>Call <code class="inline">save()</code> at the end of every function that changes <code class="inline">tasks</code>.</li><li>To check whether event delegation works, click the checkbox of a task that was added after the page loaded.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Let users edit a task by double-clicking it.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Add drag and drop (or up and down buttons) to reorder tasks.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Add due dates and sort by them.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Functionality</strong></td><td>Every requirement works, including persistence after a reload.</td></tr><tr><td><strong>Code design</strong></td><td>State lives in one array and the screen is always drawn from it, with no duplicate sources of truth.</td></tr><tr><td><strong>Safety</strong></td><td>User text never goes through innerHTML, and bad saved data is handled.</td></tr><tr><td><strong>Usability</strong></td><td>The app is fully keyboard-operable, gives clear feedback and works on a phone.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The HTML, CSS and JavaScript files.</li><li>A short list of the edge cases you tested and what happened.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-js-fund.todo-app">Link to your work (optional)</label><input class="field" id="pjl-js-fund.todo-app" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-js-fund.todo-app">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-js-fund.todo-app" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

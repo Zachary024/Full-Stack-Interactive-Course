@@ -1,0 +1,351 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Back end</span><span>Module 14</span><span>190 min</span><span>Intermediate</span></div><h1>Working with Data</h1><p class="lede">Collect, clean, summarise and chart data. The universal ideas, then practical pandas, matplotlib and seaborn in Python and the same moves in other languages.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Describe the steps of a data analysis from raw data to a conclusion.</li><li>Read tabular data from CSV and JSON, and explain what "tidy" data is.</li><li>Clean data: missing values, duplicates, wrong types and outliers.</li><li>Group, aggregate, filter, sort and join data, in several languages.</li><li>Calculate and interpret the mean, median and spread.</li><li>Choose an honest chart for a question, and spot a misleading one.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Programming Fundamentals (loops, lists, dictionaries). The tab examples run in seven languages, and the <button type="button" class="term" data-term="Pandas" data-def="A Python library for loading, cleaning and analysing tables of data.">pandas</button> sections use Python, which is the most common language for data work. If you have not learned Python, read those examples as pseudocode and use the <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button> challenges to practise.</p></section>
+<h2 id="why-data-skills-matter">Why data skills matter</h2>
+<p>Every application produces data: sign-ups, orders, clicks, errors, sensor readings. Someone has to turn that into answers. Which feature do people use? Why did sales dip in March? Is the new page faster? Full stack developers are often that someone, because they built the system that holds the data.</p>
+<p>Data work follows the same loop almost every time.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 829 202" role="img" aria-label="The data analysis workflow" style="max-width:829px;min-width:597px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-data1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="144.4" height="66.0" rx="9" class="fg-box "/><text x="84.2" y="40.0" text-anchor="middle" class="fg-title">Ask</text><text x="84.2" y="59.0" text-anchor="middle" class="fg-sub">a clear question</text><rect x="202.4" y="12.0" width="185.8" height="66.0" rx="9" class="fg-box "/><text x="295.3" y="40.0" text-anchor="middle" class="fg-title">Collect</text><text x="295.3" y="59.0" text-anchor="middle" class="fg-sub">files, databases, APIs</text><line x1="159.4" y1="45.0" x2="199.4" y2="45.0" class="fg-line" marker-end="url(#ah-data1)"/><rect x="434.2" y="12.0" width="165.1" height="66.0" rx="9" class="fg-box fg-accent "/><text x="516.8" y="40.0" text-anchor="middle" class="fg-title">Clean</text><text x="516.8" y="59.0" text-anchor="middle" class="fg-sub">fix gaps and errors</text><line x1="391.2" y1="45.0" x2="431.2" y2="45.0" class="fg-line" marker-end="url(#ah-data1)"/><rect x="645.3" y="12.0" width="172.0" height="66.0" rx="9" class="fg-box "/><text x="731.3" y="40.0" text-anchor="middle" class="fg-title">Explore</text><text x="731.3" y="59.0" text-anchor="middle" class="fg-sub">summaries and charts</text><line x1="602.3" y1="45.0" x2="642.3" y2="45.0" class="fg-line" marker-end="url(#ah-data1)"/><rect x="345.9" y="124.0" width="137.5" height="66.0" rx="9" class="fg-box "/><text x="414.6" y="152.0" text-anchor="middle" class="fg-title">Conclude</text><text x="414.6" y="171.0" text-anchor="middle" class="fg-sub">and communicate</text><path d="M731.3 81.0 V101.0 H414.6 V121.0" class="fg-line" fill="none" marker-end="url(#ah-data1)"/></svg></div><figcaption><span class="fig-n">Figure 1.</span> The data analysis workflow</figcaption></figure>
+<aside class="callout callout-note"><div class="callout-title">Most of the time goes into cleaning</div><div class="callout-body"><p>Surveys of data professionals repeatedly report that they spend more time preparing data than analysing it. Real data is messy, so cleaning is not a chore before the real work. It <em>is</em> the work.</p></div></aside>
+<h2 id="data-formats">Data formats</h2>
+<p><strong><button type="button" class="term" data-term="CSV" data-def="Comma-separated values: a plain-text table where each line is a row and commas separate the columns.">CSV</button></strong> (comma-separated values) is a plain text table: one row per line, values separated by commas, and the first line holds the column names. It is simple, universal and opens in any spreadsheet.</p>
+<pre class="code-block" data-lang="text"><span class="lang-tag">Text</span>student,class,score,passed
+Ada,A,80,yes
+Tunde,B,70,yes
+Zainab,B,65,no</pre>
+<p><strong><button type="button" class="term" data-term="JSON" data-def="A simple text format for sending structured data between programs. It looks like name and value pairs in curly braces.">JSON</button></strong> is better for nested data, as returned by most APIs:</p>
+<pre class="code-block" data-lang="json"><span class="lang-tag">JSON</span>[
+  { "student": "Ada", "class": "A", "scores": { "math": 80, "english": 91 } },
+  { "student": "Tunde", "class": "B", "scores": { "math": 70, "english": 64 } }
+]</pre>
+<h3 id="tidy-data">Tidy data</h3>
+<p>Analysis tools like data in a consistent shape, called <strong>tidy data</strong>:</p>
+<ul><li>each <strong>column</strong> is one variable (score, class),</li><li>each <strong>row</strong> is one observation (one student),</li><li>each <strong>table</strong> is about one kind of thing.</li></ul>
+<p>A table with columns <code class="inline">math_2023</code>, <code class="inline">math_2024</code> and <code class="inline">math_2025</code> is <em>not</em> tidy: the year is hiding in the column names. A tidy version has the columns <code class="inline">student</code>, <code class="inline">year</code> and <code class="inline">math</code>, and three rows per student.</p>
+<h2 id="the-core-moves-in-many-languages">The core moves, in many languages</h2>
+<p>Whatever the tool, almost all analysis is built from four moves.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Move</th><th scope="col">Question it answers</th><th scope="col">SQL word</th></tr></thead><tbody><tr><td><strong>Filter</strong></td><td>Which rows do I care about?</td><td><code class="inline">WHERE</code></td></tr><tr><td><strong>Sort</strong></td><td>In what order?</td><td><code class="inline">ORDER BY</code></td></tr><tr><td><strong>Group and aggregate</strong></td><td>What is the total, average or count for each category?</td><td><code class="inline">GROUP BY</code></td></tr><tr><td><strong>Join</strong></td><td>How do I combine two tables?</td><td><code class="inline">JOIN</code></td></tr></tbody></table></div>
+<p>Here is the most important one, <strong>group and aggregate</strong>, written in seven languages. The data is six students, each with a class and a score. The task is to print the average score for each class, in alphabetical order. Notice that the thinking is identical: collect scores under each class, then divide the sum by the count.</p>
+<div class="code-tabs" data-title="Average score per class"><div class="code-tabs-title">Average score per class</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const classes = ["A", "B", "A", "B", "B", "C"];
+const scores = [80, 70, 90, 75, 65, 60];
+
+const groups = {};
+classes.forEach((c, i) =&gt; {
+  if (!groups[c]) groups[c] = [];
+  groups[c].push(scores[i]);
+});
+
+for (const c of Object.keys(groups).sort()) {
+  const list = groups[c];
+  const sum = list.reduce((a, b) =&gt; a + b, 0);
+  console.log(c + " " + sum / list.length);
+}</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>classes = ["A", "B", "A", "B", "B", "C"]
+scores = [80, 70, 90, 75, 65, 60]
+
+groups = {}
+for c, s in zip(classes, scores):
+    groups.setdefault(c, []).append(s)
+
+for c in sorted(groups):
+    print(c, sum(groups[c]) // len(groups[c]))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>import java.util.*;
+
+String[] classes = {"A", "B", "A", "B", "B", "C"};
+int[] scores = {80, 70, 90, 75, 65, 60};
+
+Map&lt;String, List&lt;Integer&gt;&gt; groups = new TreeMap&lt;&gt;();
+for (int i = 0; i &lt; classes.length; i++) {
+    groups.computeIfAbsent(classes[i], k -&gt; new ArrayList&lt;&gt;()).add(scores[i]);
+}
+for (Map.Entry&lt;String, List&lt;Integer&gt;&gt; e : groups.entrySet()) {
+    int sum = 0;
+    for (int s : e.getValue()) sum += s;
+    System.out.println(e.getKey() + " " + sum / e.getValue().size());
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>using System.Linq;
+
+var rows = new[] { ("A", 80), ("B", 70), ("A", 90), ("B", 75), ("B", 65), ("C", 60) };
+
+foreach (var g in rows.GroupBy(r =&gt; r.Item1).OrderBy(g =&gt; g.Key))
+{
+    Console.WriteLine(g.Key + " " + (int)g.Average(r =&gt; r.Item2));
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$classes = ["A", "B", "A", "B", "B", "C"];
+$scores = [80, 70, 90, 75, 65, 60];
+
+$groups = [];
+foreach ($classes as $i =&gt; $c) {
+    $groups[$c][] = $scores[$i];
+}
+ksort($groups);
+foreach ($groups as $c =&gt; $list) {
+    echo $c . " " . intdiv(array_sum($list), count($list)) . "\n";
+}</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>classes := []string{"A", "B", "A", "B", "B", "C"}
+scores := []int{80, 70, 90, 75, 65, 60}
+
+groups := map[string][]int{}
+for i, c := range classes {
+    groups[c] = append(groups[c], scores[i])
+}
+keys := []string{}
+for c := range groups {
+    keys = append(keys, c)
+}
+sort.Strings(keys)
+for _, c := range keys {
+    sum := 0
+    for _, s := range groups[c] {
+        sum += s
+    }
+    fmt.Println(c, sum/len(groups[c]))
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>classes = ["A", "B", "A", "B", "B", "C"]
+scores = [80, 70, 90, 75, 65, 60]
+
+groups = classes.zip(scores).group_by(&amp;:first)
+groups.sort.each do |c, pairs|
+  list = pairs.map(&amp;:last)
+  puts "#{c} #{list.sum / list.size}"
+end</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>A 85
+B 70
+C 60</pre></div>
+<p>Notice that the languages with built-in <strong>grouping tools</strong> (C# <code class="inline">GroupBy</code>, Ruby <code class="inline">group_by</code>) are shortest, and the pandas library you will meet next makes it a single line. Understanding the manual version is what lets you understand the shortcut.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 520 250" role="img" aria-label="Bar chart of average score per class. Class A is 85, class B is 70, class C is 60. The vertical axis starts at zero." style="max-width:520px;min-width:360px" xmlns="http://www.w3.org/2000/svg">
+<line x1="60" y1="20" x2="60" y2="200" class="fg-line"/><line x1="60" y1="200" x2="490" y2="200" class="fg-line"/>
+<line x1="60" y1="110" x2="490" y2="110" class="fg-line fg-dash"/><line x1="60" y1="20" x2="490" y2="20" class="fg-line fg-dash"/>
+<text x="52" y="204" text-anchor="end" class="fg-sub">0</text><text x="52" y="114" text-anchor="end" class="fg-sub">50</text><text x="52" y="24" text-anchor="end" class="fg-sub">100</text>
+<rect x="100" y="47" width="80" height="153" rx="4" class="fg-box fg-accent"/><text x="140" y="40" text-anchor="middle" class="fg-title">85</text><text x="140" y="222" text-anchor="middle" class="fg-msg">Class A</text>
+<rect x="250" y="74" width="80" height="126" rx="4" class="fg-box fg-accent"/><text x="290" y="67" text-anchor="middle" class="fg-title">70</text><text x="290" y="222" text-anchor="middle" class="fg-msg">Class B</text>
+<rect x="400" y="92" width="80" height="108" rx="4" class="fg-box fg-accent"/><text x="440" y="85" text-anchor="middle" class="fg-title">60</text><text x="440" y="222" text-anchor="middle" class="fg-msg">Class C</text>
+<text x="275" y="244" text-anchor="middle" class="fg-sub">Average score per class. The axis starts at zero, so bar heights are honest</text>
+</svg></div><figcaption><span class="fig-n">Figure 2.</span> The result as a bar chart</figcaption></figure>
+<div class="challenge" data-id="data.groupavg" data-title="Group and average"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Group and average</h3></div><div class="challenge-body"><p>Write <code class="inline">groupAverage(rows, key, valueKey)</code>. <code class="inline">rows</code> is an array of objects. Return an <strong>object</strong> that maps each distinct value of <code class="inline">key</code> to the <strong>average</strong> of <code class="inline">valueKey</code> for those rows. For example, with <code class="inline">[{ c: 'A', s: 80 }, { c: 'B', s: 70 }, { c: 'A', s: 90 }]</code>, <code class="inline">groupAverage(rows, 'c', 's')</code> gives <code class="inline">{ A: 85, B: 70 }</code>.</p></div><script type="text/plain" data-part="starter">function groupAverage(rows, key, valueKey) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">const rows = [{ c: 'A', s: 80 }, { c: 'B', s: 70 }, { c: 'A', s: 90 }, { c: 'B', s: 75 }, { c: 'B', s: 65 }];
+test('averages per group', () => assert.deepEqual(groupAverage(rows, 'c', 's'), { A: 85, B: 70 }));
+test('single group', () => assert.deepEqual(groupAverage([{ c: 'X', s: 10 }], 'c', 's'), { X: 10 }));
+test('empty input', () => assert.deepEqual(groupAverage([], 'c', 's'), {}));
+test('other keys', () => assert.deepEqual(groupAverage([{ city: 'Lagos', age: 30 }, { city: 'Lagos', age: 40 }], 'city', 'age'), { Lagos: 35 }));
+test('non-whole averages', () => assert.deepEqual(groupAverage([{ g: 'a', v: 1 }, { g: 'a', v: 2 }], 'g', 'v'), { a: 1.5 }));</script><script type="text/plain" data-part="solution">function groupAverage(rows, key, valueKey) {
+  const sums = {}, counts = {};
+  for (const row of rows) {
+    const k = row[key];
+    sums[k] = (sums[k] || 0) + row[valueKey];
+    counts[k] = (counts[k] || 0) + 1;
+  }
+  const result = {};
+  for (const k of Object.keys(sums)) result[k] = sums[k] / counts[k];
+  return result;
+}</script><div class="hint-text" hidden>Build two objects as you loop: one with the running sum per group, and one with the count per group. Then divide.</div><div class="hint-text" hidden><code class="inline">sums[k] = (sums[k] || 0) + row[valueKey]</code> and <code class="inline">counts[k] = (counts[k] || 0) + 1</code>.</div></div>
+<div class="quiz-mount" data-id="data-c1" data-kind="check" data-title="Checkpoint: data basics" data-count="3"><script type="application/json" class="quiz-data">{"id": "data-c1", "kind": "check", "title": "Checkpoint: data basics", "questions": [{"t": "mcq", "q": "In tidy data, what does each ROW represent?", "o": ["A whole table", "A chart", "A variable", "One observation, such as one student or one order"], "a": 3, "why": "Each column is a variable, each row is an observation."}, {"t": "mcq", "q": "Which SQL clause performs the \"group and aggregate\" move?", "o": ["<code class=\"inline\">LIMIT<\/code>", "<code class=\"inline\">WHERE<\/code>", "<code class=\"inline\">JOIN<\/code>", "<code class=\"inline\">GROUP BY<\/code>"], "a": 3, "why": "<code class=\"inline\">GROUP BY<\/code> forms the groups, and aggregates such as <code class=\"inline\">AVG<\/code> summarise each one."}, {"t": "tf", "q": "Data analysts usually spend more time cleaning data than building charts.", "a": true, "why": "Real data is messy, and preparing it is the largest part of most projects."}]}</script></div>
+<h2 id="reading-and-cleaning-data">Reading and cleaning data</h2>
+<p>Real data has problems. The most common ones are in the table below, along with the usual treatment. Good analysts always <strong>look</strong> before they calculate.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Problem</th><th scope="col">Example</th><th scope="col">Common treatment</th></tr></thead><tbody><tr><td>Missing values</td><td>Blank age, <code class="inline">N/A</code>, <code class="inline">null</code></td><td>Remove the row, fill with a sensible value (median, "Unknown"), or leave it out of the calculation</td></tr><tr><td>Duplicates</td><td>The same order twice</td><td>Remove duplicates by a key (such as <code class="inline">id</code>)</td></tr><tr><td>Wrong type</td><td>The number <code class="inline">"36"</code> stored as text</td><td>Convert the type</td></tr><tr><td>Inconsistent labels</td><td><code class="inline">Lagos</code>, <code class="inline">lagos</code>, <code class="inline"> LAGOS </code></td><td>Trim whitespace and normalise the case</td></tr><tr><td>Outliers</td><td>An age of 999</td><td>Investigate: a typo, or a real extreme? Do not delete without a reason</td></tr><tr><td>Impossible values</td><td>A negative quantity</td><td>Fix at the source, or exclude and report it</td></tr></tbody></table></div>
+<aside class="callout callout-best"><div class="callout-title">Never overwrite your raw data</div><div class="callout-body"><p>Keep the original file untouched. Do all cleaning in a script that reads the raw data and writes a cleaned copy. Then your work is <strong>repeatable</strong>, and you can check what you changed and why.</p></div></aside>
+<div class="challenge" data-id="data.parsecsv" data-title="Parse a CSV file"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Parse a CSV file</h3></div><div class="challenge-body"><p>Write <code class="inline">parseCsv(text)</code>. The first line holds the column names. Return an <strong>array of objects</strong>, one per data line. Values that look like numbers (<code class="inline">"36"</code>) must become numbers. All other values stay as text. Ignore blank lines. An empty text returns <code class="inline">[]</code>. (No quoted commas to worry about in this task.)</p></div><script type="text/plain" data-part="starter">function parseCsv(text) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('parses rows', () => assert.deepEqual(parseCsv('name,age\nAda,36\nTunde,29\n'), [{ name: 'Ada', age: 36 }, { name: 'Tunde', age: 29 }]));
+test('text stays text', () => assert.deepEqual(parseCsv('a,b\nx,y'), [{ a: 'x', b: 'y' }]));
+test('decimals', () => assert.deepEqual(parseCsv('item,price\nPen,1.5'), [{ item: 'Pen', price: 1.5 }]));
+test('ignores blank lines', () => assert.equal(parseCsv('a\n1\n\n2\n\n').length, 2));
+test('empty text', () => assert.deepEqual(parseCsv(''), []));
+test('header only', () => assert.deepEqual(parseCsv('a,b'), []));</script><script type="text/plain" data-part="solution">function parseCsv(text) {
+  const lines = text.split('\n').map((l) => l.trim()).filter((l) => l !== '');
+  if (lines.length === 0) return [];
+  const headers = lines[0].split(',');
+  return lines.slice(1).map((line) => {
+    const cells = line.split(',');
+    const row = {};
+    headers.forEach((h, i) => {
+      const v = cells[i];
+      row[h] = v !== '' && v !== undefined && !isNaN(Number(v)) ? Number(v) : v;
+    });
+    return row;
+  });
+}</script><div class="hint-text" hidden><code class="inline">text.split('\n')</code>, <code class="inline">trim</code> each line and <code class="inline">filter</code> out the empty ones. The first line is the header.</div><div class="hint-text" hidden>Convert with <code class="inline">v !== '' &amp;&amp; !isNaN(Number(v)) ? Number(v) : v</code>.</div></div>
+<div class="challenge" data-id="data.dedupe" data-title="Remove duplicate records"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Remove duplicate records</h3></div><div class="challenge-body"><p>Write <code class="inline">dedupe(rows, key)</code>. Return a <strong>new</strong> array that keeps only the <strong>first</strong> row for each distinct value of <code class="inline">key</code>, preserving the original order.</p></div><script type="text/plain" data-part="starter">function dedupe(rows, key) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">const rows = [{ id: 1, v: 'a' }, { id: 2, v: 'b' }, { id: 1, v: 'c' }, { id: 3, v: 'd' }, { id: 2, v: 'e' }];
+test('keeps first of each', () => assert.deepEqual(dedupe(rows, 'id'), [{ id: 1, v: 'a' }, { id: 2, v: 'b' }, { id: 3, v: 'd' }]));
+test('no duplicates', () => assert.deepEqual(dedupe([{ id: 1 }, { id: 2 }], 'id'), [{ id: 1 }, { id: 2 }]));
+test('empty', () => assert.deepEqual(dedupe([], 'id'), []));
+test('does not change the input', () => { const a = rows.slice(); dedupe(a, 'id'); assert.equal(a.length, 5); });</script><script type="text/plain" data-part="solution">function dedupe(rows, key) {
+  const seen = new Set();
+  return rows.filter((r) => {
+    if (seen.has(r[key])) return false;
+    seen.add(r[key]);
+    return true;
+  });
+}</script><div class="hint-text" hidden>Keep a <code class="inline">Set</code> of the keys you have already seen.</div><div class="hint-text" hidden><code class="inline">rows.filter((r) =&gt; { if (seen.has(r[key])) return false; seen.add(r[key]); return true; })</code></div></div>
+<h2 id="pandas-a-spreadsheet-in-code">pandas: a spreadsheet in code</h2>
+<p>Python's <strong>pandas</strong> library is the standard tool for tabular data. Its main object is the <strong><button type="button" class="term" data-term="DataFrame" data-def="A table of data in memory with named columns, the main object in pandas.">DataFrame</button></strong>: a table with labelled columns. You will meet it in many jobs, and its ideas (and many of its method names) are copied by libraries in other languages. These examples are complete and verified: copy them into a file, install with <code class="inline">pip install pandas matplotlib seaborn</code>, and run them.</p>
+<div class="code-tabs" data-title="Load and summarise a table"><div class="code-tabs-title">Load and summarise a table</div><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>import pandas as pd
+from io import StringIO
+
+csv = """student,class,score,passed
+Ada,A,80,yes
+Tunde,B,70,yes
+Chidi,A,90,yes
+Amina,B,75,yes
+Zainab,B,65,no
+Ife,C,60,no
+"""
+df = pd.read_csv(StringIO(csv))
+print(df.head(3))
+print()
+print(df["score"].describe())</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>  student class  score passed
+0     Ada     A     80    yes
+1   Tunde     B     70    yes
+2   Chidi     A     90    yes
+
+count     6.000000
+mean     73.333333
+std      10.801234
+min      60.000000
+25%      66.250000
+50%      72.500000
+75%      78.750000
+max      90.000000
+Name: score, dtype: float64</pre></div>
+<p>(In real work you would write <code class="inline">pd.read_csv("scores.csv")</code>. The <code class="inline">StringIO</code> part simply lets this example be self-contained.) <code class="inline">describe()</code> gives you the count, mean, spread and quartiles of a column in one call, and is the first thing to run on any new column.</p>
+<div class="code-tabs" data-title="Filter, group, derive and sort"><div class="code-tabs-title">Filter, group, derive and sort</div><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>import pandas as pd
+from io import StringIO
+
+csv = """student,class,score,passed
+Ada,A,80,yes
+Tunde,B,70,yes
+Chidi,A,90,yes
+Amina,B,75,yes
+Zainab,B,65,no
+Ife,C,60,no
+"""
+df = pd.read_csv(StringIO(csv))
+
+high = df[df["score"] &gt;= 75]                       # filter rows
+print(high[["student", "score"]])
+print()
+print(df.groupby("class")["score"].mean())         # group and aggregate
+print()
+df["grade"] = df["score"].apply(lambda s: "A" if s &gt;= 80 else "B" if s &gt;= 70 else "C")   # new column
+print(df.sort_values("score", ascending=False)[["student", "grade"]].head(3))</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>  student  score
+0     Ada     80
+2   Chidi     90
+3   Amina     75
+
+class
+A    85.0
+B    70.0
+C    60.0
+Name: score, dtype: float64
+
+  student grade
+2   Chidi     A
+0     Ada     A
+3   Amina     B</pre></div>
+<p>Each line is a move from the table above: a <strong>filter</strong> (<code class="inline">df[df["score"] &gt;= 75]</code>), a <strong>group and aggregate</strong>, a <strong>new column</strong>, and a <strong>sort</strong>. The <code class="inline">groupby</code> line replaces the whole loop you wrote by hand a moment ago.</p>
+<h3 id="missing-data-in-pandas">Missing data in pandas</h3>
+<div class="code-tabs" data-title="Find and fix missing values"><div class="code-tabs-title">Find and fix missing values</div><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>import pandas as pd
+import numpy as np
+
+df = pd.DataFrame({
+    "name": ["Ada", "Tunde", "Chidi", "Amina"],
+    "age": [36, np.nan, 29, 41],
+    "city": ["Lagos", "Abuja", None, "Kano"],
+})
+print(df.isna().sum())
+print()
+clean = df.fillna({"age": df["age"].median(), "city": "Unknown"})
+print(clean)
+print()
+print(df.dropna())</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>name    0
+age     1
+city    1
+dtype: int64
+
+    name   age     city
+0    Ada  36.0    Lagos
+1  Tunde  36.0    Abuja
+2  Chidi  29.0  Unknown
+3  Amina  41.0     Kano
+
+    name   age   city
+0    Ada  36.0  Lagos
+3  Amina  41.0   Kano</pre></div>
+<p>Three tools you will use constantly: <code class="inline">isna().sum()</code> counts the gaps in each column, <code class="inline">fillna(...)</code> replaces them, and <code class="inline">dropna()</code> removes any row with a gap. Filling and dropping are <strong>choices that change your results</strong>, so make them deliberately and write down which you picked.</p>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>Imagine surveying ten people about their age, and two people leave it blank. Dropping the two would leave you with eight answers. Filling the blanks with the average would keep all ten, but you have invented two numbers. Neither choice is "right", and you must tell your readers what you did.</p></div></aside>
+<h2 id="statistics-you-actually-need">Statistics you actually need</h2>
+<p>You do not need a maths degree. These four ideas cover most everyday analysis.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Measure</th><th scope="col">What it tells you</th><th scope="col">Watch out</th></tr></thead><tbody><tr><td><strong>Mean</strong> (average)</td><td>The sum divided by the count</td><td>Dragged around by extreme values</td></tr><tr><td><strong>Median</strong></td><td>The middle value when sorted</td><td>Not affected by extremes, so better for salaries, prices and response times</td></tr><tr><td><strong>Mode</strong></td><td>The most common value</td><td>Useful for categories</td></tr><tr><td><strong>Standard deviation</strong></td><td>How spread out values are around the mean</td><td>A small number means that values cluster together</td></tr></tbody></table></div>
+<p>Consider the salaries 30, 32, 35, 38 and 900 (in thousands). The mean is 207, which describes nobody. The median is 35, which describes the typical person. Always look at the median as well as the mean.</p>
+<div class="challenge" data-id="data.median" data-title="Find the median"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Find the median</h3></div><div class="challenge-body"><p>Write <code class="inline">median(numbers)</code>. Return the middle value of the sorted numbers. For an even number of values, return the <strong>average of the two middle ones</strong>. For an empty array return <code class="inline">null</code>. Do <strong>not</strong> change the array that was passed in.</p></div><script type="text/plain" data-part="starter">function median(numbers) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('odd count', () => assert.equal(median([3, 1, 2]), 2));
+test('even count', () => assert.equal(median([4, 1, 3, 2]), 2.5));
+test('unsorted with a big outlier', () => assert.equal(median([900, 30, 35, 32, 38]), 35));
+test('single value', () => assert.equal(median([7]), 7));
+test('empty', () => assert.equal(median([]), null));
+test('numeric, not alphabetic, order', () => assert.equal(median([10, 9, 100]), 10));
+test('does not mutate', () => { const a = [3, 1, 2]; median(a); assert.deepEqual(a, [3, 1, 2]); });</script><script type="text/plain" data-part="solution">function median(numbers) {
+  if (numbers.length === 0) return null;
+  const sorted = [...numbers].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}</script><div class="hint-text" hidden>Copy first (<code class="inline">[...numbers]</code>), because <code class="inline">sort</code> changes an array in place. Use a compare function: <code class="inline">(a, b) =&gt; a - b</code>.</div><div class="hint-text" hidden>With <code class="inline">mid = Math.floor(n / 2)</code>, an odd count has its median at <code class="inline">sorted[mid]</code>. An even count averages <code class="inline">sorted[mid - 1]</code> and <code class="inline">sorted[mid]</code>.</div></div>
+<h2 id="sql-is-a-data-tool-too">SQL is a data tool too</h2>
+<p>Everything above has a <button type="button" class="term" data-term="SQL" data-def="The standard language for asking questions of, and changing data in, relational databases.">SQL</button> equivalent, and a lot of data analysis happens directly in the <button type="button" class="term" data-term="Database" data-def="An organised store of data that programs can save to and query efficiently.">database</button>. This sandbox holds monthly sales. Try to answer: which region sold the most? Which month was the best?</p>
+<div class="sqlplay" data-title="Sales analysis"><div class=pg-intro><p>Change <code class="inline">SUM</code> to <code class="inline">AVG</code>, <button type="button" class="term" data-term="Group by" data-def="An SQL clause that puts rows with the same value together so you can summarise each group, for example total sales per city.">group by</button> <code class="inline">month</code> instead of <code class="inline">region</code>, or filter with <code class="inline">WHERE product = 'Laptop'</code>.</p></div><script type="text/plain" data-part="schema">CREATE TABLE sales (id INTEGER PRIMARY KEY, month TEXT, region TEXT, product TEXT, units INTEGER, revenue REAL);
+INSERT INTO sales (month, region, product, units, revenue) VALUES
+('Jan','North','Laptop',5,4000),('Jan','South','Laptop',3,2400),('Jan','North','Phone',10,5000),
+('Feb','North','Laptop',6,4800),('Feb','South','Phone',8,4000),('Feb','South','Laptop',4,3200),
+('Mar','North','Phone',12,6000),('Mar','South','Laptop',7,5600),('Mar','North','Laptop',2,1600);</script><script type="text/plain" data-part="starter">SELECT region, SUM(revenue) AS total_revenue, SUM(units) AS units
+FROM sales
+GROUP BY region
+ORDER BY total_revenue DESC;</script></div>
+<h2 id="visualisation">Visualisation</h2>
+<p>A chart is a <strong>question answered visually</strong>. Pick the chart that fits the question, rather than the one that looks most impressive.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Question</th><th scope="col">Chart</th><th scope="col">Example</th></tr></thead><tbody><tr><td>How do categories compare?</td><td><strong>Bar chart</strong></td><td>Average score per class</td></tr><tr><td>How does something change over time?</td><td><strong>Line chart</strong></td><td>Daily sign-ups</td></tr><tr><td>How are values distributed?</td><td><strong>Histogram</strong> or <strong>box plot</strong></td><td>How long do users stay?</td></tr><tr><td>Are two numbers related?</td><td><strong>Scatter plot</strong></td><td>Hours studied against score</td></tr><tr><td>What share does each part have?</td><td><strong>Bar chart</strong> (pies only for 2 to 4 slices)</td><td>Traffic sources</td></tr></tbody></table></div>
+<p>In Python the standard libraries are <strong>matplotlib</strong> (flexible, detailed control) and <strong>seaborn</strong> (built on matplotlib, with attractive statistical charts in one line).</p>
+<pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>import matplotlib
+matplotlib.use("Agg")          # draw to a file, with no window (useful on servers)
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+df = pd.DataFrame({
+    "class": ["A", "B", "A", "B", "B", "C"],
+    "score": [80, 70, 90, 75, 65, 60],
+})
+
+# matplotlib: a bar chart of the average per class
+averages = df.groupby("class")["score"].mean()
+fig, ax = plt.subplots(figsize=(5, 3))
+ax.bar(averages.index, averages.values)
+ax.set_title("Average score per class")
+ax.set_xlabel("Class")
+ax.set_ylabel("Score")
+ax.set_ylim(0, 100)            # start at zero
+fig.tight_layout()
+fig.savefig("averages.png")
+
+# seaborn: the same idea, with less code
+sns.barplot(data=df, x="class", y="score", estimator="mean", errorbar=None)
+plt.savefig("averages-seaborn.png")</pre>
+<p>Always label the axes and give the chart a title, because a chart that needs explaining out loud has failed.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">Charts can lie</div><div class="callout-body"><ul><li><strong>A truncated axis.</strong> Starting a bar chart at 60 instead of 0 makes a difference of 5 look like a difference of 500%. Bars must start at zero.</li><li><strong>Too many colours or slices.</strong> If the reader needs a legend decoder ring, simplify.</li><li><strong>Missing context.</strong> "Sales doubled" from 2 to 4 units is not news.</li><li><strong>Correlation is not causation.</strong> Ice-cream sales and drownings rise together because of summer, not because one causes the other.</li><li><strong>Cherry-picking</strong> a time range that supports your story.</li><li><strong>Colour alone</strong> to carry meaning, which excludes colour-blind readers. Add labels or patterns.</li></ul></div></aside>
+<section class="lab-box"><h3>Lab: analyse a real dataset</h3><p>Pick a free CSV: for example, your country's open data portal, a Kaggle starter dataset, or export your own bank or phone-usage data (remove anything private).</p><ol class="lab-steps"><li>Write down three questions you want the data to answer before you look.</li><li>Load the file (<code class="inline">pandas.read_csv</code>, or the JavaScript <code class="inline">parseCsv</code> from the challenge). Print the first rows, the column types and <code class="inline">describe()</code>.</li><li>List every cleaning problem you find: missing values, duplicates, wrong types and inconsistent labels. Fix each in a script, and keep the raw file untouched.</li><li>Answer each question with a filter, group-and-aggregate or sort. Print the result as a small table.</li><li>Compute the mean <strong>and</strong> the median of an important column. If they differ a lot, find out why.</li><li>Make two charts that fit your questions, with titles and labelled axes. Check that your bar charts start at zero.</li><li>Write five sentences for a non-technical reader: the question, what you did to the data, what you found, one caveat, and one next step.</li><li>Stretch goal: load the data into a SQLite table and reproduce one result with SQL.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<aside class="callout callout-pitfall"><div class="callout-title">Common data mistakes</div><div class="callout-body"><ul><li><strong>Not looking at the data first.</strong> Print <code class="inline">head()</code> and <code class="inline">describe()</code> before any calculation.</li><li><strong>Silently dropping rows.</strong> Report how many rows each step removed.</li><li><strong>Using the mean on skewed data.</strong> Check the median.</li><li><strong>Mixing types</strong>, such as numbers stored as text sorting as <code class="inline">"10" &lt; "9"</code>.</li><li><strong>Editing the raw file by hand.</strong> It makes the analysis unrepeatable.</li><li><strong>Reporting numbers without sample size.</strong> An average of three people is not a trend.</li><li><strong>Leaking private data</strong> (names, emails, phone numbers) into a shared notebook or chart.</li></ul></div></aside>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>Analysis is a loop: ask, collect, clean, explore, conclude. Cleaning is the biggest part.</li><li>CSV is simple tabular text, and JSON handles nesting. Tidy data has one variable per column and one observation per row.</li><li>The core moves are filter, sort, group and aggregate, and join. They exist in every language and in SQL.</li><li>pandas gives you DataFrames, <code class="inline">groupby</code>, <code class="inline">fillna</code>, <code class="inline">dropna</code> and <code class="inline">describe</code> in a few lines.</li><li>Report the median as well as the mean, and say how you handled missing values.</li><li>Choose a chart for the question, start bars at zero, label everything, and beware of misleading axes.</li></ul></section>
+<div class="quiz-mount" data-id="data" data-kind="test" data-title="Module test: Working with data" data-count="11"><script type="application/json" class="quiz-data">{"id": "data", "kind": "test", "title": "Module test: Working with data", "questions": [{"t": "mcq", "q": "What is the median of 2, 9, 4, 100, 5?", "o": ["4", "9", "24", "5"], "a": 3, "why": "Sorted: 2, 4, 5, 9, 100. The middle value is 5. The mean (24) is pulled up by the outlier."}, {"t": "mcq", "q": "Which pandas call returns the count of missing values in each column?", "o": ["<code class=\"inline\">df.isna().sum()<\/code>", "<code class=\"inline\">df.count()<\/code>", "<code class=\"inline\">df.dropna()<\/code>", "<code class=\"inline\">df.describe()<\/code>"], "a": 0, "why": "<code class=\"inline\">isna()<\/code> marks missing values, and <code class=\"inline\">sum()<\/code> counts them for each column."}, {"t": "mcq", "q": "Which chart is the best choice to show how daily sign-ups changed over a month?", "o": ["Histogram", "Line chart", "Pie chart", "Scatter plot of unrelated values"], "a": 1, "why": "A line chart shows change over time."}, {"t": "mcq", "q": "A bar chart's y-axis starts at 60 instead of 0. What is the problem?", "o": ["The bars will be too thin", "Nothing. It is just a style choice", "Bar heights exaggerate small differences", "The chart will not render"], "a": 2, "why": "Bars encode value by length, so a truncated axis misleads."}, {"t": "mcq", "q": "Which of these is a sensible way to handle a duplicate order row?", "o": ["Keep both because more data is better", "Remove duplicates by a key such as the order id", "Rename one of them", "Delete the whole file"], "a": 1, "why": "Duplicates inflate totals. A key identifies them."}, {"t": "mcq", "q": "Which SQL query corresponds to <code class=\"inline\">df.groupby(\"class\")[\"score\"].mean()<\/code>?", "o": ["<code class=\"inline\">SELECT class, AVG(score) FROM df GROUP BY class<\/code>", "<code class=\"inline\">SELECT AVG(class) FROM df<\/code>", "<code class=\"inline\">SELECT class, score FROM df<\/code>", "<code class=\"inline\">ORDER BY class<\/code>"], "a": 0, "why": "Group on the category and apply an aggregate to the value column."}, {"t": "mcq", "q": "Why should you keep the raw data file unchanged?", "o": ["Because CSV files cannot be edited", "It does not matter", "To save disk space", "So that the cleaning is repeatable and checkable"], "a": 3, "why": "A script that goes from raw to clean documents every change you made."}, {"t": "tf", "q": "The mean is always the best single number to describe a typical value.", "a": false, "why": "With skewed data and outliers, the median describes a typical value better."}, {"t": "tf", "q": "Correlation proves that one thing causes another.", "a": false, "why": "Two things can move together because of a third factor, or by chance."}, {"t": "short", "q": "Which library built on matplotlib gives attractive statistical charts in one line? Type its name.", "a": ["seaborn"], "why": "seaborn makes common statistical plots with little code, and matplotlib draws them."}, {"t": "multi", "q": "Which of these are common data-cleaning tasks? Select all that apply.", "o": ["Converting text to numbers", "Handling missing values", "Changing the raw data file by hand", "Removing duplicates"], "a": [0, 1, 3], "why": "Clean in a repeatable script. Hand-editing the raw file hides what you changed."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="data.data-story" data-req="9" data-stretch="3" aria-labelledby="pj-data.data-story"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-data.data-story">Analyse a dataset and tell its story</h3><div class="pj-meta"><span>4-5 hours</span><span>Intermediate</span><span>Skills: loading data, cleaning, summary statistics, grouping, charts, communicating results</span></div></div><div class="pj-body"><div class="pj-brief"><p>Pick a real dataset and turn it into a short, honest report. Good choices are a public CSV about school results, football matches, city temperatures, film ratings or your own spending. Aim for between 200 and 5,000 rows. You can use Python with pandas, JavaScript, a spreadsheet, or SQL, as long as your steps can be repeated.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>Choose a dataset and write down its source, licence and what one row means.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>Load it from a file and print the number of rows and columns, each column's type and the first five rows.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Find and report the missing values in every column. Decide, for each one, whether to drop, fill or keep it, and write down why.</span></label></li><li><label><input type="checkbox" data-k="r3"><span>Check for duplicates and for impossible values (such as a negative age) and handle them.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>Calculate the mean, median, minimum, maximum and standard deviation for at least two numeric columns, and explain a case where the mean and the median differ.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>Group the data by at least one category and compare the groups with a table.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>Produce at least two charts of different types (for example a histogram and a bar chart or scatter plot). Every chart needs a title, axis labels with units and a readable scale.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>State three findings in plain English, each backed by a number or chart. State one thing the data cannot tell you.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>The analysis runs from a single script or notebook, from the raw file to the final charts, with no manual editing of the data.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Choose a question first ("Do students who study more score higher?"), then find data that can answer it.</li><li>Load the raw file and inspect it. Save an untouched copy of the original.</li><li>Clean the data in code and log every change, for example "dropped 12 rows with no score".</li><li>Calculate the summary statistics and look for outliers.</li><li>Group and compare, then draw the charts.</li><li>Write the findings. Check each claim against the numbers one more time.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("data.csv")
+
+print(df.shape)
+print(df.dtypes)
+print(df.head())
+
+# Missing values per column
+print(df.isna().sum())
+
+# TODO: clean (drop duplicates, handle missing and impossible values)
+# TODO: describe() the numeric columns
+# TODO: groupby a category and compare
+# TODO: draw two charts and save them with plt.savefig("chart1.png")</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li><code class="inline">df.describe()</code> gives the main statistics in one call. Compare <code class="inline">mean</code> with the 50% row (the median).</li><li>A correlation does not show that one thing causes another. Say "is associated with", not "causes".</li><li>Start every chart with a clear question. If you cannot say what it shows in one sentence, simplify it.</li><li>Cleaning is usually the longest part. That is normal.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Repeat one analysis in SQL and check that you get the same numbers.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Calculate a correlation between two columns and draw a scatter plot with a trend line.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Publish the report as a web page with the charts embedded.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Data quality</strong></td><td>Missing, duplicate and impossible values are found and every decision about them is explained.</td></tr><tr><td><strong>Analysis</strong></td><td>Statistics are correct and chosen for the question, and groups are compared fairly.</td></tr><tr><td><strong>Visuals</strong></td><td>Charts are the right type, clearly labelled and easy to read in a few seconds.</td></tr><tr><td><strong>Honesty</strong></td><td>Claims match the evidence, limits are stated and correlation is not presented as cause.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The script or notebook, the cleaned data and the charts.</li><li>A one-page written report with your question, method, three findings and one limitation.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-data.data-story">Link to your work (optional)</label><input class="field" id="pjl-data.data-story" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-data.data-story">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-data.data-story" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

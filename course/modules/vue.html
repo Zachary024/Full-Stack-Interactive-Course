@@ -1,0 +1,254 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Front-end frameworks</span><span>Module 11</span><span>150 min</span><span>Intermediate</span></div><h1>Vue: The Progressive Framework</h1><p class="lede">Single-file components, reactivity with ref and computed, directives, props and events, and how Vue compares with React.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Describe how Vue's reactivity system keeps the page in sync with your data.</li><li>Write single-file components with <code class="inline">&lt;script setup&gt;</code>, a template and scoped styles.</li><li>Use <code class="inline">ref</code>, <code class="inline">computed</code> and <code class="inline">watch</code> correctly.</li><li>Apply directives: <code class="inline">v-if</code>, <code class="inline">v-for</code>, <code class="inline">v-model</code>, <code class="inline">v-bind</code> and <code class="inline">v-on</code>.</li><li>Pass data down with props and send messages up with emitted events.</li><li>Compare Vue and React so you can pick one deliberately.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Advanced <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button>, and ideally the <button type="button" class="term" data-term="React" data-def="A JavaScript library for building user interfaces from components.">React</button> module. Vue solves the same problem as React with a different feel, and the comparisons in this module build on what you already learned.</p></section>
+<h2 id="what-is-vue">What is Vue?</h2>
+<p><strong>Vue</strong> is a framework for building user interfaces. Like React, you describe the page as a function of your data and the framework updates the <button type="button" class="term" data-term="DOM" data-def="The browser&#x27;s live, tree-shaped representation of a web page that JavaScript can read and change.">DOM</button>. Unlike React, Vue notices <strong>automatically</strong> when your data changes, and it uses an HTML-like template syntax. Many beginners find Vue's learning curve gentler because familiar <button type="button" class="term" data-term="HTML" data-def="The language that describes the structure and content of a web page with tags.">HTML</button>, <button type="button" class="term" data-term="CSS" data-def="The language that controls how HTML looks: colours, fonts, spacing and layout.">CSS</button> and JavaScript each have their own clearly separated place.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 691 202" role="img" aria-label="How Vue keeps the page in sync" style="max-width:691px;min-width:498px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-vue1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="172.0" height="66.0" rx="9" class="fg-box "/><text x="98.0" y="40.0" text-anchor="middle" class="fg-title">Reactive data</text><text x="98.0" y="59.0" text-anchor="middle" class="fg-sub">ref(0), reactive({})</text><rect x="230.0" y="12.0" width="268.6" height="66.0" rx="9" class="fg-box fg-accent "/><text x="364.3" y="40.0" text-anchor="middle" class="fg-title">Vue tracks</text><text x="364.3" y="59.0" text-anchor="middle" class="fg-sub">which template parts read the data</text><line x1="187.0" y1="45.0" x2="227.0" y2="45.0" class="fg-line" marker-end="url(#ah-vue1)"/><rect x="544.6" y="12.0" width="134.8" height="66.0" rx="9" class="fg-box "/><text x="612.0" y="40.0" text-anchor="middle" class="fg-title">Data changes</text><text x="612.0" y="59.0" text-anchor="middle" class="fg-sub">count.value++</text><line x1="501.6" y1="45.0" x2="541.6" y2="45.0" class="fg-line" marker-end="url(#ah-vue1)"/><rect x="223.7" y="124.0" width="244.0" height="66.0" rx="9" class="fg-box "/><text x="345.7" y="152.0" text-anchor="middle" class="fg-title">Only affected DOM updates</text><text x="345.7" y="171.0" text-anchor="middle" class="fg-sub">automatically</text><path d="M612.0 81.0 V101.0 H345.7 V121.0" class="fg-line" fill="none" marker-end="url(#ah-vue1)"/></svg></div><figcaption><span class="fig-n">Figure 1.</span> How Vue keeps the page in sync</figcaption></figure>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>Think of a spreadsheet. If cell C1 is <code class="inline">=A1+B1</code>, you never tell C1 to recalculate. When you change A1 the spreadsheet knows which cells depend on it and updates them. Vue does that for your web page: the template is full of formulas, and changing a piece of data updates exactly the parts that use it.</p></div></aside>
+<h2 id="single-file-components">Single-file components</h2>
+<p>Vue components live in <code class="inline">.vue</code> files with three sections. Each section has its own job.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 724 114" role="img" aria-label="Anatomy of a single-file component" style="max-width:724px;min-width:521px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-vue2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="6.0" y="8" width="236.0" height="98" rx="9" class="fg-box fg-c1"/><text x="22.0" y="34" class="fg-title">template</text><text x="22.0" y="62" class="fg-mono-s" xml:space="preserve">The HTML structure of the</text><text x="22.0" y="82" class="fg-mono-s" xml:space="preserve">component</text><rect x="252.0" y="8" width="228.0" height="98" rx="9" class="fg-box fg-c2"/><text x="268.0" y="34" class="fg-title">script setup</text><text x="268.0" y="62" class="fg-mono-s" xml:space="preserve">The JavaScript: data and</text><text x="268.0" y="82" class="fg-mono-s" xml:space="preserve">functions</text><rect x="490.0" y="8" width="228.0" height="98" rx="9" class="fg-box fg-c3"/><text x="506.0" y="34" class="fg-title">style scoped</text><text x="506.0" y="62" class="fg-mono-s" xml:space="preserve">The CSS, applied only to</text><text x="506.0" y="82" class="fg-mono-s" xml:space="preserve">this component</text></svg></div><figcaption><span class="fig-n">Figure 2.</span> Anatomy of a single-file component</figcaption></figure>
+<pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;script setup&gt;
+import { ref } from "vue";
+
+const count = ref(0);
+
+function increment() {
+  count.value++;
+}
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;button @click="increment"&gt;You clicked {{ count }} times&lt;/button&gt;
+&lt;/template&gt;
+
+&lt;style scoped&gt;
+button {
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+&lt;/style&gt;</pre>
+<p>Everything declared in <code class="inline">&lt;script setup&gt;</code> is automatically available in the template. Double curly braces <code class="inline">{{ }}</code> print the value of a JavaScript expression. <code class="inline">scoped</code> styles only affect this component, which prevents accidental clashes.</p>
+<h2 id="reactivity-ref-and-computed">Reactivity: <code class="inline">ref</code> and <code class="inline">computed</code></h2>
+<h3 id="ref"><code class="inline">ref</code></h3>
+<p>A <code class="inline">ref</code> wraps a value in a <strong><button type="button" class="term" data-term="Reactive" data-def="Updating the screen automatically whenever the underlying data changes.">reactive</button></strong> <button type="button" class="term" data-term="Container" data-def="A packaged, isolated environment holding an application and everything it needs to run. Docker creates containers.">container</button>. Read and write it through <code class="inline">.value</code> in JavaScript. In the template, Vue unwraps it for you, so you write just <code class="inline">count</code>.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const name = ref("Ada");
+name.value = "Grace";     // the page updates by itself</pre>
+<p>For an object with many properties, <code class="inline">reactive({ ... })</code> makes every property reactive, with no <code class="inline">.value</code>. Many developers simply use <code class="inline">ref</code> for everything, which keeps one consistent rule.</p>
+<h3 id="computed"><code class="inline">computed</code></h3>
+<p>A <strong>computed</strong> value is derived from other reactive data. Vue caches it, and recalculates only when what it depends on changes. It is the right tool for anything you can calculate from other data.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const price = ref(20);
+const quantity = ref(3);
+const total = computed(() =&gt; price.value * quantity.value);   // 60, always up to date</pre>
+<h3 id="watch"><code class="inline">watch</code></h3>
+<p>Use <code class="inline">watch</code> to run a <strong><button type="button" class="term" data-term="Side effect" data-def="Anything a function does besides returning a value, such as printing, changing a global variable or writing a file.">side effect</button></strong> when data changes: saving to the server, logging, calling an API.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>watch(searchText, async (newValue, oldValue) =&gt; {
+  results.value = await searchApi(newValue);
+});</pre>
+<aside class="callout callout-best"><div class="callout-title">computed or watch?</div><div class="callout-body"><p>If you want a <strong>new value</strong> derived from other data, use <code class="inline">computed</code>. If you want to <strong>do something</strong> (a request, saving, logging) when data changes, use <code class="inline">watch</code>. Beginners often reach for <code class="inline">watch</code> and then set another ref inside it. That is almost always a sign that a <code class="inline">computed</code> was the right choice.</p></div></aside>
+<p>To see the principle behind this magic, you will build a tiny reactive reference yourself.</p>
+<div class="challenge" data-id="vue.ref" data-title="Build your own reactive ref"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Build your own reactive ref</h3></div><div class="challenge-body"><p>Write <code class="inline">createRef(initial)</code>. It returns an object with:</p>
+<ul><li>a <code class="inline">value</code> property that reads and writes the current value, and</li><li>a <code class="inline">watch(callback)</code> method that registers a callback. Whenever <code class="inline">value</code> is <strong>set to a different value</strong>, call every registered callback with <code class="inline">(newValue, oldValue)</code>. Setting the same value again must not call anything.</li></ul></div><script type="text/plain" data-part="starter">function createRef(initial) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('reads the initial value', () => assert.equal(createRef(5).value, 5));
+test('writes a new value', () => { const r = createRef(1); r.value = 2; assert.equal(r.value, 2); });
+test('calls watchers with new and old', () => {
+  const r = createRef(1); const seen = [];
+  r.watch((n, o) => seen.push([n, o]));
+  r.value = 7;
+  assert.deepEqual(seen, [[7, 1]]);
+});
+test('same value does not trigger', () => {
+  const r = createRef(1); let calls = 0;
+  r.watch(() => calls++);
+  r.value = 1;
+  assert.equal(calls, 0);
+});
+test('several watchers', () => {
+  const r = createRef('a'); let n = 0;
+  r.watch(() => n++); r.watch(() => n++);
+  r.value = 'b';
+  assert.equal(n, 2);
+});</script><script type="text/plain" data-part="solution">function createRef(initial) {
+  let current = initial;
+  const listeners = [];
+  return {
+    get value() { return current; },
+    set value(v) {
+      if (v === current) return;
+      const old = current;
+      current = v;
+      listeners.forEach((fn) => fn(v, old));
+    },
+    watch(fn) { listeners.push(fn); },
+  };
+}</script><div class="hint-text" hidden>Keep <code class="inline">let current = initial</code> and an array <code class="inline">listeners</code> in the function. Define <code class="inline">value</code> with <code class="inline">get</code> and <code class="inline">set</code> in the returned object.</div><div class="hint-text" hidden>In <code class="inline">set value(v)</code>, return early if <code class="inline">v === current</code>. Otherwise save <code class="inline">old = current</code>, update <code class="inline">current</code>, and call each listener.</div></div>
+<h2 id="template-directives">Template directives</h2>
+<p><strong>Directives</strong> are special attributes starting with <code class="inline">v-</code>. They are Vue's template vocabulary.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Directive</th><th scope="col">Shorthand</th><th scope="col">Purpose</th><th scope="col">Example</th></tr></thead><tbody><tr><td><code class="inline">v-bind</code></td><td><code class="inline">:</code></td><td>Bind an attribute to data</td><td><code class="inline">&lt;img :src="user.avatar" :alt="user.name"&gt;</code></td></tr><tr><td><code class="inline">v-on</code></td><td><code class="inline">@</code></td><td>Listen to an event</td><td><code class="inline">&lt;button @click="save"&gt;</code></td></tr><tr><td><code class="inline">v-model</code></td><td></td><td>Two-way binding for form inputs</td><td><code class="inline">&lt;input v-model="name"&gt;</code></td></tr><tr><td><code class="inline">v-if</code> / <code class="inline">v-else</code></td><td></td><td>Add or remove from the DOM</td><td><code class="inline">&lt;p v-if="loading"&gt;Loading&lt;/p&gt;</code></td></tr><tr><td><code class="inline">v-show</code></td><td></td><td>Toggle CSS <code class="inline">display</code> (the element stays in the DOM)</td><td><code class="inline">&lt;div v-show="open"&gt;</code></td></tr><tr><td><code class="inline">v-for</code></td><td></td><td>Repeat an element</td><td><code class="inline">&lt;li v-for="t in todos" :key="t.id"&gt;</code></td></tr></tbody></table></div>
+<pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;script setup&gt;
+import { ref, computed } from "vue";
+
+const todos = ref([
+  { id: 1, text: "Learn Vue", done: true },
+  { id: 2, text: "Build an app", done: false },
+]);
+const newText = ref("");
+const remaining = computed(() =&gt; todos.value.filter((t) =&gt; !t.done).length);
+
+function addTodo() {
+  const text = newText.value.trim();
+  if (!text) return;
+  todos.value.push({ id: Date.now(), text, done: false });
+  newText.value = "";
+}
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;form @submit.prevent="addTodo"&gt;
+    &lt;label for="new"&gt;New task&lt;/label&gt;
+    &lt;input id="new" v-model="newText" /&gt;
+    &lt;button&gt;Add&lt;/button&gt;
+  &lt;/form&gt;
+
+  &lt;p&gt;{{ remaining }} tasks left&lt;/p&gt;
+
+  &lt;ul v-if="todos.length"&gt;
+    &lt;li v-for="todo in todos" :key="todo.id"&gt;
+      &lt;label&gt;
+        &lt;input type="checkbox" v-model="todo.done" /&gt;
+        &lt;span :class="{ done: todo.done }"&gt;{{ todo.text }}&lt;/span&gt;
+      &lt;/label&gt;
+    &lt;/li&gt;
+  &lt;/ul&gt;
+  &lt;p v-else&gt;Nothing to do.&lt;/p&gt;
+&lt;/template&gt;</pre>
+<p>Study this example. Everything in it is a directive from the table, plus <code class="inline">.prevent</code>, a <strong>modifier</strong> that calls <code class="inline">preventDefault()</code> for you. Notice <code class="inline">todos.value.push(...)</code>: unlike in React, <strong>mutating is fine</strong> in Vue, because Vue's reactivity system sees it.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">Common template mistakes</div><div class="callout-body"><ul><li><strong>Forgetting <code class="inline">:key</code> in <code class="inline">v-for</code></strong>, or using the index as a key in lists that change.</li><li><strong>Writing <code class="inline">value="x"</code> instead of <code class="inline">:value="x"</code></strong>. Without the colon the attribute is the literal text <code class="inline">x</code>.</li><li><strong>Using <code class="inline">v-if</code> and <code class="inline">v-for</code> on the same element.</strong> Put the condition on a wrapper, or filter in a <code class="inline">computed</code>.</li><li><strong>Forgetting <code class="inline">.value</code></strong> in <code class="inline">&lt;script&gt;</code> (but not in the template).</li><li><strong>Putting heavy logic in the template.</strong> Move it to a <code class="inline">computed</code> so it is cached and readable.</li></ul></div></aside>
+<div class="quiz-mount" data-id="vue-c1" data-kind="check" data-title="Checkpoint: Vue basics" data-count="3"><script type="application/json" class="quiz-data">{"id": "vue-c1", "kind": "check", "title": "Checkpoint: Vue basics", "questions": [{"t": "mcq", "q": "How do you read and change a <code class=\"inline\">ref<\/code> named <code class=\"inline\">count<\/code> inside <code class=\"inline\">&lt;script setup&gt;<\/code>?", "o": ["<code class=\"inline\">count()<\/code>", "<code class=\"inline\">this.count<\/code>", "<code class=\"inline\">count.value<\/code>", "<code class=\"inline\">count<\/code>"], "a": 2, "why": "In JavaScript you access a ref with <code class=\"inline\">.value<\/code>. In the template Vue unwraps it automatically."}, {"t": "mcq", "q": "Which tool should you use to derive <code class=\"inline\">total<\/code> from <code class=\"inline\">price<\/code> and <code class=\"inline\">quantity<\/code>?", "o": ["<code class=\"inline\">v-show<\/code>", "A plain function that you call by hand every time", "<code class=\"inline\">watch<\/code>", "<code class=\"inline\">computed<\/code>"], "a": 3, "why": "Computed values are derived, cached, and recalculated only when their dependencies change."}, {"t": "tf", "q": "In Vue, <code class=\"inline\">todos.value.push(item)<\/code> does not trigger an update, so you must copy the array like in React.", "a": false, "why": "Vue's reactivity tracks mutations, so pushing to a reactive array updates the page."}]}</script></div>
+<h2 id="components-props-and-events">Components, props and events</h2>
+<p>A real app is made of many components. The data rules are the same as in React:</p>
+<ul><li><strong>Props</strong> pass data <strong>down</strong> from parent to child. They are read-only for the child.</li><li><strong>Events</strong> send messages <strong>up</strong> from child to parent.</li></ul>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 473 294" role="img" aria-label="Props down, events up" style="max-width:473px;min-width:340px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-vue3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><line x1="118.2" y1="54" x2="118.2" y2="288.0" class="fg-life"/><rect x="63.2" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="118.2" y="38.0" text-anchor="middle" class="fg-title">Parent</text><line x1="354.5" y1="54" x2="354.5" y2="288.0" class="fg-life"/><rect x="299.5" y="14.0" width="110.0" height="38.0" rx="9" class="fg-box fg-accent "/><text x="354.5" y="38.0" text-anchor="middle" class="fg-title">Child</text><line x1="122.2" y1="94" x2="350.5" y2="94" class="fg-line" marker-end="url(#ah-vue3)"/><text x="236.3" y="86" text-anchor="middle" class="fg-msg">prop: :title=&quot;product.name&quot;</text><line x1="350.5" y1="144" x2="122.2" y2="144" class="fg-line" marker-end="url(#ah-vue3)"/><text x="236.3" y="136" text-anchor="middle" class="fg-msg">emit(&#x27;add&#x27;, product.id)</text><line x1="114.2" y1="194" x2="122.2" y2="194" class="fg-line" marker-end="url(#ah-vue3)"/><text x="118.2" y="186" text-anchor="middle" class="fg-msg">updates the cart state</text><line x1="122.2" y1="244" x2="350.5" y2="244" class="fg-line fg-dash" marker-end="url(#ah-vue3)"/><text x="236.3" y="236" text-anchor="middle" class="fg-msg">new props flow down</text></svg></div><figcaption><span class="fig-n">Figure 3.</span> Props down, events up</figcaption></figure>
+<pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;!-- ProductCard.vue --&gt;
+&lt;script setup&gt;
+const props = defineProps({
+  name: { type: String, required: true },
+  price: { type: Number, default: 0 },
+});
+const emit = defineEmits(["add"]);
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;article class="card"&gt;
+    &lt;h2&gt;{{ props.name }}&lt;/h2&gt;
+    &lt;p&gt;${{ props.price.toFixed(2) }}&lt;/p&gt;
+    &lt;button @click="emit('add', props.name)"&gt;Add to cart&lt;/button&gt;
+  &lt;/article&gt;
+&lt;/template&gt;</pre>
+<pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;!-- App.vue --&gt;
+&lt;script setup&gt;
+import { ref } from "vue";
+import ProductCard from "./ProductCard.vue";
+
+const cart = ref([]);
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;ProductCard name="Notebook" :price="4.5" @add="(n) =&gt; cart.push(n)" /&gt;
+  &lt;p&gt;Items in cart: {{ cart.length }}&lt;/p&gt;
+&lt;/template&gt;</pre>
+<h3 id="slots">Slots</h3>
+<p>A <strong>slot</strong> lets the parent put its own content inside a child component, which is useful for generic building blocks such as cards, dialogs and layouts.</p>
+<pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;!-- Card.vue --&gt;
+&lt;template&gt;
+  &lt;div class="card"&gt;
+    &lt;header&gt;&lt;slot name="title"&gt;Default title&lt;/slot&gt;&lt;/header&gt;
+    &lt;slot /&gt;   &lt;!-- the main content goes here --&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;!-- usage --&gt;
+&lt;Card&gt;
+  &lt;template #title&gt;Welcome&lt;/template&gt;
+  &lt;p&gt;This paragraph fills the default slot.&lt;/p&gt;
+&lt;/Card&gt;</pre>
+<h2 id="lifecycle-and-loading-data">Lifecycle and loading data</h2>
+<p>Components have a lifecycle: they are created, mounted onto the page, updated and finally removed. Hooks let you run code at those moments. The most used is <code class="inline">onMounted</code>, perfect for the first data fetch.</p>
+<pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;script setup&gt;
+import { ref, onMounted } from "vue";
+
+const users = ref([]);
+const loading = ref(true);
+const error = ref(null);
+
+onMounted(async () =&gt; {
+  try {
+    const res = await fetch("/api/users");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    users.value = await res.json();
+  } catch (e) {
+    error.value = e.message;
+  } finally {
+    loading.value = false;
+  }
+});
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;p v-if="loading"&gt;Loading...&lt;/p&gt;
+  &lt;p v-else-if="error" role="alert"&gt;Could not load: {{ error }}&lt;/p&gt;
+  &lt;ul v-else&gt;
+    &lt;li v-for="u in users" :key="u.id"&gt;{{ u.name }}&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/template&gt;</pre>
+<p>As with React, always design the loading, error and success states.</p>
+<h3 id="reusable-logic-composables">Reusable logic: composables</h3>
+<p>The Vue equivalent of a React custom hook is a <strong>composable</strong>: a function (named <code class="inline">useSomething</code>) that uses reactivity and returns what a component needs.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>// useCounter.js
+import { ref, computed } from "vue";
+
+export function useCounter(start = 0) {
+  const count = ref(start);
+  const double = computed(() =&gt; count.value * 2);
+  const increment = () =&gt; count.value++;
+  return { count, double, increment };
+}</pre>
+<h2 id="routing-and-state-management">Routing and state management</h2>
+<p>Official companions cover the rest of a real app:</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Need</th><th scope="col">Vue's answer</th></tr></thead><tbody><tr><td>Pages without reloads</td><td><strong>Vue Router</strong> (routes map URLs to components)</td></tr><tr><td>Shared state</td><td><strong>Pinia</strong>, the official store</td></tr><tr><td>Project tooling</td><td><strong>Vite</strong> (<code class="inline">npm create vue@latest</code>)</td></tr><tr><td>Full-stack and server rendering</td><td><strong>Nuxt</strong></td></tr><tr><td>Testing</td><td>Vitest and Vue Test Utils</td></tr></tbody></table></div>
+<h2 id="vue-or-react">Vue or React?</h2>
+<p>Both are excellent, widely used and in demand. The choice is mostly about preference and the job market in your area.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col"></th><th scope="col">Vue</th><th scope="col">React</th></tr></thead><tbody><tr><td>Template style</td><td>HTML-like templates with directives</td><td>JSX: JavaScript with markup inside</td></tr><tr><td>State changes</td><td>Mutate reactive data directly</td><td>Replace state with new values</td></tr><tr><td>Reactivity</td><td>Automatic dependency tracking</td><td>Re-runs the component and compares output</td></tr><tr><td>Official extras</td><td>Router and Pinia, maintained by the Vue team</td><td>Community choices (React Router, Redux, and others)</td></tr><tr><td>Learning curve</td><td>Gentler start</td><td>A smaller core, but more decisions</td></tr><tr><td>Ecosystem and jobs</td><td>Large, strong in parts of Europe and Asia</td><td>The largest, strong everywhere</td></tr></tbody></table></div>
+<aside class="callout callout-learn"><div class="callout-title">Do not marry a framework</div><div class="callout-body"><p>The concepts you learned (components, props down and events up, state, effects, lists and keys, loading and error states) are identical across all modern frameworks. Learning a second one takes days, not months. Choose one for your first project and go deep.</p></div></aside>
+<section class="lab-box"><h3>Lab: a recipe finder in Vue</h3><p>Create a Vue project with <code class="inline">npm create vue@latest</code> (choose Vue Router and Pinia if asked) and build a small recipe app.</p><ol class="lab-steps"><li>Create <code class="inline">RecipeCard.vue</code> with <code class="inline">name</code>, <code class="inline">time</code> and <code class="inline">tags</code> props, and an <code class="inline">add-favourite</code> event.</li><li>In <code class="inline">App.vue</code>, keep a list of recipes in a <code class="inline">ref</code> (hard-code six to start).</li><li>Add a search input with <code class="inline">v-model</code> and a <code class="inline">computed</code> that returns the filtered list.</li><li>Add a tag filter (a row of buttons that toggle <code class="inline">active</code>). Combine it with the text filter in the same <code class="inline">computed</code>.</li><li>Show a count ("5 recipes") and an empty-state message with <code class="inline">v-if</code>/<code class="inline">v-else</code>.</li><li>Keep favourites in a <code class="inline">ref</code> and save them to <code class="inline">localStorage</code> using a <code class="inline">watch</code>. Wrap this in a <code class="inline">useFavourites</code> composable.</li><li>Replace the hard-coded list with a <code class="inline">fetch</code> in <code class="inline">onMounted</code> from a JSON file or an API, with loading and error states.</li><li>Add a second page for recipe details with Vue Router, and make sure that every control works by keyboard.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<aside class="callout callout-pitfall"><div class="callout-title">Common Vue mistakes</div><div class="callout-body"><ul><li><strong>Replacing a reactive object</strong> with a plain one and losing reactivity. Prefer <code class="inline">ref</code>, and assign through <code class="inline">.value</code>.</li><li><strong>Destructuring a reactive object</strong> (<code class="inline">const { count } = state</code>) which makes <code class="inline">count</code> a plain, non-reactive number. Use <code class="inline">toRefs</code> or keep the object.</li><li><strong>Mutating a prop</strong> inside the child. Emit an event instead.</li><li><strong>Using <code class="inline">watch</code> where a <code class="inline">computed</code> belongs.</strong></li><li><strong>Not cleaning up</strong> timers and listeners when a component unmounts (use <code class="inline">onUnmounted</code>).</li></ul></div></aside>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>Vue tracks which parts of the template use which data, and updates exactly those parts.</li><li>A single-file component has a template, a script and scoped styles.</li><li><code class="inline">ref</code> holds reactive values (<code class="inline">.value</code> in JavaScript). <code class="inline">computed</code> derives values. <code class="inline">watch</code> runs side effects.</li><li>Directives (<code class="inline">v-if</code>, <code class="inline">v-for</code>, <code class="inline">v-model</code>, <code class="inline">v-bind</code>/<code class="inline">:</code>, <code class="inline">v-on</code>/<code class="inline">@</code>) are the template vocabulary.</li><li>Props flow down, emitted events flow up, and slots let parents supply content.</li><li>Composables share reactive logic. Vue Router and Pinia cover routing and global state.</li><li>The ideas transfer between frameworks, so pick one and go deep.</li></ul></section>
+<div class="quiz-mount" data-id="vue" data-kind="test" data-title="Module test: Vue" data-count="11"><script type="application/json" class="quiz-data">{"id": "vue", "kind": "test", "title": "Module test: Vue", "questions": [{"t": "mcq", "q": "What does the <code class=\"inline\">@<\/code> symbol mean in <code class=\"inline\">&lt;button @click=\"save\"&gt;<\/code>?", "o": ["It binds an attribute", "It imports a file", "Mention a user", "It is shorthand for <code class=\"inline\">v-on<\/code>, listening to an event"], "a": 3, "why": "<code class=\"inline\">@click<\/code> is the same as <code class=\"inline\">v-on:click<\/code>."}, {"t": "mcq", "q": "Which directive removes an element from the DOM when its condition is false?", "o": ["<code class=\"inline\">v-model<\/code>", "<code class=\"inline\">v-show<\/code>", "<code class=\"inline\">v-if<\/code>", "<code class=\"inline\">v-bind<\/code>"], "a": 2, "why": "<code class=\"inline\">v-if<\/code> adds or removes the element. <code class=\"inline\">v-show<\/code> merely hides it with CSS."}, {"t": "mcq", "q": "What is <code class=\"inline\">v-model<\/code> used for?", "o": ["Two-way binding between a form input and data", "Styling", "Routing", "Importing a model class"], "a": 0, "why": "The input shows the data and updates it as the user types."}, {"t": "mcq", "q": "A child component wants to tell its parent that a button was clicked. What should it do?", "o": ["Nothing is possible", "Change the prop directly", "Emit an event with <code class=\"inline\">emit<\/code>", "Use <code class=\"inline\">document.querySelector<\/code> on the parent"], "a": 2, "why": "Props flow down and events flow up."}, {"t": "mcq", "q": "What is the purpose of <code class=\"inline\">:key<\/code> on a <code class=\"inline\">v-for<\/code> element?", "o": ["To help Vue identify items when the list changes", "To make it unique in CSS", "It is required for styling", "To encrypt the item"], "a": 0, "why": "Stable keys let Vue reuse and reorder elements correctly."}, {"t": "mcq", "q": "What is the output? <code class=\"inline\">const a = ref(2); const b = computed(() =&gt; a.value * 3); a.value = 5; console.log(b.value);<\/code>", "o": ["15", "undefined", "5", "6"], "a": 0, "why": "The computed value recalculates when its dependency changes: 5 times 3 is 15."}, {"t": "mcq", "q": "Which lifecycle hook is a good place for the first data fetch?", "o": ["<code class=\"inline\">onUnmounted<\/code>", "<code class=\"inline\">computed<\/code>", "<code class=\"inline\">onMounted<\/code>", "<code class=\"inline\">defineProps<\/code>"], "a": 2, "why": "<code class=\"inline\">onMounted<\/code> runs after the component first appears on the page."}, {"t": "tf", "q": "In Vue it is fine to mutate an array held in a <code class=\"inline\">ref<\/code> with <code class=\"inline\">push<\/code>.", "a": true, "why": "Vue's reactivity system detects mutations, unlike React where you replace the value."}, {"t": "tf", "q": "Writing <code class=\"inline\">&lt;img src=\"user.avatar\"&gt;<\/code> binds the image to the <code class=\"inline\">user.avatar<\/code> variable.", "a": false, "why": "Without a colon the attribute is the literal text. You need <code class=\"inline\">:src=\"user.avatar\"<\/code>."}, {"t": "short", "q": "What is the name of the official state management library for Vue?", "a": ["Pinia"], "why": "Pinia is the official store, replacing the older Vuex."}, {"t": "multi", "q": "Which of these are true about <code class=\"inline\">&lt;style scoped&gt;<\/code>? Select all that apply.", "o": ["Styles apply only to this component", "It makes every style global", "It helps avoid accidental style clashes", "It is written inside the <code class=\"inline\">.vue<\/code> file"], "a": [0, 2, 3], "why": "Scoped styles are local to the component by design."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="vue.notes-app" data-req="10" data-stretch="3" aria-labelledby="pj-vue.notes-app"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-vue.notes-app">Notes app in Vue</h3><div class="pj-meta"><span>4-5 hours</span><span>Intermediate</span><span>Skills: single-file components, reactivity, v-model, computed values, props and emits, routing</span></div></div><div class="pj-body"><div class="pj-brief"><p>Build a notes application in Vue. Users can create notes with a title, body and colour tag, search them as they type, pin the important ones, and open a single note on its own page with its own address. It teaches the Vue way of thinking: declare what the screen should look like for the current data, and let the framework keep it up to date.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>Built with Vite and Vue 3 using the Composition API and <code class="inline">&lt;script setup&gt;</code> single-file components.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>At least four components: <code class="inline">App</code>, <code class="inline">NoteList</code>, <code class="inline">NoteCard</code> and <code class="inline">NoteEditor</code>. Data goes down through props and changes come back up through emitted events.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Notes are stored in a <code class="inline">ref</code> array (or a small store). Each note has an id, title, body, colour, pinned flag and updated time.</span></label></li><li><label><input type="checkbox" data-k="r3"><span><code class="inline">NoteEditor</code> uses <code class="inline">v-model</code> for the title and body, validates that the title is not empty, and can create or edit a note.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>A search box filters the notes by title and body as the user types, using a <code class="inline">computed</code> value. Pinned notes always appear first in the filtered list.</span></label></li><li><label><input type="checkbox" data-k="r5"><span>A count shows "N notes" or "No notes match" using <code class="inline">v-if</code> and <code class="inline">v-else</code>.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>Colour tags are chosen from a fixed list, and the card style changes with a bound class.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>Vue Router provides two routes: the list at <code class="inline">/</code> and a single note at <code class="inline">/notes/:id</code>. An unknown id shows a friendly not-found view.</span></label></li><li><label><input type="checkbox" data-k="r8"><span>Notes are saved to <code class="inline">localStorage</code> using a <code class="inline">watch</code> with <code class="inline">deep: true</code>, and loaded at start-up.</span></label></li><li><label><input type="checkbox" data-k="r9"><span>Deleting a note asks for confirmation inside the page (a small dialog or a two-step button), not with <code class="inline">alert</code>.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Create the app with <code class="inline">npm create vue@latest</code>, and select Vue Router.</li><li>Define the note shape and write the sample data by hand to see the layout.</li><li>Build <code class="inline">NoteCard</code> with props only and render it from <code class="inline">NoteList</code> using <code class="inline">v-for</code> with a key.</li><li>Build the editor with <code class="inline">v-model</code> and emit a <code class="inline">save</code> event. Handle it in <code class="inline">App</code>.</li><li>Add the computed filtered list, the search field and pinning.</li><li>Add routing, then persistence with <code class="inline">watch</code>.</li><li>Try the not-found route and a reload on <code class="inline">/notes/3</code> to check that the page survives a refresh.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="vue"><span class="lang-tag">Vue</span>&lt;script setup&gt;
+import { ref, computed, watch } from "vue";
+
+const notes = ref(JSON.parse(localStorage.getItem("notes") || "[]"));
+const query = ref("");
+
+const visible = computed(() =&gt; {
+  const q = query.value.trim().toLowerCase();
+  // TODO: filter by title and body, then put pinned notes first
+  return notes.value;
+});
+
+watch(notes, (value) =&gt; {
+  localStorage.setItem("notes", JSON.stringify(value));
+}, { deep: true });
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;main&gt;
+    &lt;h1&gt;Notes&lt;/h1&gt;
+    &lt;label for="q"&gt;Search&lt;/label&gt;
+    &lt;input id="q" v-model="query" type="search" /&gt;
+    &lt;p v-if="visible.length === 0"&gt;No notes match.&lt;/p&gt;
+    &lt;!-- TODO: NoteList and NoteEditor --&gt;
+  &lt;/main&gt;
+&lt;/template&gt;</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Create ids with <code class="inline">crypto.randomUUID()</code> or <code class="inline">Date.now()</code>.</li><li>To avoid changing a prop, copy the note into a local <code class="inline">ref</code> inside the editor and emit the edited copy on save.</li><li>Sort a copy: <code class="inline">[...list].sort(...)</code>, because sorting a reactive array in place changes the original.</li><li>Use <code class="inline">useRoute()</code> to read <code class="inline">route.params.id</code>, and <code class="inline">router.push</code> to navigate after saving.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Add tags and filter by tag.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Add a dark theme toggle that remembers its setting.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Move the notes into a Pinia store and compare how the components change.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Component design</strong></td><td>Props down and events up are respected, and no child changes its parent's data directly.</td></tr><tr><td><strong>Reactivity</strong></td><td>Derived data uses computed, side effects use watch and nothing is duplicated in state.</td></tr><tr><td><strong>Routing</strong></td><td>Both routes work, including a direct visit or reload, and bad ids are handled.</td></tr><tr><td><strong>Polish</strong></td><td>Validation messages, confirmation before delete and a layout that suits phones and desktops.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The project folder (without <code class="inline">node_modules</code>) or a link to the repository.</li><li>A paragraph explaining one thing that is easier in Vue than in plain JavaScript, and one thing that is not.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-vue.notes-app">Link to your work (optional)</label><input class="field" id="pjl-vue.notes-app" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-vue.notes-app">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-vue.notes-app" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>

@@ -1,0 +1,598 @@
+<header class="lesson-head"><div class="lesson-meta"><span>Foundations</span><span>Module 5</span><span>180 min</span><span>Beginner</span></div><h1>Programming Fundamentals</h1><p class="lede">Values, variables, decisions, loops, collections, functions and errors. The ideas behind every program, shown side by side in seven languages.</p></header>
+<section class="objectives" aria-label="Learning objectives"><div class="box-title">What you will learn</div><ul><li>Store and combine values using variables, numbers, text and booleans.</li><li>Make decisions with <code class="inline">if</code> and comparison operators.</li><li>Repeat work with <code class="inline">for</code> and <code class="inline">while</code> loops.</li><li>Group data in lists and key-value collections.</li><li>Write functions that take inputs and return results.</li><li>Handle errors without crashing, and trace code by hand to find bugs.</li><li>Solve small problems by decomposing them, in the language you chose.</li></ul></section>
+<section class="prereq" aria-label="Prerequisites"><div class="box-title">Before you start</div><p>Introduction to Programming (variables and the three building blocks) and Choosing Your Programming Language. Pick your language in the sidebar so the tabs show it.</p></section>
+<aside class="callout callout-note"><div class="callout-title">How to use this module</div><div class="callout-body"><p>Every idea is shown in seven languages. Read the tab for your chosen language first, then glance at one other to see what stays the same. Java, Go and C# samples show only the lines you would put inside <code class="inline">main</code>. Java samples that use lists or maps need <code class="inline">import java.util.*;</code> at the top of the file, and Go samples that use <code class="inline">strings</code> need <code class="inline">import "strings"</code>. The coding challenges at the end of each section are in <button type="button" class="term" data-term="JavaScript" data-def="The programming language of the web. It runs in every browser and, with Node.js, on servers.">JavaScript</button>, because they run right here in your <button type="button" class="term" data-term="Browser" data-def="A program, such as Chrome, Firefox or Safari, that downloads web pages and displays them.">browser</button>. The logic transfers directly to your own language.</p></div></aside>
+<h2 id="1-values-and-types">1. Values and types</h2>
+<p>Everything a program works with is a <strong>value</strong>, and every value has a <strong>type</strong>: what kind of thing it is. The basic types are almost identical in every language.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Type</th><th scope="col">What it holds</th><th scope="col">Examples</th></tr></thead><tbody><tr><td>Integer</td><td>Whole numbers</td><td><code class="inline">0</code>, <code class="inline">42</code>, <code class="inline">-7</code></td></tr><tr><td>Decimal (float)</td><td>Numbers with a fractional part</td><td><code class="inline">3.14</code>, <code class="inline">-0.5</code></td></tr><tr><td>String</td><td>Text, written in quotes</td><td><code class="inline">"hello"</code>, <code class="inline">"42"</code></td></tr><tr><td>Boolean</td><td>Exactly one of two values: true or false</td><td><code class="inline">true</code>, <code class="inline">false</code></td></tr><tr><td>Nothing</td><td>"No value here"</td><td><code class="inline">null</code>, <code class="inline">None</code>, <code class="inline">nil</code></td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">The text "42" is not the number 42</div><div class="callout-body"><p><code class="inline">"42"</code> is two characters of text. <code class="inline">42</code> is a number. Adding numbers gives <code class="inline">42 + 1 = 43</code>. Adding text joins it: in JavaScript, <code class="inline">"42" + 1</code> gives <code class="inline">"421"</code>. If a program gives surprising results, check the types first.</p></div></aside>
+<h3 id="arithmetic">Arithmetic</h3>
+<p>The usual operators work as you expect: <code class="inline">+ - * /</code>. Two extras are worth learning now.</p>
+<ul><li><code class="inline">%</code> is the <strong>remainder</strong> (modulo): <code class="inline">10 % 3</code> is <code class="inline">1</code>, because 3 goes into 10 three times with 1 left over. It is how you test whether a number is even (<code class="inline">n % 2 == 0</code>) or wrap around a clock.</li><li><strong>Integer division.</strong> In many languages, dividing two integers throws away the fractional part: <code class="inline">10 / 3</code> is <code class="inline">3</code>, not <code class="inline">3.333</code>. JavaScript, Python (<code class="inline">/</code>), PHP and Ruby have rules of their own, so we ask each for the whole-number quotient explicitly.</li></ul>
+<div class="code-tabs" data-title="Quotient and remainder of 10 divided by 3"><div class="code-tabs-title">Quotient and remainder of 10 divided by 3</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>console.log(Math.floor(10 / 3), 10 % 3);</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>print(10 // 3, 10 % 3)</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>System.out.println(10 / 3 + " " + 10 % 3);</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>Console.WriteLine($"{10 / 3} {10 % 3}");</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+echo intdiv(10, 3) . " " . (10 % 3) . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>fmt.Println(10/3, 10%3)</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>puts "#{10 / 3} #{10 % 3}"</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>3 1</pre></div>
+<aside class="callout callout-learn"><div class="callout-title">Precision warning</div><div class="callout-body"><p>Computers store decimals in binary, so <code class="inline">0.1 + 0.2</code> is not exactly <code class="inline">0.3</code> in any language. It is <code class="inline">0.30000000000000004</code>. For money, store whole cents as integers, or use a decimal type. You will meet this again in the Data module.</p></div></aside>
+<h3 id="working-with-strings">Working with strings</h3>
+<p>Text is so common that every language gives you many tools to handle it. These two are in every program: changing case and finding the length.</p>
+<div class="code-tabs" data-title="Upper-case and length"><div class="code-tabs-title">Upper-case and length</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const word = "hello";
+console.log(word.toUpperCase(), word.length);</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>word = "hello"
+print(word.upper(), len(word))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>String word = "hello";
+System.out.println(word.toUpperCase() + " " + word.length());</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>string word = "hello";
+Console.WriteLine($"{word.ToUpper()} {word.Length}");</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$word = "hello";
+echo strtoupper($word) . " " . strlen($word) . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>word := "hello"
+fmt.Println(strings.ToUpper(word), len(word))</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>word = "hello"
+puts "#{word.upcase} #{word.length}"</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>HELLO 5</pre></div>
+<p>Notice that some languages call functions on the value (<code class="inline">word.upper()</code>), and others pass the value in (<code class="inline">strtoupper($word)</code>, <code class="inline">len(word)</code>). Both do the same job. A function attached to a value is called a <button type="button" class="term" data-term="Method" data-def="A function that belongs to an object or class.">method</button>.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 520 150" role="img" aria-label="The word hello with each letter in a box. Positions 0 to 4 are shown beneath the letters. Position 0 holds h and position 4 holds o." style="max-width:520px;min-width:374px" xmlns="http://www.w3.org/2000/svg">
+<g class="fg-code">
+<rect x="60" y="30" width="70" height="60" rx="8" class="fg-box fg-accent"/><text x="95" y="70" text-anchor="middle" class="fg-code">h</text>
+<rect x="140" y="30" width="70" height="60" rx="8" class="fg-box"/><text x="175" y="70" text-anchor="middle" class="fg-code">e</text>
+<rect x="220" y="30" width="70" height="60" rx="8" class="fg-box"/><text x="255" y="70" text-anchor="middle" class="fg-code">l</text>
+<rect x="300" y="30" width="70" height="60" rx="8" class="fg-box"/><text x="335" y="70" text-anchor="middle" class="fg-code">l</text>
+<rect x="380" y="30" width="70" height="60" rx="8" class="fg-box fg-accent"/><text x="415" y="70" text-anchor="middle" class="fg-code">o</text>
+</g>
+<text x="95" y="115" text-anchor="middle" class="fg-title">0</text><text x="175" y="115" text-anchor="middle" class="fg-title">1</text><text x="255" y="115" text-anchor="middle" class="fg-title">2</text><text x="335" y="115" text-anchor="middle" class="fg-title">3</text><text x="415" y="115" text-anchor="middle" class="fg-title">4</text>
+<text x="255" y="142" text-anchor="middle" class="fg-sub">index: the first character is at 0, the last is at length minus 1</text>
+</svg></div><figcaption><span class="fig-n">Figure 1.</span> Positions in a string start at zero</figcaption></figure>
+<p>Almost every language starts counting positions at <strong>zero</strong>. In "hello", <code class="inline">h</code> is at index 0 and <code class="inline">o</code> is at index 4, although the length is 5. Forgetting this causes the famous "off-by-one" bug.</p>
+<div class="playground" data-kind="js" data-title="Experiment with strings and numbers"><div class="pg-intro"><p>Predict each result before you run it. Then change the values.</p></div><script type="text/plain" data-part="js">const word = "hello";
+console.log(word[0]);               // first letter
+console.log(word[word.length - 1]); // last letter
+console.log("Hi " + "there");       // joining text
+console.log("5" + 1, 5 + 1);        // text versus number
+console.log(17 % 5);                // remainder</script></div>
+<div class="challenge" data-id="basics.celsius" data-title="Convert Celsius to Fahrenheit"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Convert Celsius to Fahrenheit</h3></div><div class="challenge-body"><p>Write <code class="inline">toFahrenheit(c)</code> that converts a temperature using the formula <strong>F = C x 9 / 5 + 32</strong>.</p></div><script type="text/plain" data-part="starter">function toFahrenheit(c) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('freezing point', () => assert.equal(toFahrenheit(0), 32));
+test('boiling point', () => assert.equal(toFahrenheit(100), 212));
+test('body temperature', () => assert.equal(toFahrenheit(37), 98.6));
+test('negative', () => assert.equal(toFahrenheit(-40), -40));</script><script type="text/plain" data-part="solution">function toFahrenheit(c) {
+  return c * 9 / 5 + 32;
+}</script><div class="hint-text" hidden>In code, multiplication is <code class="inline">*</code> and division is <code class="inline">/</code>.</div><div class="hint-text" hidden>Write the formula as one line: <code class="inline">return c * 9 / 5 + 32;</code></div></div>
+<div class="quiz-mount" data-id="basics-c1" data-kind="check" data-title="Checkpoint: values and types" data-count="3"><script type="application/json" class="quiz-data">{"id": "basics-c1", "kind": "check", "title": "Checkpoint: values and types", "questions": [{"t": "mcq", "q": "What is <code class=\"inline\">17 % 5<\/code>?", "o": ["3.4", "2", "12", "3"], "a": 1, "why": "5 goes into 17 three times (15), and 2 is left over. <code class=\"inline\">%<\/code> gives the remainder."}, {"t": "tf", "q": "In most languages the first character of a string is at index 1.", "a": false, "why": "Positions start at 0. This is true in JavaScript, Python, Java, C#, PHP, Go and Ruby (though Go indexes bytes)."}, {"t": "mcq", "q": "In JavaScript, what is <code class=\"inline\">\"3\" + 4<\/code>?", "o": ["7", "An error", "\"34\"", "\"7\""], "a": 2, "why": "When one side of <code class=\"inline\">+<\/code> is text, JavaScript joins instead of adding, so the result is the text \"34\"."}]}</script></div>
+<h2 id="2-variables-in-depth">2. Variables in depth</h2>
+<p>A variable is a name for a value. Giving it a value for the first time is called <strong>declaring</strong> or <strong>assigning</strong>. You can then read it, or give it a new value.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 560 170" role="img" aria-label="A box labelled score holds the value 10. An arrow shows that after score = score + 5 the box holds 15." style="max-width:560px;min-width:403px" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ah-b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs>
+<text x="90" y="24" text-anchor="middle" class="fg-title">score</text>
+<rect x="30" y="34" width="120" height="70" rx="10" class="fg-box fg-accent"/><text x="90" y="80" text-anchor="middle" class="fg-code">10</text>
+<text x="90" y="128" text-anchor="middle" class="fg-sub">after: score = 10</text>
+<line x1="170" y1="70" x2="370" y2="70" class="fg-line" marker-end="url(#ah-b1)"/>
+<text x="270" y="58" text-anchor="middle" class="fg-msg">score = score + 5</text>
+<text x="450" y="24" text-anchor="middle" class="fg-title">score</text>
+<rect x="390" y="34" width="120" height="70" rx="10" class="fg-box fg-c2"/><text x="450" y="80" text-anchor="middle" class="fg-code">15</text>
+<text x="450" y="128" text-anchor="middle" class="fg-sub">the old value is replaced</text>
+</svg></div><figcaption><span class="fig-n">Figure 2.</span> A variable is a labelled box</figcaption></figure>
+<h3 id="constants">Constants</h3>
+<p>Some values should never change, like the number of days in a week or a tax rate. Most languages let you declare a <strong>constant</strong>, and the language will stop you if you try to change it. JavaScript uses <code class="inline">const</code>, Java and Go use <code class="inline">final</code> and <code class="inline">const</code>, C# uses <code class="inline">const</code>, Python and Ruby use an ALL_CAPS naming convention, and PHP uses <code class="inline">const</code> or <code class="inline">define</code>. Prefer constants whenever a value does not need to change: it tells the reader, and protects you from accidents.</p>
+<h3 id="scope-where-a-name-can-be-seen">Scope: where a name can be seen</h3>
+<p>Variables created inside a function or a block of braces usually exist only there. This is called <strong>scope</strong>. It stops different parts of a program from accidentally trampling each other's names.</p>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>A variable declared inside a function is like a note on a whiteboard inside a meeting room. People in the room can read it, and when the meeting ends the board is wiped. Variables declared outside everything are like notices in the hallway: everyone sees them, but then everyone can also mess with them. Keep notices to a minimum.</p></div></aside>
+<h3 id="tracing-running-code-by-hand">Tracing: running code by hand</h3>
+<p>When code does not do what you expect, the most reliable technique is a <strong>trace table</strong>. Write a column for each variable and update it after every line, exactly as the computer would.</p>
+<pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>let a = 3;
+let b = 4;
+a = a + b;
+b = a - b;
+a = a - b;</pre>
+<div class="table-wrap"><table><thead><tr><th scope="col">After line</th><th scope="col"><code class="inline">a</code></th><th scope="col"><code class="inline">b</code></th></tr></thead><tbody><tr><td><code class="inline">let a = 3</code></td><td>3</td><td>not yet created</td></tr><tr><td><code class="inline">let b = 4</code></td><td>3</td><td>4</td></tr><tr><td><code class="inline">a = a + b</code></td><td>7</td><td>4</td></tr><tr><td><code class="inline">b = a - b</code></td><td>7</td><td>3</td></tr><tr><td><code class="inline">a = a - b</code></td><td>4</td><td>3</td></tr></tbody></table></div>
+<p>The code swaps the values of <code class="inline">a</code> and <code class="inline">b</code> without a third variable. Without the trace table it is hard to see. With it, it is easy. <button type="button" class="term" data-term="Tracing" data-def="Following one request as it passes through many services to find where time is spent.">Tracing</button> is not a beginner trick. Professionals do it too.</p>
+<aside class="callout callout-learn"><div class="callout-title">Predict, run, compare</div><div class="callout-body"><p>Before running any code in this course, say out loud what you expect it to print. Then run it. If your prediction was wrong, work out why. That moment of surprise is when the brain updates its model, and it is worth more than ten correct guesses.</p></div></aside>
+<h2 id="3-making-decisions">3. Making decisions</h2>
+<p>A program needs to <button type="button" class="term" data-term="React" data-def="A JavaScript library for building user interfaces from components.">react</button> to different situations. A <strong>condition</strong> is something that is true or false, and <code class="inline">if</code> runs a block of code only when the condition is true.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 615 90" role="img" aria-label="Decisions pick a path" style="max-width:615px;min-width:443px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-basics3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="160.0" height="66.0" rx="9" class="fg-box "/><text x="92.0" y="40.0" text-anchor="middle" class="fg-title">Is score &gt;= 50?</text><text x="92.0" y="59.0" text-anchor="middle" class="fg-sub">the condition</text><rect x="218.0" y="12.0" width="160.0" height="66.0" rx="9" class="fg-box fg-accent "/><text x="298.0" y="40.0" text-anchor="middle" class="fg-title">Yes: print Pass</text><text x="298.0" y="59.0" text-anchor="middle" class="fg-sub">the if block</text><line x1="175.0" y1="45.0" x2="215.0" y2="45.0" class="fg-line" marker-end="url(#ah-basics3)"/><rect x="424.0" y="12.0" width="178.9" height="66.0" rx="9" class="fg-box "/><text x="513.5" y="40.0" text-anchor="middle" class="fg-title">Done</text><text x="513.5" y="59.0" text-anchor="middle" class="fg-sub">the program continues</text><line x1="381.0" y1="45.0" x2="421.0" y2="45.0" class="fg-line" marker-end="url(#ah-basics3)"/></svg></div><figcaption><span class="fig-n">Figure 3.</span> Decisions pick a path</figcaption></figure>
+<h3 id="comparison-and-logical-operators">Comparison and logical operators</h3>
+<div class="table-wrap"><table><thead><tr><th scope="col">Idea</th><th scope="col">Symbol in most languages</th><th scope="col">Example</th></tr></thead><tbody><tr><td>Equal</td><td><code class="inline">==</code> (JavaScript prefers <code class="inline">===</code>)</td><td><code class="inline">age == 18</code></td></tr><tr><td>Not equal</td><td><code class="inline">!=</code> (JavaScript prefers <code class="inline">!==</code>)</td><td><code class="inline">age != 18</code></td></tr><tr><td>Greater, less</td><td><code class="inline">&gt;  &lt;  &gt;=  &lt;=</code></td><td><code class="inline">score &gt;= 50</code></td></tr><tr><td>And</td><td><code class="inline">&amp;&amp;</code> (Python and Ruby also accept <code class="inline">and</code>)</td><td><code class="inline">age &gt;= 18 &amp;&amp; hasId</code></td></tr><tr><td>Or</td><td><code class="inline">||</code> (Python and Ruby also accept <code class="inline">or</code>)</td><td><code class="inline">isAdmin || isOwner</code></td></tr><tr><td>Not</td><td><code class="inline">!</code> (Python writes <code class="inline">not</code>)</td><td><code class="inline">!isBanned</code></td></tr></tbody></table></div>
+<aside class="callout callout-pitfall"><div class="callout-title">One equals sign or two</div><div class="callout-body"><p><code class="inline">score = 50</code> <strong>stores</strong> 50 in <code class="inline">score</code>. <code class="inline">score == 50</code> <strong>asks</strong> whether it already is 50. Mixing them up is one of the most common bugs. In JavaScript, always compare with three equals signs (<code class="inline">===</code>), which also checks the type, so that <code class="inline">"5" === 5</code> is false.</p></div></aside>
+<div class="code-tabs" data-title="if, else if, else: turn a score into a grade"><div class="code-tabs-title">if, else if, else: turn a score into a grade</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const score = 85;
+if (score &gt;= 90) {
+  console.log("A");
+} else if (score &gt;= 80) {
+  console.log("B");
+} else if (score &gt;= 70) {
+  console.log("C");
+} else {
+  console.log("Try again");
+}</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>score = 85
+if score &gt;= 90:
+    print("A")
+elif score &gt;= 80:
+    print("B")
+elif score &gt;= 70:
+    print("C")
+else:
+    print("Try again")</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>int score = 85;
+if (score &gt;= 90) {
+    System.out.println("A");
+} else if (score &gt;= 80) {
+    System.out.println("B");
+} else if (score &gt;= 70) {
+    System.out.println("C");
+} else {
+    System.out.println("Try again");
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>int score = 85;
+if (score &gt;= 90)
+{
+    Console.WriteLine("A");
+}
+else if (score &gt;= 80)
+{
+    Console.WriteLine("B");
+}
+else if (score &gt;= 70)
+{
+    Console.WriteLine("C");
+}
+else
+{
+    Console.WriteLine("Try again");
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$score = 85;
+if ($score &gt;= 90) {
+    echo "A\n";
+} elseif ($score &gt;= 80) {
+    echo "B\n";
+} elseif ($score &gt;= 70) {
+    echo "C\n";
+} else {
+    echo "Try again\n";
+}</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>score := 85
+if score &gt;= 90 {
+    fmt.Println("A")
+} else if score &gt;= 80 {
+    fmt.Println("B")
+} else if score &gt;= 70 {
+    fmt.Println("C")
+} else {
+    fmt.Println("Try again")
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>score = 85
+if score &gt;= 90
+  puts "A"
+elsif score &gt;= 80
+  puts "B"
+elsif score &gt;= 70
+  puts "C"
+else
+  puts "Try again"
+end</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>B</pre></div>
+<p>The conditions are checked from top to bottom, and the <strong>first</strong> one that is true wins. That is why the order matters. If we had tested <code class="inline">score &gt;= 70</code> first, a score of 95 would get a "C".</p>
+<div class="challenge" data-id="basics.fizzbuzz" data-title="FizzBuzz for a single number"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>FizzBuzz for a single number</h3></div><div class="challenge-body"><p>The classic interview warm-up. Write <code class="inline">fizzBuzz(n)</code>: if <code class="inline">n</code> is divisible by both 3 and 5, return <code class="inline">"FizzBuzz"</code>. If only by 3, return <code class="inline">"Fizz"</code>. If only by 5, return <code class="inline">"Buzz"</code>. Otherwise return the number itself.</p></div><script type="text/plain" data-part="starter">function fizzBuzz(n) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('15 is FizzBuzz', () => assert.equal(fizzBuzz(15), 'FizzBuzz'));
+test('30 is FizzBuzz', () => assert.equal(fizzBuzz(30), 'FizzBuzz'));
+test('9 is Fizz', () => assert.equal(fizzBuzz(9), 'Fizz'));
+test('10 is Buzz', () => assert.equal(fizzBuzz(10), 'Buzz'));
+test('7 is 7', () => assert.equal(fizzBuzz(7), 7));</script><script type="text/plain" data-part="solution">function fizzBuzz(n) {
+  if (n % 3 === 0 && n % 5 === 0) return 'FizzBuzz';
+  if (n % 3 === 0) return 'Fizz';
+  if (n % 5 === 0) return 'Buzz';
+  return n;
+}</script><div class="hint-text" hidden><code class="inline">n % 3 === 0</code> is true when <code class="inline">n</code> is divisible by 3.</div><div class="hint-text" hidden>Check the "both" case first, otherwise 15 would match the "divisible by 3" test and return "Fizz".</div></div>
+<div class="quiz-mount" data-id="basics-c2" data-kind="check" data-title="Checkpoint: decisions" data-count="2"><script type="application/json" class="quiz-data">{"id": "basics-c2", "kind": "check", "title": "Checkpoint: decisions", "questions": [{"t": "mcq", "q": "Which expression is true when <code class=\"inline\">age<\/code> is at least 13 and less than 20?", "o": ["<code class=\"inline\">age &gt;= 13 &amp;&amp; age &lt; 20<\/code>", "<code class=\"inline\">age &gt; 13 || age &lt; 20<\/code>", "<code class=\"inline\">age &gt;= 13 || age &lt;= 20<\/code>", "<code class=\"inline\">age = 13 &amp;&amp; age = 20<\/code>"], "a": 0, "why": "\"And\" requires both parts to be true. With \"or\", every number would qualify. A single <code class=\"inline\">=<\/code> assigns instead of comparing."}, {"t": "mcq", "q": "With the grade code above, what would a score of 95 print if the <code class=\"inline\">score &gt;= 70<\/code> check came first?", "o": ["B", "A", "Try again", "C"], "a": 3, "why": "The first true condition wins. 95 is at least 70, so \"C\" would be printed and the other branches are skipped."}]}</script></div>
+<h2 id="4-repeating-work-with-loops">4. Repeating work with loops</h2>
+<p>Imagine printing the numbers from 1 to 1000 by hand. A <strong>loop</strong> repeats a block of code. There are two main kinds.</p>
+<ul><li>A <strong><code class="inline">for</code> loop</strong> when you know how many times to repeat, or you want to go through a collection.</li><li>A <strong><code class="inline">while</code> loop</strong> when you repeat until something changes.</li></ul>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 687 90" role="img" aria-label="Anatomy of a counting loop" style="max-width:687px;min-width:495px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-basics4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="134.8" height="66.0" rx="9" class="fg-box "/><text x="79.4" y="40.0" text-anchor="middle" class="fg-title">Start: i = 1</text><text x="79.4" y="59.0" text-anchor="middle" class="fg-sub">initialise</text><rect x="192.8" y="12.0" width="118.0" height="66.0" rx="9" class="fg-box fg-accent "/><text x="251.8" y="40.0" text-anchor="middle" class="fg-title">Is i &lt;= 5?</text><text x="251.8" y="59.0" text-anchor="middle" class="fg-sub">the test</text><line x1="149.8" y1="45.0" x2="189.8" y2="45.0" class="fg-line" marker-end="url(#ah-basics4)"/><rect x="356.8" y="12.0" width="134.8" height="66.0" rx="9" class="fg-box "/><text x="424.2" y="40.0" text-anchor="middle" class="fg-title">Run the body</text><text x="424.2" y="59.0" text-anchor="middle" class="fg-sub">print i</text><line x1="313.8" y1="45.0" x2="353.8" y2="45.0" class="fg-line" marker-end="url(#ah-basics4)"/><rect x="537.6" y="12.0" width="137.5" height="66.0" rx="9" class="fg-box "/><text x="606.4" y="40.0" text-anchor="middle" class="fg-title">Add 1 to i</text><text x="606.4" y="59.0" text-anchor="middle" class="fg-sub">then test again</text><line x1="494.6" y1="45.0" x2="534.6" y2="45.0" class="fg-line" marker-end="url(#ah-basics4)"/></svg></div><figcaption><span class="fig-n">Figure 4.</span> Anatomy of a counting loop</figcaption></figure>
+<div class="code-tabs" data-title="A for loop that prints 1 to 5"><div class="code-tabs-title">A for loop that prints 1 to 5</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>for (let i = 1; i &lt;= 5; i++) {
+  console.log(i);
+}</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>for i in range(1, 6):
+    print(i)</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>for (int i = 1; i &lt;= 5; i++) {
+    System.out.println(i);
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>for (int i = 1; i &lt;= 5; i++)
+{
+    Console.WriteLine(i);
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+for ($i = 1; $i &lt;= 5; $i++) {
+    echo $i . "\n";
+}</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>for i := 1; i &lt;= 5; i++ {
+    fmt.Println(i)
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>(1..5).each do |i|
+  puts i
+end</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>1
+2
+3
+4
+5</pre></div>
+<p>In the C-style loop <code class="inline">for (let i = 1; i &lt;= 5; i++)</code> there are three parts separated by semicolons: <strong>start</strong> (<code class="inline">let i = 1</code>), <strong>keep going while</strong> (<code class="inline">i &lt;= 5</code>) and <strong>after each pass</strong> (<code class="inline">i++</code>, which means "add one to i"). Python's <code class="inline">range(1, 6)</code> stops <em>before</em> 6, which is a common surprise. Ruby's <code class="inline">1..5</code> includes 5.</p>
+<h3 id="the-while-loop">The while loop</h3>
+<div class="code-tabs" data-title="A while loop: halve a number until it is below 1"><div class="code-tabs-title">A while loop: halve a number until it is below 1</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>let n = 20;
+let steps = 0;
+while (n &gt;= 1) {
+  n = n / 2;
+  steps++;
+}
+console.log(steps);</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>n = 20
+steps = 0
+while n &gt;= 1:
+    n = n / 2
+    steps += 1
+print(steps)</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>double n = 20;
+int steps = 0;
+while (n &gt;= 1) {
+    n = n / 2;
+    steps++;
+}
+System.out.println(steps);</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>double n = 20;
+int steps = 0;
+while (n &gt;= 1)
+{
+    n = n / 2;
+    steps++;
+}
+Console.WriteLine(steps);</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$n = 20;
+$steps = 0;
+while ($n &gt;= 1) {
+    $n = $n / 2;
+    $steps++;
+}
+echo $steps . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>n := 20.0
+steps := 0
+for n &gt;= 1 {
+    n = n / 2
+    steps++
+}
+fmt.Println(steps)</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>n = 20.0
+steps = 0
+while n &gt;= 1
+  n /= 2
+  steps += 1
+end
+puts steps</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>5</pre></div>
+<p>Go has only one loop keyword, <code class="inline">for</code>, and it does the job of <code class="inline">while</code> as well. Let us trace the loop above: n goes 20, 10, 5, 2.5, 1.25, 0.625. That is five halvings, and the loop stops when n is below 1.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">The infinite loop</div><div class="callout-body"><p>If the condition never becomes false, the loop never ends and your program freezes. In the loop above, if you forgot the line <code class="inline">n = n / 2</code>, <code class="inline">n</code> would stay at 20 forever. Whenever you write a <code class="inline">while</code>, ask: <em>what changes each time round so that it eventually stops?</em> The code runner in this course stops anything that runs for more than four seconds.</p></div></aside>
+<aside class="callout callout-pitfall"><div class="callout-title">Off-by-one errors</div><div class="callout-body"><p>Does the loop run from 0 to 4, or 1 to 5? Is the last number included? When something is "one too many" or "one too few", you have an <button type="button" class="term" data-term="Off-by-one error" data-def="A bug where a loop runs one time too many or too few, often by confusing less-than with less-than-or-equal.">off-by-one error</button>. The cure is to trace the first and last pass by hand.</p></div></aside>
+<h3 id="loops-and-collections-together">Loops and collections together</h3>
+<p>The real power of a loop is going through every item in a collection, which comes next. First, practise with numbers.</p>
+<div class="challenge" data-id="basics.sumrange" data-title="Add up the numbers from 1 to n"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Add up the numbers from 1 to n</h3></div><div class="challenge-body"><p>Write <code class="inline">sumTo(n)</code> that returns 1 + 2 + ... + n using a loop. For example <code class="inline">sumTo(4)</code> is 10.</p></div><script type="text/plain" data-part="starter">function sumTo(n) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('sumTo(1)', () => assert.equal(sumTo(1), 1));
+test('sumTo(4)', () => assert.equal(sumTo(4), 10));
+test('sumTo(10)', () => assert.equal(sumTo(10), 55));
+test('sumTo(100)', () => assert.equal(sumTo(100), 5050));
+test('sumTo(0)', () => assert.equal(sumTo(0), 0));</script><script type="text/plain" data-part="solution">function sumTo(n) {
+  let total = 0;
+  for (let i = 1; i <= n; i++) {
+    total += i;
+  }
+  return total;
+}</script><div class="hint-text" hidden>Create a variable <code class="inline">total</code> that starts at 0.</div><div class="hint-text" hidden>Loop from 1 to n and add the loop variable to <code class="inline">total</code> each time. Return <code class="inline">total</code> after the loop.</div></div>
+<div class="quiz-mount" data-id="basics-c3" data-kind="check" data-title="Checkpoint: loops" data-count="2"><script type="application/json" class="quiz-data">{"id": "basics-c3", "kind": "check", "title": "Checkpoint: loops", "questions": [{"t": "mcq", "q": "How many times does <code class=\"inline\">for (let i = 0; i &lt; 3; i++)<\/code> run its body?", "o": ["4", "2", "3", "Forever"], "a": 2, "why": "i takes the values 0, 1 and 2. When i becomes 3 the test <code class=\"inline\">i &lt; 3<\/code> is false and the loop stops."}, {"t": "mcq", "q": "What is the main risk of a <code class=\"inline\">while<\/code> loop?", "o": ["It is always slower", "It cannot repeat code", "The condition might never become false, giving an infinite loop", "It only works with numbers"], "a": 2, "why": "Make sure something inside the loop eventually makes the condition false."}]}</script></div>
+<h2 id="5-collections-lists-and-dictionaries">5. Collections: lists and dictionaries</h2>
+<p>Real programs handle many values: a list of products, a set of settings. A <strong>list</strong> (also called an array) keeps values in order, and you reach them by position. A <strong>dictionary</strong> (also called a map, hash or associative array) keeps pairs of a <strong>key</strong> and a <strong>value</strong>, and you reach values by key.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 662 90" role="img" aria-label="Two ways to organise data" style="max-width:662px;min-width:477px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-basics5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="303.1" height="66.0" rx="9" class="fg-box fg-accent "/><text x="163.6" y="40.0" text-anchor="middle" class="fg-title">List</text><text x="163.6" y="59.0" text-anchor="middle" class="fg-sub">ordered, reached by position: colors[0]</text><rect x="361.1" y="12.0" width="289.3" height="66.0" rx="9" class="fg-box "/><text x="505.8" y="40.0" text-anchor="middle" class="fg-title">Dictionary</text><text x="505.8" y="59.0" text-anchor="middle" class="fg-sub">labelled, reached by key: ages[&quot;Ada&quot;]</text><line x1="318.1" y1="45.0" x2="358.1" y2="45.0" class="fg-line" marker-end="url(#ah-basics5)"/></svg></div><figcaption><span class="fig-n">Figure 5.</span> Two ways to organise data</figcaption></figure>
+<div class="code-tabs" data-title="A list: create, append, read"><div class="code-tabs-title">A list: create, append, read</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const colors = ["red", "green", "blue"];
+colors.push("yellow");
+console.log(colors.length, colors[0], colors[colors.length - 1]);</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>colors = ["red", "green", "blue"]
+colors.append("yellow")
+print(len(colors), colors[0], colors[-1])</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>List&lt;String&gt; colors = new ArrayList&lt;&gt;(List.of("red", "green", "blue"));
+colors.add("yellow");
+System.out.println(colors.size() + " " + colors.get(0) + " " + colors.get(colors.size() - 1));</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>var colors = new List&lt;string&gt; { "red", "green", "blue" };
+colors.Add("yellow");
+Console.WriteLine(colors.Count + " " + colors[0] + " " + colors[^1]);</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$colors = ["red", "green", "blue"];
+$colors[] = "yellow";
+echo count($colors) . " " . $colors[0] . " " . end($colors) . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>colors := []string{"red", "green", "blue"}
+colors = append(colors, "yellow")
+fmt.Println(len(colors), colors[0], colors[len(colors)-1])</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>colors = %w[red green blue]
+colors &lt;&lt; "yellow"
+puts "#{colors.length} #{colors.first} #{colors.last}"</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>4 red yellow</pre></div>
+<div class="code-tabs" data-title="A dictionary: store and look up by key"><div class="code-tabs-title">A dictionary: store and look up by key</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>const ages = { Ada: 36, Linus: 54 };
+console.log(ages["Ada"], Object.keys(ages).length);</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>ages = {"Ada": 36, "Linus": 54}
+print(ages["Ada"], len(ages))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>Map&lt;String, Integer&gt; ages = new HashMap&lt;&gt;();
+ages.put("Ada", 36);
+ages.put("Linus", 54);
+System.out.println(ages.get("Ada") + " " + ages.size());</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>var ages = new Dictionary&lt;string, int&gt; { { "Ada", 36 }, { "Linus", 54 } };
+Console.WriteLine(ages["Ada"] + " " + ages.Count);</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+$ages = ["Ada" =&gt; 36, "Linus" =&gt; 54];
+echo $ages["Ada"] . " " . count($ages) . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>ages := map[string]int{"Ada": 36, "Linus": 54}
+fmt.Println(ages["Ada"], len(ages))</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>ages = { "Ada" =&gt; 36, "Linus" =&gt; 54 }
+puts "#{ages["Ada"]} #{ages.size}"</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>36 2</pre></div>
+<h3 id="going-through-a-list">Going through a list</h3>
+<p>Loops and lists belong together. To total a list of prices, you create a running total and add each item to it.</p>
+<div class="stepper" data-title="Totalling a list, one pass at a time"><ol class="stepper-list"><li><strong>Start.</strong> <span>We have <code class="inline">prices = [4, 7, 2]</code> and <code class="inline">total = 0</code>.</span></li><li><strong>First item.</strong> <span>Look at <code class="inline">4</code>. Add it: <code class="inline">total = 0 + 4 = 4</code>.</span></li><li><strong>Second item.</strong> <span>Look at <code class="inline">7</code>. Add it: <code class="inline">total = 4 + 7 = 11</code>.</span></li><li><strong>Third item.</strong> <span>Look at <code class="inline">2</code>. Add it: <code class="inline">total = 11 + 2 = 13</code>.</span></li><li><strong>No items left.</strong> <span>The loop ends and <code class="inline">total</code> holds <code class="inline">13</code>. This "running total" pattern appears in almost every program.</span></li></ol></div>
+<div class="playground" data-kind="js" data-title="Loop over a list"><div class="pg-intro"><p>Change the prices, add a few, and watch the total. Then try changing the code to find the largest price instead.</p></div><script type="text/plain" data-part="js">const prices = [4, 7, 2];
+let total = 0;
+for (const price of prices) {
+  total += price;
+}
+console.log("Total:", total);
+console.log("Average:", total / prices.length);</script></div>
+<div class="challenge" data-id="basics.largest" data-title="Find the biggest number in a list"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Find the biggest number in a list</h3></div><div class="challenge-body"><p>Write <code class="inline">largest(numbers)</code> that returns the biggest number in an array, <strong>using a loop</strong> (do not use <code class="inline">Math.max</code>). You may assume the array has at least one number.</p></div><script type="text/plain" data-part="starter">function largest(numbers) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('simple list', () => assert.equal(largest([3, 9, 2]), 9));
+test('largest first', () => assert.equal(largest([10, 4, 6]), 10));
+test('negative numbers', () => assert.equal(largest([-5, -2, -9]), -2));
+test('single number', () => assert.equal(largest([7]), 7));</script><script type="text/plain" data-part="solution">function largest(numbers) {
+  let best = numbers[0];
+  for (const n of numbers) {
+    if (n > best) best = n;
+  }
+  return best;
+}</script><div class="hint-text" hidden>Start by assuming the first number is the largest so far.</div><div class="hint-text" hidden>Loop through the rest. Whenever you find a number bigger than your current largest, replace it.</div></div>
+<div class="challenge" data-id="basics.freq" data-title="Count how often each word appears"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Count how often each word appears</h3></div><div class="challenge-body"><p>Write <code class="inline">wordCounts(words)</code> that takes an array of words and returns an object (dictionary) mapping each word to how many times it appears. For example <code class="inline">["a","b","a"]</code> gives <code class="inline">{ a: 2, b: 1 }</code>.</p></div><script type="text/plain" data-part="starter">function wordCounts(words) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('counts duplicates', () => assert.deepEqual(wordCounts(['a', 'b', 'a']), { a: 2, b: 1 }));
+test('empty list', () => assert.deepEqual(wordCounts([]), {}));
+test('all same', () => assert.deepEqual(wordCounts(['x', 'x', 'x']), { x: 3 }));
+test('mixed', () => assert.deepEqual(wordCounts(['to', 'be', 'or', 'not', 'to', 'be']), { to: 2, be: 2, or: 1, not: 1 }));</script><script type="text/plain" data-part="solution">function wordCounts(words) {
+  const counts = {};
+  for (const word of words) {
+    counts[word] = (counts[word] || 0) + 1;
+  }
+  return counts;
+}</script><div class="hint-text" hidden>Start with an empty object <code class="inline">{}</code>.</div><div class="hint-text" hidden>For each word, if the object already has it, add 1. Otherwise set it to 1. <code class="inline">counts[word] = (counts[word] || 0) + 1</code> does both.</div></div>
+<div class="quiz-mount" data-id="basics-c4" data-kind="check" data-title="Checkpoint: collections" data-count="3"><script type="application/json" class="quiz-data">{"id": "basics-c4", "kind": "check", "title": "Checkpoint: collections", "questions": [{"t": "mcq", "q": "What does <code class=\"inline\">colors[0]<\/code> give for the list <code class=\"inline\">[\"red\", \"green\", \"blue\"]<\/code>?", "o": ["\"blue\"", "\"red\"", "\"green\"", "An error"], "a": 1, "why": "Positions start at 0, so index 0 is the first item."}, {"t": "mcq", "q": "Which structure is best for looking up a person's phone number by their name?", "o": ["A single string", "A list of numbers", "A dictionary mapping names to numbers", "A boolean"], "a": 2, "why": "A dictionary stores key-value pairs and looks up a value by its key quickly."}, {"t": "multi", "q": "Which of these are true about lists? Select all that apply.", "o": ["Items can usually be added or removed", "They can only store numbers", "They keep their items in order", "You reach an item by its position"], "a": [0, 2, 3], "why": "Lists keep order, use positions starting at 0, and can grow. They can hold any type of value, including other lists."}]}</script></div>
+<h2 id="6-functions-reusable-building-blocks">6. Functions: reusable building blocks</h2>
+<p>A <strong>function</strong> is a named block of code that does one job. You <strong>define</strong> it once and <strong>call</strong> it as often as you like. Functions are how large programs stay manageable, and they are the most important idea in this module.</p>
+<p>A function can take <strong>parameters</strong> (named inputs). When you call it you give <strong>arguments</strong> (the actual values). It can send back a result with <code class="inline">return</code>.</p>
+<figure class="figure"><div class="fig-body"><svg class="fg" viewBox="0 0 568 90" role="img" aria-label="Calling a function" style="max-width:568px;min-width:409px" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah-basics6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="fg-head"/></marker></defs><rect x="12.0" y="12.0" width="116.0" height="66.0" rx="9" class="fg-box "/><text x="70.0" y="40.0" text-anchor="middle" class="fg-title">Arguments</text><text x="70.0" y="59.0" text-anchor="middle" class="fg-sub">square(7)</text><rect x="174.0" y="12.0" width="220.3" height="66.0" rx="9" class="fg-box fg-accent "/><text x="284.1" y="40.0" text-anchor="middle" class="fg-title">Function</text><text x="284.1" y="59.0" text-anchor="middle" class="fg-sub">takes n, computes n times n</text><line x1="131.0" y1="45.0" x2="171.0" y2="45.0" class="fg-line" marker-end="url(#ah-basics6)"/><rect x="440.3" y="12.0" width="116.0" height="66.0" rx="9" class="fg-box "/><text x="498.3" y="40.0" text-anchor="middle" class="fg-title">Result</text><text x="498.3" y="59.0" text-anchor="middle" class="fg-sub">returns 49</text><line x1="397.3" y1="45.0" x2="437.3" y2="45.0" class="fg-line" marker-end="url(#ah-basics6)"/></svg></div><figcaption><span class="fig-n">Figure 6.</span> Calling a function</figcaption></figure>
+<aside class="callout callout-plain"><div class="callout-title">In plain English</div><div class="callout-body"><p>A function is a vending machine. You put in a coin and press a button (arguments). The machine does something inside (the body). A snack comes out (the <button type="button" class="term" data-term="Return value" data-def="The result a function hands back to the code that called it.">return value</button>). You do not need to know how the machine works. You only need to know what goes in and what comes out.</p></div></aside>
+<div class="code-tabs" data-title="Defining and calling functions"><div class="code-tabs-title">Defining and calling functions</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>function square(n) {
+  return n * n;
+}
+
+function describe(n) {
+  if (n % 2 === 0) {
+    return "even";
+  }
+  return "odd";
+}
+
+console.log(square(7));
+console.log(describe(7));</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>def square(n):
+    return n * n
+
+
+def describe(n):
+    if n % 2 == 0:
+        return "even"
+    return "odd"
+
+
+print(square(7))
+print(describe(7))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>public class Main {
+    static int square(int n) {
+        return n * n;
+    }
+
+    static String describe(int n) {
+        if (n % 2 == 0) {
+            return "even";
+        }
+        return "odd";
+    }
+
+    public static void main(String[] args) {
+        System.out.println(square(7));
+        System.out.println(describe(7));
+    }
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>using System;
+
+Console.WriteLine(Square(7));
+Console.WriteLine(Describe(7));
+
+static int Square(int n)
+{
+    return n * n;
+}
+
+static string Describe(int n)
+{
+    if (n % 2 == 0)
+    {
+        return "even";
+    }
+    return "odd";
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+function square($n) {
+    return $n * $n;
+}
+
+function describe($n) {
+    if ($n % 2 === 0) {
+        return "even";
+    }
+    return "odd";
+}
+
+echo square(7) . "\n";
+echo describe(7) . "\n";</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>package main
+
+import "fmt"
+
+func square(n int) int {
+    return n * n
+}
+
+func describe(n int) string {
+    if n%2 == 0 {
+        return "even"
+    }
+    return "odd"
+}
+
+func main() {
+    fmt.Println(square(7))
+    fmt.Println(describe(7))
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>def square(n)
+  n * n
+end
+
+def describe(n)
+  return "even" if n.even?
+  "odd"
+end
+
+puts square(7)
+puts describe(7)</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>49
+odd</pre></div>
+<h3 id="why-functions-matter">Why functions matter</h3>
+<ul><li><strong>No repetition.</strong> Write the logic once and call it everywhere. Fix a bug in one place.</li><li><strong>Names explain intent.</strong> <code class="inline">isEligibleForDiscount(customer)</code> is clearer than ten lines of conditions.</li><li><strong>Easy to test.</strong> A small function with clear inputs and outputs can be checked by itself, as the coding challenges here do.</li></ul>
+<aside class="callout callout-best"><div class="callout-title">Write small functions</div><div class="callout-body"><p>A good function does one thing, has a name that describes it (usually a verb: <code class="inline">calculateTotal</code>, <code class="inline">sendEmail</code>), and fits on one screen. If you need the word "and" to describe what it does, split it into two.</p></div></aside>
+<h3 id="return-versus-print">Return versus print</h3>
+<p>A beginner mix-up worth clearing up. <strong>Printing</strong> shows text to a human. <strong>Returning</strong> gives a value back to the code that called the function so that it can be used further. <code class="inline">square(7) + 1</code> only works if <code class="inline">square</code> returns its result.</p>
+<aside class="callout callout-pitfall"><div class="callout-title">A function with no return gives back nothing</div><div class="callout-body"><p>If you forget <code class="inline">return</code>, the function quietly produces <code class="inline">undefined</code> (JavaScript), <code class="inline">None</code> (Python), <code class="inline">null</code> or nothing. If a result is mysteriously empty, check for a missing <code class="inline">return</code>.</p></div></aside>
+<div class="challenge" data-id="basics.palindrome" data-title="Check for palindromes"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Check for palindromes</h3></div><div class="challenge-body"><p>A palindrome reads the same forwards and backwards, like "level" or "Racecar". Write <code class="inline">isPalindrome(text)</code> that returns <code class="inline">true</code> or <code class="inline">false</code>, ignoring upper and lower case.</p></div><script type="text/plain" data-part="starter">function isPalindrome(text) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('level', () => assert.equal(isPalindrome('level'), true));
+test('Racecar ignores case', () => assert.equal(isPalindrome('Racecar'), true));
+test('hello', () => assert.equal(isPalindrome('hello'), false));
+test('single letter', () => assert.equal(isPalindrome('a'), true));
+test('empty text', () => assert.equal(isPalindrome(''), true));</script><script type="text/plain" data-part="solution">function isPalindrome(text) {
+  const t = text.toLowerCase();
+  return t === t.split('').reverse().join('');
+}</script><div class="hint-text" hidden>Make the text lower case first with <code class="inline">text.toLowerCase()</code>.</div><div class="hint-text" hidden>To reverse a string in JavaScript, split it into characters, reverse the array and join it again: <code class="inline">text.split('').reverse().join('')</code>.</div></div>
+<div class="challenge" data-id="basics.vowels" data-title="Count the vowels in a text"><div class="challenge-head"><span class="badge">Coding challenge</span><h3>Count the vowels in a text</h3></div><div class="challenge-body"><p>Write <code class="inline">countVowels(text)</code> that returns how many of the letters a, e, i, o, u appear in the text, in either case.</p></div><script type="text/plain" data-part="starter">function countVowels(text) {
+  // your code here
+}</script><script type="text/plain" data-part="tests">test('hello', () => assert.equal(countVowels('hello'), 2));
+test('upper case', () => assert.equal(countVowels('AEIOU'), 5));
+test('no vowels', () => assert.equal(countVowels('rhythm'), 0));
+test('sentence', () => assert.equal(countVowels('Programming is fun'), 5));
+test('empty', () => assert.equal(countVowels(''), 0));</script><script type="text/plain" data-part="solution">function countVowels(text) {
+  let count = 0;
+  for (const ch of text.toLowerCase()) {
+    if ('aeiou'.includes(ch)) count++;
+  }
+  return count;
+}</script><div class="hint-text" hidden>Loop through every character of the text.</div><div class="hint-text" hidden>Keep the vowels in a string like <code class="inline">"aeiou"</code> and use <code class="inline">"aeiou".includes(letter)</code>. Remember to lower-case each letter first.</div></div>
+<div class="quiz-mount" data-id="basics-c5" data-kind="check" data-title="Checkpoint: functions" data-count="3"><script type="application/json" class="quiz-data">{"id": "basics-c5", "kind": "check", "title": "Checkpoint: functions", "questions": [{"t": "mcq", "q": "In <code class=\"inline\">function add(a, b) { return a + b; }<\/code>, what are <code class=\"inline\">a<\/code> and <code class=\"inline\">b<\/code>?", "o": ["Loops", "Arguments", "Parameters", "Return values"], "a": 2, "why": "Parameters are the names in the definition. The actual values you pass when calling are the arguments."}, {"t": "tf", "q": "A function that prints a result is the same as a function that returns it.", "a": false, "why": "Printing displays text to a person. Returning hands a value back to the calling code, which can use it in other calculations."}, {"t": "short", "q": "What keyword sends a result back from a function in JavaScript, Python, Java, C#, PHP and Go?", "a": ["return"], "why": "<code class=\"inline\">return<\/code> ends the function and hands a value back to the caller. Ruby also returns the last value automatically."}]}</script></div>
+<h2 id="7-when-things-go-wrong-errors">7. When things go wrong: errors</h2>
+<p>Mistakes happen, and good programs expect them. There are three kinds.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Kind</th><th scope="col">When it shows up</th><th scope="col">Example</th></tr></thead><tbody><tr><td><strong>Syntax error</strong></td><td>Before the program runs. The code breaks the language's grammar</td><td>A missing bracket or quote</td></tr><tr><td><strong>Runtime error</strong></td><td>While running. The code is valid but an operation fails</td><td>Reading a file that does not exist; dividing by zero in some languages</td></tr><tr><td><strong>Logic error</strong></td><td>Never reports itself. The program runs but gives the wrong answer</td><td>Using <code class="inline">&gt;</code> when you meant <code class="inline">&gt;=</code></td></tr></tbody></table></div>
+<p>Logic errors are the hardest, because the computer sees nothing wrong. That is why tests and tracing matter.</p>
+<p><button type="button" class="term" data-term="Runtime" data-def="The period when a program is running, or the software environment that runs it.">Runtime</button> errors produce an <strong><button type="button" class="term" data-term="Exception" data-def="A signal that something went wrong while a program was running. Programs can catch exceptions and recover.">exception</button></strong> (or an error value). If nothing catches it, the program stops with a stack trace. You can <strong>catch</strong> an exception and respond: show a friendly message, try something else, log the problem.</p>
+<div class="code-tabs" data-title="Throwing and catching an error"><div class="code-tabs-title">Throwing and catching an error</div><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>try {
+  throw new Error("boom");
+} catch (e) {
+  console.log("Caught: " + e.message);
+}</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>try:
+    raise ValueError("boom")
+except ValueError as e:
+    print("Caught: " + str(e))</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>try {
+    throw new IllegalStateException("boom");
+} catch (IllegalStateException e) {
+    System.out.println("Caught: " + e.getMessage());
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>try
+{
+    throw new InvalidOperationException("boom");
+}
+catch (InvalidOperationException e)
+{
+    Console.WriteLine("Caught: " + e.Message);
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+try {
+    throw new Exception("boom");
+} catch (Exception $e) {
+    echo "Caught: " . $e-&gt;getMessage() . "\n";
+}</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>err := errors.New("boom")
+if err != nil {
+    fmt.Println("Caught: " + err.Error())
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>begin
+  raise "boom"
+rescue =&gt; e
+  puts "Caught: #{e.message}"
+end</pre><pre class="code-block output" data-lang="output"><span class="lang-tag">Output</span>Caught: boom</pre></div>
+<p>Go does it differently on purpose: functions <strong>return</strong> an error value as a second result, and the caller checks <code class="inline">if err != nil</code>. There are no exceptions. Both styles solve the same problem.</p>
+<aside class="callout callout-best"><div class="callout-title">Debugging checklist</div><div class="callout-body"><ol><li>Read the error message and note the file and line.</li><li>Print the values of the variables near the problem.</li><li>Check your assumptions: is this variable really a number? Is the list really empty?</li><li>Trace the code by hand.</li><li>Simplify: remove everything unrelated until the bug disappears.</li></ol></div></aside>
+<h2 id="8-putting-it-together-solving-problems">8. Putting it together: solving problems</h2>
+<p>Programming is solving problems. When you meet a new one, do not start typing. Follow a simple method.</p>
+<div class="stepper" data-title="A method for any problem"><ol class="stepper-list"><li><strong>Understand.</strong> <span>Restate the problem in your own words. What are the inputs? What should the output be? Write two or three examples with the answers you expect.</span></li><li><strong>Plan in plain words.</strong> <span>Write the steps as pseudocode, in ordinary language: "Start with a total of 0. For each price, add it. Return the total."</span></li><li><strong>Break it down.</strong> <span>Split anything complicated into smaller functions you can finish and test one at a time.</span></li><li><strong>Write the smallest working version.</strong> <span>Do one step, run it, check it.</span></li><li><strong>Test with your examples.</strong> <span>Include edge cases: an empty list, zero, a negative number, a single item.</span></li><li><strong>Improve.</strong> <span>Rename things so they are clear. Remove repetition. Only then consider speed.</span></li></ol></div>
+<section class="lab-box"><h3>Mini-project: grade book</h3><p>Build a small program in <strong>your chosen language</strong> (run it on your computer, or in JavaScript right here in the playground). It practises everything in this module.</p><ol class="lab-steps"><li>Create a list of at least five student scores (numbers from 0 to 100).</li><li>Write a function <code class="inline">letterGrade(score)</code> that returns "A" for 90 and above, "B" for 80 to 89, "C" for 70 to 79 and "F" otherwise.</li><li>Write a function <code class="inline">average(scores)</code> that returns the mean of a list.</li><li>Loop over the scores and print each score with its letter grade.</li><li>Print the average, the highest score and how many students passed (70 or more).</li><li>Stretch goal: store names and scores together in a dictionary, and print the name of the top student.</li><li>Stretch goal: wrap the grade conversion in a try/catch so that a score outside 0 to 100 raises and reports an error.</li></ol><div class="lab-foot">Mark the lab complete from the module page when you have finished the steps.</div></section>
+<aside class="callout callout-pitfall"><div class="callout-title">Mistakes to avoid at this stage</div><div class="callout-body"><ul><li><strong>Copying solutions without understanding them.</strong> After you see a solution, close it and write it again from memory the next day.</li><li><strong>Writing a lot before running anything.</strong> Run after every few lines.</li><li><strong>Giving up on a bug after five minutes.</strong> Use the 20-minute rule and the debugging checklist.</li><li><strong>Skipping the trace.</strong> If you cannot predict what code does, you will not be able to debug it.</li></ul></div></aside>
+<section class="recap" aria-label="Recap"><div class="box-title">Key takeaways</div><ul><li>Values have types: integers, decimals, strings, booleans. Positions start at 0.</li><li><code class="inline">=</code> stores a value. <code class="inline">==</code> or <code class="inline">===</code> compares. <code class="inline">%</code> gives a remainder.</li><li><code class="inline">if</code> / <code class="inline">else if</code> / <code class="inline">else</code> choose a path. The first true condition wins.</li><li><code class="inline">for</code> loops repeat a known number of times or go through a collection. <code class="inline">while</code> loops repeat until a condition changes. Make sure every loop can end.</li><li>Lists keep order and are read by position. Dictionaries map keys to values.</li><li>Functions take parameters, return results and keep programs organised. Return is not the same as print.</li><li>Errors are normal. Read them, trace, print values, and catch exceptions where it makes sense.</li><li>Solve problems in steps: understand, plan, break down, build small, test, improve.</li></ul></section>
+<div class="quiz-mount" data-id="basics" data-kind="test" data-title="Module test: Programming Fundamentals" data-count="11"><script type="application/json" class="quiz-data">{"id": "basics", "kind": "test", "title": "Module test: Programming Fundamentals", "questions": [{"t": "mcq", "q": "What does <code class=\"inline\">\"5\" + 3<\/code> produce in JavaScript?", "o": ["8", "3", "\"53\"", "An error"], "a": 2, "why": "One side is text, so JavaScript joins instead of adding. The result is the text \"53\"."}, {"t": "mcq", "q": "Which of these correctly tests whether <code class=\"inline\">n<\/code> is even?", "o": ["<code class=\"inline\">n % 2 == 0<\/code>", "<code class=\"inline\">n / 2 == 0<\/code>", "<code class=\"inline\">n % 2 = 0<\/code>", "<code class=\"inline\">n = 2<\/code>"], "a": 0, "why": "The remainder when dividing an even number by 2 is 0. A single <code class=\"inline\">=<\/code> would assign instead of compare."}, {"t": "mcq", "q": "What does this print? <code class=\"inline\">let t = 0; for (let i = 1; i &lt;= 3; i++) { t += i; } console.log(t);<\/code>", "o": ["6", "3", "123", "5"], "a": 0, "why": "t becomes 1, then 3, then 6. Tracing the loop by hand confirms it."}, {"t": "mcq", "q": "A function has no <code class=\"inline\">return<\/code> statement. What does the caller receive in JavaScript?", "o": ["undefined", "0", "An error", "An empty string"], "a": 0, "why": "Without return the function produces no value. JavaScript reports that as undefined, Python as None."}, {"t": "mcq", "q": "Which data structure fits best for storing a user's settings such as <code class=\"inline\">theme<\/code> and <code class=\"inline\">language<\/code>?", "o": ["A single number", "A loop", "A dictionary (map)", "A list"], "a": 2, "why": "Settings are labelled values, which is exactly what key-value dictionaries are for."}, {"t": "mcq", "q": "A program runs without errors but prints the wrong total. What kind of error is it?", "o": ["Logic error", "Compiler error", "Runtime error", "Syntax error"], "a": 0, "why": "The program is valid and does not crash, but its logic is wrong. Only tests and tracing find these."}, {"t": "tf", "q": "A <code class=\"inline\">while<\/code> loop whose condition never becomes false will run forever.", "a": true, "why": "That is an infinite loop. Always make sure something inside the loop changes toward ending it."}, {"t": "tf", "q": "The first item of a list is at index 1 in most programming languages.", "a": false, "why": "Counting starts at zero in almost all mainstream languages."}, {"t": "short", "q": "What is the remainder of 29 divided by 6? Type the number.", "a": ["5"], "why": "6 goes into 29 four times (24), leaving 5."}, {"t": "multi", "q": "Which of these are good problem-solving habits? Select all that apply.", "o": ["Run the code after every few lines", "Plan the steps in plain words first", "Write the whole program before testing anything", "Write examples of the expected answer before coding"], "a": [0, 1, 3], "why": "Small steps with frequent testing catch mistakes while they are still easy to find."}, {"t": "order", "q": "Put the problem-solving method in order.", "o": ["Plan the steps in plain words", "Write the smallest working version", "Improve names and structure", "Test with edge cases", "Understand the problem and write examples"], "a": [4, 0, 1, 3, 2], "why": "You cannot solve what you do not understand, and you should only polish code that already works."}]}</script></div>
+<h2 id="module-project">Module project</h2>
+<section class="project" data-id="basics.grade-book" data-req="8" data-stretch="3" aria-labelledby="pj-basics.grade-book"><div class="pj-head"><span class="badge">Project</span><h3 id="pj-basics.grade-book">Build a grade book in the language you chose</h3><div class="pj-meta"><span>2-3 hours</span><span>Beginner</span><span>Skills: variables, conditions, loops, lists, functions, error handling</span></div></div><div class="pj-body"><div class="pj-brief"><p>A teacher has a list of exam scores and wants a quick report. You will write a small console program that turns the scores into letter grades, calculates simple statistics, and copes with bad data without crashing. It uses every idea from this module, and the same project works in any language.</p></div><h4>Requirements</h4><p class="pj-help">Tick each one when your project does it. All of them are needed to finish.</p><ul class="pj-checks"><li><label><input type="checkbox" data-k="r0"><span>Store at least six scores in a list or array.</span></label></li><li><label><input type="checkbox" data-k="r1"><span>Write a function <code class="inline">letterGrade(score)</code> that returns A for 90 or more, B for 80 or more, C for 70 or more, D for 60 or more, and F otherwise.</span></label></li><li><label><input type="checkbox" data-k="r2"><span>Write separate functions for the average, the highest score and the lowest score. Do not use a built-in average function.</span></label></li><li><label><input type="checkbox" data-k="r3"><span>Print one line per score in the form <code class="inline">92 -&gt; A</code>.</span></label></li><li><label><input type="checkbox" data-k="r4"><span>Print the average (rounded to one decimal place), the highest, the lowest and how many scores are passing (60 or more).</span></label></li><li><label><input type="checkbox" data-k="r5"><span>Check every score before using it. A score that is not a number, or is outside 0 to 100, must be reported as invalid and left out of the statistics. The program must not crash.</span></label></li><li><label><input type="checkbox" data-k="r6"><span>Use at least three functions, meaningful variable names and a comment that explains each function.</span></label></li><li><label><input type="checkbox" data-k="r7"><span>Test the program with a list that contains an invalid value and with an empty list. State what it prints in each case.</span></label></li></ul><h4>Build it in stages</h4><ol class="pj-steps"><li>Start from the starter code and run it to make sure your setup works.</li><li>Finish <code class="inline">letterGrade</code> and test it with the edge values 59, 60, 69, 70, 89, 90 and 100.</li><li>Write the average, highest and lowest functions and print their results for the sample list.</li><li>Add the validation. Collect the good scores in a new list, and print a message for each rejected value.</li><li>Handle the empty list: say "No valid scores" instead of dividing by zero.</li><li>Read through the code and rename anything that is unclear.</li></ol><h4>Starter code</h4><div class="code-tabs" data-title=""><pre class="code-block" data-lang="javascript"><span class="lang-tag">JavaScript</span>function letterGrade(score) {
+  if (score &gt;= 90) return "A";
+  // TODO: B, C and D
+  return "F";
+}
+
+const scores = [92, 78, 85, 61, 47, 88];
+for (const s of scores) {
+  console.log(s + " -&gt; " + letterGrade(s));
+}
+// TODO: validation, average, highest, lowest, passing count</pre><pre class="code-block" data-lang="python"><span class="lang-tag">Python</span>def letter_grade(score):
+    if score &gt;= 90:
+        return "A"
+    # TODO: B, C and D
+    return "F"
+
+
+scores = [92, 78, 85, 61, 47, 88]
+for s in scores:
+    print(s, "-&gt;", letter_grade(s))
+# TODO: validation, average, highest, lowest, passing count</pre><pre class="code-block" data-lang="java"><span class="lang-tag">Java</span>public class GradeBook {
+    static String letterGrade(int score) {
+        if (score &gt;= 90) return "A";
+        // TODO: B, C and D
+        return "F";
+    }
+
+    public static void main(String[] args) {
+        int[] scores = {92, 78, 85, 61, 47, 88};
+        for (int s : scores) {
+            System.out.println(s + " -&gt; " + letterGrade(s));
+        }
+        // TODO: validation, average, highest, lowest, passing count
+    }
+}</pre><pre class="code-block" data-lang="csharp"><span class="lang-tag">C#</span>using System;
+
+class GradeBook
+{
+    static string LetterGrade(int score)
+    {
+        if (score &gt;= 90) return "A";
+        // TODO: B, C and D
+        return "F";
+    }
+
+    static void Main()
+    {
+        int[] scores = { 92, 78, 85, 61, 47, 88 };
+        foreach (int s in scores)
+        {
+            Console.WriteLine(s + " -&gt; " + LetterGrade(s));
+        }
+        // TODO: validation, average, highest, lowest, passing count
+    }
+}</pre><pre class="code-block" data-lang="php"><span class="lang-tag">PHP</span>&lt;?php
+function letterGrade(int $score): string {
+    if ($score &gt;= 90) return "A";
+    // TODO: B, C and D
+    return "F";
+}
+
+$scores = [92, 78, 85, 61, 47, 88];
+foreach ($scores as $s) {
+    echo $s . " -&gt; " . letterGrade($s) . "\n";
+}
+// TODO: validation, average, highest, lowest, passing count</pre><pre class="code-block" data-lang="go"><span class="lang-tag">Go</span>package main
+
+import "fmt"
+
+func letterGrade(score int) string {
+	if score &gt;= 90 {
+		return "A"
+	}
+	// TODO: B, C and D
+	return "F"
+}
+
+func main() {
+	scores := []int{92, 78, 85, 61, 47, 88}
+	for _, s := range scores {
+		fmt.Println(s, "-&gt;", letterGrade(s))
+	}
+	// TODO: validation, average, highest, lowest, passing count
+}</pre><pre class="code-block" data-lang="ruby"><span class="lang-tag">Ruby</span>def letter_grade(score)
+  return "A" if score &gt;= 90
+  # TODO: B, C and D
+  "F"
+end
+
+scores = [92, 78, 85, 61, 47, 88]
+scores.each { |s| puts "#{s} -&gt; #{letter_grade(s)}" }
+# TODO: validation, average, highest, lowest, passing count</pre></div><details class="pj-hints"><summary>Stuck? Open the hints</summary><ul><li>Check the highest grade first and work down, using else if (or elif, elsif) so only one branch runs.</li><li>To keep the valid scores, start with an empty list and add each good value to it inside a loop.</li><li>Dividing by the length of an empty list is the classic crash. Check the length first.</li><li>In languages with typed lists, treat "not a number" as something you check while reading input. In JavaScript, <code class="inline">Number.isFinite(x)</code> is useful.</li></ul></details><h4>Stretch goals <span class="pj-opt">optional</span></h4><ul class="pj-checks pj-stretch"><li><label><input type="checkbox" data-k="s0"><span>Read the scores from the command line arguments instead of a fixed list.</span></label></li><li><label><input type="checkbox" data-k="s1"><span>Print a bar of stars for each score, one star per ten points.</span></label></li><li><label><input type="checkbox" data-k="s2"><span>Add the median, and the percentage of students in each letter grade.</span></label></li></ul><h4>Review it against this rubric</h4><div class="table-wrap"><table><thead><tr><th scope="col">Criterion</th><th scope="col">What good looks like</th></tr></thead><tbody><tr><td><strong>Correctness</strong></td><td>Every boundary value (59, 60, 69, 70, 89, 90, 100) gets the right letter and the statistics are correct.</td></tr><tr><td><strong>Robustness</strong></td><td>Invalid scores and an empty list never crash the program and produce clear messages.</td></tr><tr><td><strong>Structure</strong></td><td>The work is split into small functions with one job each, and no code is repeated.</td></tr><tr><td><strong>Readability</strong></td><td>Names say what things mean, comments explain why, and the output is easy to read.</td></tr></tbody></table></div><ul class="pj-checks"><li><label><input type="checkbox" data-k="rubric"><span>I reviewed my project against the rubric and fixed what fell short.</span></label></li></ul><h4>What to hand in</h4><ul><li>The source file, with comments.</li><li>A short text file listing the output for the normal list, the list with invalid data and the empty list.</li></ul><div class="pj-foot"><div class="pj-progress"><div class="progress-bar" aria-hidden="true"><div class="fill"></div></div><span class="pj-count" role="status"></span></div><div class="pj-fields"><div class="form-row"><label class="label" for="pjl-basics.grade-book">Link to your work (optional)</label><input class="field" id="pjl-basics.grade-book" type="url" inputmode="url" placeholder="https://github.com/you/project" autocomplete="off"></div><div class="form-row"><label class="label" for="pjn-basics.grade-book">What did you learn? What would you do differently?</label><textarea class="field" id="pjn-basics.grade-book" rows="3" maxlength="2000"></textarea></div></div><div class="actions"><button type="button" class="btn btn-primary" data-a="finish" disabled>Mark project complete</button><button type="button" class="btn btn-secondary" data-a="reopen" hidden>Reopen project</button></div></div></div></section>
